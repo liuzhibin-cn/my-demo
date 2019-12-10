@@ -38,6 +38,68 @@
   - 分片算法的选择，充分考虑简化扩容时的数据迁移、避免高并发插入时的热点问题、避免XA事物；
 
 #### Dubbo基础用法
+使用[apache/dubbo-spring-boot-project](https://github.com/apache/dubbo-spring-boot-project)与SpringBoot集成，注册中心使用Redis。
+
+1. `pom.xml`添加依赖项：
+   ```xml
+   <dependency>
+        <groupId>org.apache.dubbo</groupId>
+        <artifactId>dubbo-spring-boot-starter</artifactId>
+        <version>2.7.4.1</version>
+   </dependency>
+   <dependency>
+     <groupId>org.apache.dubbo</groupId>
+     <artifactId>dubbo</artifactId>
+     <version>2.7.4.1</version>
+   </dependency>
+   <dependency> <!-- dubbo: serialization -->
+     <groupId>de.ruedigermoeller</groupId>
+     <artifactId>fst</artifactId>
+     <version>2.57</version>
+   </dependency>
+   <dependency> <!-- dubbo: use redis registry, dubbo uses jedis client -->
+       <groupId>redis.clients</groupId>
+       <artifactId>jedis</artifactId>
+   </dependency>
+   ```
+2. 在`application.yml`中配置Dubbo的protocol、registry等：
+   ```yaml
+   dubbo:
+       application:
+           id: srv-item
+           name: srv-item
+           qosEnable: false
+        protocol:
+            id: dubbo
+            name: dubbo
+            port: 20880
+            threads: 3
+            iothreads: 1
+            server: netty
+            client: netty
+            status: server
+            serialization: fst
+            queues: 0
+            keepAlive: true
+        registry: 
+            id: redis
+            address: redis://127.0.0.1:6379
+   ```
+   最新配置项参考[ApplicationConfig](https://github.com/apache/dubbo/blob/master/dubbo-common/src/main/java/org/apache/dubbo/config/ApplicationConfig.java)、[ProtocolConfig](https://github.com/apache/dubbo/blob/master/dubbo-common/src/main/java/org/apache/dubbo/config/ProtocolConfig.java)、[RegistryConfig](https://github.com/apache/dubbo/blob/master/dubbo-common/src/main/java/org/apache/dubbo/config/RegistryConfig.java)、[MonitorConfig](https://github.com/apache/dubbo/blob/master/dubbo-common/src/main/java/org/apache/dubbo/config/MonitorConfig.java)、[ServiceConfig](https://github.com/apache/dubbo/blob/master/dubbo-config/dubbo-config-api/src/main/java/org/apache/dubbo/config/ServiceConfig.java)、[ReferenceConfig](https://github.com/apache/dubbo/blob/master/dubbo-config/dubbo-config-api/src/main/java/org/apache/dubbo/config/ReferenceConfig.java)
+3. 在SpringBoot启动类上指定Dubbo组件扫描范围：
+   ```java
+   @Configuration
+   @EnableAutoConfiguration
+   @ComponentScan(basePackages={"my.demo.service.item"})
+   @DubboComponentScan(basePackages = { "my.demo.service.item" })
+   public class Application {
+	   public static void main(String[] args) {
+		   new SpringApplicationBuilder(Application.class)
+			   .web(WebApplicationType.NONE).run(args);
+	   }
+   }
+   ```
+4. 暴露Dubbo服务的类上使用`@Service`注解（不再需要Spring的`@Component`等注解），引用Dubbo服务使用`@Reference`（不再需要Spring的`@Autowired`注解）；
 
 -------------------------------------------------------------------
 #### Mycat部署
@@ -124,7 +186,9 @@ Windows环境下载[Mycat-server-1.6.7.3-release-20190927161129-win.tar.gz](http
 - 通过`bin\startup_nowrap.bat`在命令行直接运行。
   > 注意：需要在命令行进入`bin`目录后再执行`startup_nowrap.bat`命令，否则会将命令行所处当前目录作为Mycat主目录，导致无法找到`lib`等目录，`classpath`无法加载jar文件。
 - 通过`bin\mycat.bat install`注册为Windows服务（以管理员身份运行），开机自动启动。
-  > 注意：需要修改`conf\wrapper.conf`文件，将`wrapper.java.command=java`改为全路径，例如`wrapper.java.command=E:\dev-tools\java\bin\java`，否则服务启动时报无法找到`java`命令，启动失败。
+  > 注意：
+  > 1. 需要修改`conf\wrapper.conf`文件，将`wrapper.java.command=java`改为全路径，例如`wrapper.java.command=E:\dev-tools\java\bin\java`，否则服务启动时报无法找到`java`命令，启动失败；
+  > 2. 在`conf\wrapper.conf`中配置Mycat JVM启动参数；
 
 ##### Mac/Linux环境
 ```sh

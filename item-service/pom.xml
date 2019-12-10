@@ -78,26 +78,25 @@
 	      <artifactId>spring-boot-starter</artifactId>
 	    </dependency>
         
-        <!-- https://github.com/apache/dubbo-spring-boot-project -->
-        <dependency>
-             <groupId>org.apache.dubbo</groupId>
-             <artifactId>dubbo-spring-boot-starter</artifactId>
-             <version>2.7.4.1</version>
-        </dependency>
+		<dependency> <!-- https://github.com/apache/dubbo-spring-boot-project -->
+		     <groupId>org.apache.dubbo</groupId>
+		     <artifactId>dubbo-spring-boot-starter</artifactId>
+		     <version>2.7.4.1</version>
+		</dependency>
 		<dependency>
 		  <groupId>org.apache.dubbo</groupId>
 		  <artifactId>dubbo</artifactId>
 		  <version>2.7.4.1</version>
 		</dependency>
-        <dependency> <!-- dubbo: serialization -->
-          <groupId>de.ruedigermoeller</groupId>
-          <artifactId>fst</artifactId>
-          <version>2.57</version>
-        </dependency>
-        <dependency> <!-- dubbo: use redis registry, dubbo uses jedis client -->
-            <groupId>redis.clients</groupId>
-            <artifactId>jedis</artifactId>
-        </dependency>
+		<dependency> <!-- dubbo: serialization -->
+		  <groupId>de.ruedigermoeller</groupId>
+		  <artifactId>fst</artifactId>
+		  <version>2.57</version>
+		</dependency>
+		<dependency> <!-- dubbo: use redis registry, dubbo uses jedis client -->
+		    <groupId>redis.clients</groupId>
+		    <artifactId>jedis</artifactId>
+		</dependency>
 	</dependencies>
 
 	<dependencyManagement>
