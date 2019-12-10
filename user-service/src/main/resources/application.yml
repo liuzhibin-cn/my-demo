@@ -1,0 +1,64 @@
+# MySQL JDBC Driver的Bug（Mac OSX环境下）：
+# 中国的时区简写为CST (China Standard Time)，但全球简写为CST的时区一共有4个：
+#    CST Central Standard Time (USA) UT-6:00
+#    CST Central Standard Time (Australia) UT+9:30
+#    CST China Standard Time UT+8:00
+#    CST Cuba Standard Time UT-4:00
+# 安装MySQL Server时，从操作系统获取时区并以简写CST表示，show variables like '%time_zone%'如下：
+#    | Variable_name    | Value  |
+#    | system_time_zone | CST    |
+#    | time_zone        | SYSTEM |
+# MyBatis的DateTypeHandler将java.util.Date类型转换成java.sql.Timestamp交给MySQL JDBC Driver处理，
+# 而MySQL JDBC Driver会使用MySQL Server的CST创建Java TimeZone对象来处理Timestamp参数，
+# 此时实际得到的Java TimeZone为Central Standard Time (USA) UT-6:00，而不是China Standard Time UT+8:00，导致存入MySQL的时间不正确。
+# 通过JDBC url的serverTimezone参数指定TimeZone ID全称可以避免这个问题。
+spring:
+  output:
+    ansi:
+      enabled: always
+  datasource:  
+    name: user-ds
+    type: org.apache.tomcat.jdbc.pool.DataSource 
+    driver-class-name: com.mysql.cj.jdbc.Driver  
+    url: ${db.url}
+    username: ${db.user}  
+    password: ${db.password}
+    tomcat:
+      defaultAutoCommit: true
+      defaultTransactionIsolation: 2
+      initialSize: 5
+      minIdle: 5
+      maxIdle: 5
+      maxActive: 5
+      maxWait: 2000
+      timeBetweenEvictionRunsMillis: 60000  
+      minEvictableIdleTimeMillis: 300000 
+      testOnBorrow: true
+      validationQuery: /* ping */ select 1
+      validationInterval: 30000
+      testWhileIdle: true
+
+# Spring Boot应用中mybatis的配置方法
+mybatis: # see MybatisProperties.class in mybatis-spring-boot-autoconfigure
+  mapperLocations: classpath:mappers/*.xml
+
+dubbo:
+    application: # see com.alibaba.dubbo.config.ApplicationConfig
+        id: srv-user
+        name: srv-user
+        qosEnable: false
+    protocol: # see com.alibaba.dubbo.config.ProtocolConfig
+        id: dubbo
+        name: dubbo
+        port: 20882
+        threads: 3
+        iothreads: 1
+        server: netty
+        client: netty
+        status: server
+        serialization: fst
+        queues: 0
+        keepAlive: true
+    registry: # see com.alibaba.dubbo.config.RegistryConfig
+        id: redis
+        address: redis://127.0.0.1:6379

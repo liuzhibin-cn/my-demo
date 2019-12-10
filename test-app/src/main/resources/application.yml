@@ -1,0 +1,15 @@
+spring:
+    output:
+        ansi:
+            enabled: always
+
+dubbo:
+    scan:
+        basePackages: my.demo.test
+    application: # see com.alibaba.dubbo.config.ApplicationConfig
+        id: test-client
+        name: test-client
+        qosEnable: false
+    registry: # see com.alibaba.dubbo.config.RegistryConfig
+        id: redis
+        address: redis://127.0.0.1:6379

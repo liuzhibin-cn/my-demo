@@ -1,0 +1,25 @@
+spring:
+    output:
+        ansi:
+            enabled: always
+
+dubbo:
+    application: # see com.alibaba.dubbo.config.ApplicationConfig
+        id: srv-item
+        name: srv-item
+        qosEnable: false
+    protocol: # see com.alibaba.dubbo.config.ProtocolConfig
+        id: dubbo
+        name: dubbo
+        port: 20880
+        threads: 3
+        iothreads: 1
+        server: netty
+        client: netty
+        status: server
+        serialization: fst
+        queues: 0
+        keepAlive: true
+    registry: # see com.alibaba.dubbo.config.RegistryConfig
+        id: redis
+        address: redis://127.0.0.1:6379

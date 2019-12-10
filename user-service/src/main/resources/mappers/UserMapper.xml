@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="my.demo.dao.user.UserDao">
+    <resultMap id="user" type="my.demo.domain.User">
+        <result property="userId" column="user_id" />
+        <result property="nickname" column="nickname" />
+        <result property="mobile" column="mobile" />
+        <result property="email" column="email" />
+        <result property="createdAt" column="created_at" />
+        <result property="lastUpdate" column="last_update" />
+    </resultMap>
+    
+    <resultMap id="userAccount" type="my.demo.domain.UserAccount">
+        <result property="account" column="account" />
+        <result property="password" column="password" />
+        <result property="userId" column="user_id" />
+        <result property="accountHash" column="account_hash" />
+    </resultMap>
+</mapper>

@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<configuration>
+	<!-- <include resource="org/springframework/boot/logging/logback/defaults.xml" /> -->
+	<!-- 去掉logback启动时搜索、解析logback.xml的日志 -->
+    <statusListener class="ch.qos.logback.core.status.NopStatusListener" />
+    
+    <!-- copied from org/springframework/boot/logging/logback/ defaults.xml and console-appender.xml in spring-boot-xxx.jar -->
+	<conversionRule conversionWord="clr" converterClass="org.springframework.boot.logging.logback.ColorConverter" />
+	<conversionRule conversionWord="wex" converterClass="org.springframework.boot.logging.logback.WhitespaceThrowableProxyConverter" />
+	<conversionRule conversionWord="wEx" converterClass="org.springframework.boot.logging.logback.ExtendedWhitespaceThrowableProxyConverter" />
+    <!-- spring default console pattern: -->
+	<appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+		<encoder charset="utf-8"> <!-- add charset -->
+		  <charset>UTF-8</charset>
+		   <pattern>${CONSOLE_LOG_PATTERN:-%clr(%d{${LOG_DATEFORMAT_PATTERN:-HH:mm:ss.SSS}}){faint} %clr(${LOG_LEVEL_PATTERN:-%5p}) %clr(${PID:- }){magenta} %clr(%-40.40logger{39}){cyan} %clr(:){faint} %m%n${LOG_EXCEPTION_CONVERSION_WORD:-%wEx}}</pattern>
+		</encoder>
+	</appender>
+	
+	<logger name="org.apache.dubbo.registry.redis.RedisRegistry" level="ERROR" />
+    
+    <root level="INFO">
+		<appender-ref ref="CONSOLE" />
+	</root>
+</configuration>
