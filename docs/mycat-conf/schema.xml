@@ -1,0 +1,51 @@
+<?xml version="1.0"?>
+<!DOCTYPE mycat:schema SYSTEM "schema.dtd">
+<mycat:schema xmlns:mycat="http://io.mycat/">
+	<schema name="my-demo" checkSQLschema="false" sqlMaxLimit="100">
+		<!--
+			name: 如果多个table的配置完全一样，name可以配置为多个table名，使用逗号分隔（使用场景？全局表可以）
+			primaryKey: 可以不指定主键
+			autoIncrement: true表示使用数据库自增长主键；如果使用全局sequence handler，将autoIncrement设为false（默认false）
+		-->
+		<table name="order_header" primaryKey="order_id" dataNode="dn$1-4" rule="order-rule">
+			<childTable name="order_detail" primaryKey="detail_id" joinKey="order_id" parentKey="order_id" />
+		</table>
+		<table name="user" primaryKey="user_id" dataNode="dn1, dn2" rule="user-rule" />
+		<table name="user_account" primaryKey="account" dataNode="dn1, dn2" rule="user-account-rule" />
+		<table name="user_order" dataNode="dn1, dn2" rule="user-rule" />
+	</schema>
+	<dataNode name="dn0" dataHost="db1" database="mydemo-dn0" />
+	<dataNode name="dn1" dataHost="db1" database="mydemo-dn1" />
+	<dataNode name="dn2" dataHost="db1" database="mydemo-dn2" />
+	<dataNode name="dn3" dataHost="db2" database="mydemo-dn3" />
+	<dataNode name="dn4" dataHost="db2" database="mydemo-dn4" />
+
+	<!--
+		balance:
+		1. balance="0", 不开启分离机制，所有读操作都发送到当前可用的 writeHost 上;
+		2. balance="1"，全部的 readHost 和 stand by writeHost 参不 select 的负载均衡;
+		3. balance="2"，所有读操作都随机的在 writeHost、readhost 上分发;
+		4. balance="3"，所有读请求随机的分发到 wiriterHost 对应的 readhost 执行，writerHost 不负担读压力
+
+		switchType: 双Master之间的自动切换策略
+		-1 表示不自动切换；
+		1 默认值，自动切换；
+		2 基于MySQL主从同步的状态决定是否切换，心跳询句为 show slave status；
+		3 基于 MySQL galary cluster 的切换机制；
+
+		writeType: 这里只支持 0 - 所有写操作仅配置的第一个 writeHost
+
+		dbDriver: 值为native时，writeHost/readHost的url格式必须为：[IP/host]:[port]
+	 -->
+	<dataHost name="db1" maxCon="5" minCon="5" balance="0" writeType="0" dbType="mysql" dbDriver="native" switchType="-1" slaveThreshold="100" maxRetryCount="0">
+		<heartbeat>select user()</heartbeat>
+		<writeHost host="localhost" url="localhost:3306" user="root" password="1234">
+			<!-- can have multi read hosts -->
+			<!-- readHost host="hostS2" url="192.168.1.200:3306" user="root" password="xxx" / -->
+		</writeHost>
+	</dataHost>
+	<dataHost name="db2" maxCon="5" minCon="5" balance="0" writeType="0" dbType="mysql" dbDriver="native" switchType="-1" slaveThreshold="100" maxRetryCount="0">
+                <heartbeat>select user()</heartbeat>
+                <writeHost host="127.0.0.1" url="127.0.0.1:3306" user="root" password="1234" />
+        </dataHost>
+</mycat:schema>
