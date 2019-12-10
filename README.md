@@ -1,8 +1,11 @@
+-------------------------------------------------------------------
 #### 演示应用说明
-![](docs/images/architecture.png)
+![](docs/images/architecture.png) <br />
+`ItemService`、`StockService`没有建表，应用中生成mock数据。
 
 ##### 表结构
-![](docs/images/table-schema.png)
+![](docs/images/table-schema.png) <br />
+建表SQL参考[sql-schema.sql](docs/sql-schema.sql)。
 
 - `user`: 会员表 <br />
   _分片字段_：`user_id` <br />
@@ -37,75 +40,13 @@
   - 尽量建立一层虚拟分片到实际物理节点的映射，方便物理节点扩容；
   - 分片算法的选择，充分考虑简化扩容时的数据迁移、避免高并发插入时的热点问题、避免XA事物；
 
-#### Dubbo基础用法
-使用[apache/dubbo-spring-boot-project](https://github.com/apache/dubbo-spring-boot-project)与SpringBoot集成，注册中心使用Redis。
-
-1. `pom.xml`添加依赖项：
-   ```xml
-   <dependency>
-        <groupId>org.apache.dubbo</groupId>
-        <artifactId>dubbo-spring-boot-starter</artifactId>
-        <version>2.7.4.1</version>
-   </dependency>
-   <dependency>
-     <groupId>org.apache.dubbo</groupId>
-     <artifactId>dubbo</artifactId>
-     <version>2.7.4.1</version>
-   </dependency>
-   <dependency> <!-- dubbo: serialization -->
-     <groupId>de.ruedigermoeller</groupId>
-     <artifactId>fst</artifactId>
-     <version>2.57</version>
-   </dependency>
-   <dependency> <!-- dubbo: use redis registry, dubbo uses jedis client -->
-       <groupId>redis.clients</groupId>
-       <artifactId>jedis</artifactId>
-   </dependency>
-   ```
-2. 在`application.yml`中配置Dubbo的protocol、registry等：
-   ```yaml
-   dubbo:
-       application:
-           id: srv-item
-           name: srv-item
-           qosEnable: false
-        protocol:
-            id: dubbo
-            name: dubbo
-            port: 20880
-            threads: 3
-            iothreads: 1
-            server: netty
-            client: netty
-            status: server
-            serialization: fst
-            queues: 0
-            keepAlive: true
-        registry: 
-            id: redis
-            address: redis://127.0.0.1:6379
-   ```
-   最新配置项参考[ApplicationConfig](https://github.com/apache/dubbo/blob/master/dubbo-common/src/main/java/org/apache/dubbo/config/ApplicationConfig.java)、[ProtocolConfig](https://github.com/apache/dubbo/blob/master/dubbo-common/src/main/java/org/apache/dubbo/config/ProtocolConfig.java)、[RegistryConfig](https://github.com/apache/dubbo/blob/master/dubbo-common/src/main/java/org/apache/dubbo/config/RegistryConfig.java)、[MonitorConfig](https://github.com/apache/dubbo/blob/master/dubbo-common/src/main/java/org/apache/dubbo/config/MonitorConfig.java)、[ServiceConfig](https://github.com/apache/dubbo/blob/master/dubbo-config/dubbo-config-api/src/main/java/org/apache/dubbo/config/ServiceConfig.java)、[ReferenceConfig](https://github.com/apache/dubbo/blob/master/dubbo-config/dubbo-config-api/src/main/java/org/apache/dubbo/config/ReferenceConfig.java)
-3. 在SpringBoot启动类上指定Dubbo组件扫描范围：
-   ```java
-   @Configuration
-   @EnableAutoConfiguration
-   @ComponentScan(basePackages={"my.demo.service.item"})
-   @DubboComponentScan(basePackages = { "my.demo.service.item" })
-   public class Application {
-	   public static void main(String[] args) {
-		   new SpringApplicationBuilder(Application.class)
-			   .web(WebApplicationType.NONE).run(args);
-	   }
-   }
-   ```
-4. 暴露Dubbo服务的类上使用`@Service`注解（不再需要Spring的`@Component`等注解），引用Dubbo服务使用`@Reference`（不再需要Spring的`@Autowired`注解）；
-
 -------------------------------------------------------------------
 #### Mycat部署
-[Mycat](http://www.mycat.io/)版本[1.6.7.3](http://dl.mycat.io/1.6.7.3/)
+[Mycat](http://www.mycat.io/)版本[1.6.7.3](http://dl.mycat.io/1.6.7.3/)，Mycat配置文件参考[docs/mycat-conf](https://github.com/liuzhibin-cn/my-demo/tree/master/docs/mycat-conf)。
 
 ##### Mycat配置
+使用了Mycat全局序列，数据库方式，SQL脚本参考[sql-schema.sql](docs/sql-schema.sql)。
+
 - [server.xml](docs/mycat-conf/server.xml)：配置服务器参数，配置逻辑用户名密码：
   ```xml
   <user name="mydemo" defaultAccount="true">
@@ -113,7 +54,6 @@
     <property name="schemas">my-demo</property>
   </user>
   ```
-  Mycat全局序列配置为数据库方式，需要在mysql中建立全局序列表、函数，参考[sql-schema.sql](docs/sql-schema.sql)
 - [schema.xml](docs/mycat-conf/schema.xml)：配置dataHost、dataNode、逻辑schema：
   ```xml
   <mycat:schema xmlns:mycat="http://io.mycat/">
@@ -218,3 +158,68 @@ mysql -h localhost -P 9066 -uroot -p --protocol=TCP
 | dn4      | 127.0.0.1 | mysql | 127.0.0.1 | 3306 | W    |      0 |    5 |    5 |     623 |         0 |          0 |
 +----------+-----------+-------+-----------+------+------+--------+------+------+---------+-----------+------------+
 ```
+
+-------------------------------------------------------------------
+#### Dubbo基础用法
+使用[apache/dubbo-spring-boot-project](https://github.com/apache/dubbo-spring-boot-project)与SpringBoot集成，注册中心使用Redis。
+
+1. `pom.xml`添加依赖项：
+   ```xml
+   <dependency>
+        <groupId>org.apache.dubbo</groupId>
+        <artifactId>dubbo-spring-boot-starter</artifactId>
+        <version>2.7.4.1</version>
+   </dependency>
+   <dependency>
+     <groupId>org.apache.dubbo</groupId>
+     <artifactId>dubbo</artifactId>
+     <version>2.7.4.1</version>
+   </dependency>
+   <dependency> <!-- dubbo: serialization -->
+     <groupId>de.ruedigermoeller</groupId>
+     <artifactId>fst</artifactId>
+     <version>2.57</version>
+   </dependency>
+   <dependency> <!-- dubbo: use redis registry, dubbo uses jedis client -->
+       <groupId>redis.clients</groupId>
+       <artifactId>jedis</artifactId>
+   </dependency>
+   ```
+2. 在`application.yml`中配置Dubbo的protocol、registry等：
+   ```yaml
+   dubbo:
+       application:
+           id: srv-item
+           name: srv-item
+           qosEnable: false
+        protocol:
+            id: dubbo
+            name: dubbo
+            port: 20880
+            threads: 3
+            iothreads: 1
+            server: netty
+            client: netty
+            status: server
+            serialization: fst
+            queues: 0
+            keepAlive: true
+        registry: 
+            id: redis
+            address: redis://127.0.0.1:6379
+   ```
+   最新配置项参考[ApplicationConfig](https://github.com/apache/dubbo/blob/master/dubbo-common/src/main/java/org/apache/dubbo/config/ApplicationConfig.java)、[ProtocolConfig](https://github.com/apache/dubbo/blob/master/dubbo-common/src/main/java/org/apache/dubbo/config/ProtocolConfig.java)、[RegistryConfig](https://github.com/apache/dubbo/blob/master/dubbo-common/src/main/java/org/apache/dubbo/config/RegistryConfig.java)、[MonitorConfig](https://github.com/apache/dubbo/blob/master/dubbo-common/src/main/java/org/apache/dubbo/config/MonitorConfig.java)、[ServiceConfig](https://github.com/apache/dubbo/blob/master/dubbo-config/dubbo-config-api/src/main/java/org/apache/dubbo/config/ServiceConfig.java)、[ReferenceConfig](https://github.com/apache/dubbo/blob/master/dubbo-config/dubbo-config-api/src/main/java/org/apache/dubbo/config/ReferenceConfig.java)
+3. 在SpringBoot启动类上指定Dubbo组件扫描范围：
+   ```java
+   @Configuration
+   @EnableAutoConfiguration
+   @ComponentScan(basePackages={"my.demo.service.item"})
+   @DubboComponentScan(basePackages = { "my.demo.service.item" })
+   public class Application {
+	   public static void main(String[] args) {
+		   new SpringApplicationBuilder(Application.class)
+			   .web(WebApplicationType.NONE).run(args);
+	   }
+   }
+   ```
+4. 暴露Dubbo服务的类上使用`@Service`注解（不再需要Spring的`@Component`等注解），引用Dubbo服务使用`@Reference`（不再需要Spring的`@Autowired`注解）；
