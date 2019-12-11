@@ -139,12 +139,12 @@ bin/mycat status     # 查看启动状态
 ```
 
 ##### Mycat管理
-Mycat启动之后，`8066`为数据端口，`9066`为管理端口，支持Mycat管理命令。连接Mycat使用`server.xml`文件中定义的用户名和密码。<br />
-Mac环境连接Mycat必须指定TCP协议，否则会直接连接mysql的3306端口而不是Mycat，没有任何错误信息：
-```sh
-mysql -h localhost -P 8066 -uroot -p --protocol=TCP
-mysql -h localhost -P 9066 -uroot -p --protocol=TCP
-```
+Mycat启动之后，`8066`为数据端口，`9066`为管理端口，支持Mycat管理命令。连接Mycat使用`server.xml`文件中定义的用户名和密码。
+> Mac环境连接Mycat必须指定TCP协议，否则会直接连接mysql的3306端口而不是Mycat，没有任何错误信息：
+> ```sh
+> mysql -h localhost -P 8066 -uroot -p --protocol=TCP
+> mysql -h localhost -P 9066 -uroot -p --protocol=TCP
+> ```
 
 管理端口登录，通过`show @@help;`查看Mycat提供的管理命令，例如`show @@datasource;`：
 ```
@@ -162,17 +162,15 @@ mysql -h localhost -P 9066 -uroot -p --protocol=TCP
 ##### Tips
 - Mycat的全局序列不太方便的地方：插入数据后未找到有效获取本次生成的sequence值的方法；
 - Mycat 2.0在开发中，参考[Mycat2](https://github.com/MyCATApache/Mycat2) <br />
-  从新特性来看，结果集缓存、自动集群管理、支持负载均衡等主要特性，方向偏了，Mycat应该朝无状态化、为Mycat server降压减负的方向上发展，负载均衡、集群管理、缓存等可以交由第三方管理。
+  从新特性来看，结果集缓存、自动集群管理、支持负载均衡等主要特性没有必要由Mycat管理，使用第三方即可。
 - 简单性能对比测试 <br />
   Mac book pro，单机测试，50并发线程，对相同的业务逻辑功能（使用手机号+密码注册会员）进行测试，TPS指被测试业务逻辑的每秒执行次数（包含`select from user_account` + `insert into user` + `insert into user_account`）：
   - Mycat + MyBatis，分片: TPS在2200上下波动；
   - MyBatis，不分片: TPS在2600上下波动；
   - 纯JDBC，不分片: TPS在3400上下波动；<br />
   单机测试，Mycat server的CPU占用对测试结果有一定影响。<br />
-  受单机资源限制，测试结果TPS高低不反映数据库吞吐率，而是反映平均执行时间，TPS越高执行速度越快。从结果看，中间加一层mycat后性能有一定下降，但幅度不大，不及MyBatis与原生JDBC之间的差异。
-- 分片方案：
-  - 尽量建立一层虚拟分片到实际物理节点的映射，方便物理节点扩容；
-  - 分片算法的选择，充分考虑简化扩容时的数据迁移、避免高并发插入时的热点问题、避免XA事物；
+  从结果看中间加一层mycat后性能有一定下降，但幅度不大，不及MyBatis与原生JDBC之间的差异。
+- 分片方案：算法选择充分考虑扩容时简化数据迁移、避免高并发插入时的热点、避免XA事物；
 
 -------------------------------------------------------------------
 #### SkyWalking全链路跟踪
@@ -183,8 +181,8 @@ Windows环境单机部署，存储到MySQL：
 1. 下载[SkyWalking 6.5.0 Windows包](http://archive.apache.org/dist/skywalking/6.5.0/apache-skywalking-apm-6.5.0.zip)，解压；
 2. 下载[MySQL Connector/J](https://dev.mysql.com/downloads/connector/j/)放入`oap-libs`，本文使用`8.0.18`版本；
 3. 配置：
-   1. `config/application.yml`：`storage`注释掉`h2`，打开`mysql`，并设置JDBC连接、用户密码，添加`dataSource.useSSL: false`，其它配置使用默认值。Collector启动时会检查并自动创建MySQL表，无需手工创建；
-   2. `webapp/webapp.yml`：Web UI配置，本文采用默认值；
+   1. `config/application.yml`：`storage`注释掉`h2`改用`mysql`，设置JDBC连接、用户密码，添加`dataSource.useSSL: false`，其它使用默认值。Backend启动时检查并自动创建MySQL表，无需手工创建；
+   2. `webapp/webapp.yml`：Web UI配置，全部采用默认值；
 4. 启动：`oapService.bat`启动Backend，`webappService.bat`启动Web UI，`startup.bat`启动所有；
    > SkyWalking使用`start`批处理命令新开cmd窗口启动Backend和Web UI，使用cmd的默认代码页（Win10下为936），导致Console异常和日志信息的中文显示为乱码，本文通过注册表修改cmd默认代码页，可能需要重启才能生效，临时解决办法修改`oapService.bat`：
    > ```
@@ -200,13 +198,14 @@ collector.backend_service=${SW_AGENT_COLLECTOR_BACKEND_SERVICES:192.168.31.108:1
 # 其它保留默认配置
 ```
 
-启动应用时指定`-javaagent`和应用名称：
+启动应用时通过`-javaagent`指定SkyWalking代理，`-Dskywalking.agent.service_name`指定应用名称：
 ```sh
 java -javaagent:F:\workspace\skywalking\agent\skywalking-agent.jar -Dskywalking.agent.service_name=item-service -jar item-service\target\item-service-0.0.1-SNAPSHOT.jar
 ```
 
-##### 为链路跟踪添加属性
-SkyWalking链路跟踪只记录方法的全限定名，不记录参数值，可以通过代码来记录参数值。
+##### 链路跟踪添加属性
+SkyWalking链路跟踪只记录方法全限定名，不记录参数值，可通过代码添加：<br />
+![](docs/images/skywalking-span.png)
 
 pom添加依赖项：
 ```xml
@@ -224,10 +223,15 @@ ActiveSpan.tag("itemId", String.valueOf(itemId));
 
 如果当前方法没有被SkyWalking跟踪，需要在方法上添加`@Trace`注解。
 
-> 1. SkyWalking通过AOP实现跟踪，因此静态方法上添加`@Trace`无效，只能运用于实例方法；
-> 2. SkyWalking默认跟踪Dubbo服务方法，因此无需额外添加`@Trace`注解，参考[Supported middleware, framework and library](https://github.com/apache/skywalking/blob/master/docs/en/setup/service-agent/java-agent/Supported-list.md)；
+> 1. 通过AOP实现跟踪，因此静态方法添加`@Trace`无效，只能用于实例方法；
+> 2. 默认跟踪Dubbo服务方法，无需额外添加`@Trace`注解，参考[Supported middleware, framework and library](https://github.com/apache/skywalking/blob/master/docs/en/setup/service-agent/java-agent/Supported-list.md)；
+
+MySQL记录SQL语句参数，在`agent\config\agent.config`文件中将`plugin.mysql.trace_sql_parameters`设为true。
 
 ##### 在日志中输出全局`trace-id`
+![](docs/images/app-log.jpg)  <br />
+未被跟踪的方法`trace-id`输出`TID:N/A`
+
 pom添加依赖项：
 ```xml
 <dependency>
@@ -275,7 +279,7 @@ logback日志layout使用`org.apache.skywalking.apm.toolkit.log.logback.v1.x.Tra
        <artifactId>jedis</artifactId>
    </dependency>
    ```
-2. 在`application.yml`中配置Dubbo的protocol、registry等：
+2. 在`application.yml`中配置protocol、registry等：
    ```yaml
    dubbo:
        application:
@@ -299,7 +303,7 @@ logback日志layout使用`org.apache.skywalking.apm.toolkit.log.logback.v1.x.Tra
             address: redis://127.0.0.1:6379
    ```
    最新配置项参考[ApplicationConfig](https://github.com/apache/dubbo/blob/master/dubbo-common/src/main/java/org/apache/dubbo/config/ApplicationConfig.java)、[ProtocolConfig](https://github.com/apache/dubbo/blob/master/dubbo-common/src/main/java/org/apache/dubbo/config/ProtocolConfig.java)、[RegistryConfig](https://github.com/apache/dubbo/blob/master/dubbo-common/src/main/java/org/apache/dubbo/config/RegistryConfig.java)、[MonitorConfig](https://github.com/apache/dubbo/blob/master/dubbo-common/src/main/java/org/apache/dubbo/config/MonitorConfig.java)、[ServiceConfig](https://github.com/apache/dubbo/blob/master/dubbo-config/dubbo-config-api/src/main/java/org/apache/dubbo/config/ServiceConfig.java)、[ReferenceConfig](https://github.com/apache/dubbo/blob/master/dubbo-config/dubbo-config-api/src/main/java/org/apache/dubbo/config/ReferenceConfig.java)
-3. 在SpringBoot启动类上指定Dubbo组件扫描范围：
+3. SpringBoot启动类上指定Dubbo组件扫描范围：
    ```java
    @Configuration
    @EnableAutoConfiguration
@@ -312,4 +316,4 @@ logback日志layout使用`org.apache.skywalking.apm.toolkit.log.logback.v1.x.Tra
 	   }
    }
    ```
-4. 暴露Dubbo服务的类上使用`@Service`注解（不再需要Spring的`@Component`等注解），引用Dubbo服务使用`@Reference`（不再需要Spring的`@Autowired`注解）；
+4. 暴露Dubbo服务的类上使用`@Service`注解（不再需要Spring的`@Component`），引用Dubbo服务使用`@Reference`（不再需要Spring的`@Autowired`）；
