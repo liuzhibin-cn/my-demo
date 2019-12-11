@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.apache.dubbo.config.annotation.Reference;
+import org.apache.skywalking.apm.toolkit.trace.Trace;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.WebApplicationType;
@@ -16,6 +17,7 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 
 import my.demo.domain.Cart;
+import my.demo.domain.CartItem;
 import my.demo.domain.Item;
 import my.demo.domain.Order;
 import my.demo.domain.User;
@@ -46,34 +48,36 @@ public class Application {
 		ConfigurableApplicationContext context = new SpringApplicationBuilder(Application.class).web(WebApplicationType.NONE).run(args);
 		Application app = context.getBean(Application.class);
 		long start = System.currentTimeMillis();
-		app.runTest(100);
+		app.runTestCases(100);
 		long end = System.currentTimeMillis();
-		log.info("Elapsed: " + (end - start) + " ms.");
+		log.info("耗时" + (end - start) + "ms.");
 		context.stop();
 		context.close();
 	}
-	private void runTest(int loops) {
-		while(loops-->0) this.runTest();
+	private void runTestCases(int loops) {
+		while(loops-->0) this.runTestCase();
 	}
-	private void runTest() {
+	@Trace //强制SkyWalking跟踪该方法，产生全局trace-id，这样test-app的日志输出中即带有有效的trace-id了
+	private void runTestCase() {
+		log.debug("Start a test case");
 		//随机注册一个用户
 		String prefix = MOBILE_PREFIXS[(int)Math.round(Math.random()*1000) % MOBILE_PREFIXS.length];
 		String mobile = prefix + String.format("%08d", Math.round(Math.random()*100000000));
 		String password = Math.round(Math.random() * 10000000) + "";
 		ServiceResult<User> result = userService.registerByMobile(mobile, password);
 		if(!result.isSuccess()) {
-			log.warn("> Failed to register: " + result.getMessage());
+			log.info("[register] failed, account:" + mobile + ", msg:" + result.getMessage());
 			return;
 		}
-		log.info("> [register] user-id: " + result.getResult().getUserId() + ", mobile: " + mobile + ", password: " + password);
+		log.info("[register] success, account:" + mobile + ", user-id:" + result.getResult().getUserId());
 		
 		//登录
 		result = userService.login(mobile, password);
 		if(!result.isSuccess()) {
-			log.warn("> Failed to login: " + result.getMessage());
+			log.info("[login] failed, account:" + mobile + ", msg:" + result.getMessage());
 			return;
 		}
-		log.info("> [login] user-id: " + result.getResult().getUserId());
+		log.info("[login] success, account:" + mobile + " , user-id:" + result.getResult().getUserId());
 		User user = result.getResult();
 		
 		//浏览商品
@@ -85,17 +89,26 @@ public class Application {
 		//下单
 		ServiceResult<Order> orderResult = orderService.createOrder(cart);
 		if(!orderResult.isSuccess()) {
-			log.warn("> Failed to create order: " + result.getMessage());
+			log.warn("[create-order] failed, msg:" + result.getMessage());
 			return;
 		}
+		log.info("[create-order] success, order:" + orderResult.getResult().getOrderId());
 		
 		//查用户订单列表
-		orderService.findUserOrders(user.getUserId(), 0, 10).getResult().forEach(order -> {
-			log.info("> [order] id: " + order.getOrderId() + ", contact: " + order.getContact() + ", phone: " + order.getPhone() + ", amt: " + order.getTotal());
-			//查订单明细
+		ServiceResult<List<Order>> userOrderResult = orderService.findUserOrders(user.getUserId(), 0, 10);
+		if(!userOrderResult.isSuccess()) {
+			log.info("[find-order] failed, msg:" + userOrderResult.getMessage());
+			return;
+		}
+		if(userOrderResult.getResult().isEmpty()) {
+			log.info("[find-order] no orders found");
+			return;
+		}
+		userOrderResult.getResult().forEach(order -> {
+			log.debug("[show-order] order:" + order.getOrderId() + ", details:" + order.getDetails().size());
 			orderService.getOrderDetails(order.getOrderId()).getResult().forEach(detail -> {
-				log.info("> [detail] item: " + detail.getItemId() + ", title: " + detail.getTitle() 
-					+ ", qty: " + detail.getQuantity() + ", amt: " + detail.getSubtotal() + ", discount: " + detail.getDiscount());
+				log.debug("[show-order]     item:" + detail.getItemId() + ", qty:" + detail.getQuantity() 
+					+ ", amt:" + String.format("%.2f", detail.getSubtotal()) + ", discount:" + String.format("%.2f", detail.getDiscount()));
 			});
 		});
 	}
@@ -104,6 +117,9 @@ public class Application {
 		List<Item> pickedItems = this.pickupItems(items);
 		pickedItems.forEach(item -> {
 			cart.addItem(item.getId(), 1, item.getPrice(), item.getPrice(), (1-Math.random()/10) * item.getPrice());
+			CartItem ci = cart.getItems().get(cart.getItems().size()-1);
+			log.info("[add-cart] item:" + ci.getItemId() + ", qty:" + ci.getQuantity() + ", price:" + String.format("%.2f", ci.getPrice()) 
+				+ ", amt:" + String.format("%.2f", ci.getSubtotal()) + ", discount:" + String.format("%.2f", ci.getDiscount()));
 		});
 		return cart;
 	}

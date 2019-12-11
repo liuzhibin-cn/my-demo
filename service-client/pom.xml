@@ -14,4 +14,12 @@
 		<maven.compiler.source>8</maven.compiler.source>
 		<maven.compiler.target>8</maven.compiler.target>
 	</properties>
+	
+	<dependencies>
+       <dependency>
+          <groupId>org.apache.skywalking</groupId>
+          <artifactId>apm-toolkit-trace</artifactId>
+          <version>6.5.0</version>
+       </dependency>
+	</dependencies>
 </project>

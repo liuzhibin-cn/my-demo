@@ -5,6 +5,8 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 
 import org.apache.dubbo.config.annotation.Service;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.DigestUtils;
 
@@ -13,9 +15,12 @@ import my.demo.domain.User;
 import my.demo.domain.UserAccount;
 import my.demo.service.ServiceResult;
 import my.demo.service.UserService;
+import my.demo.utils.Tracer;
 
-@Service
+@Service(cluster="failfast", retries=0, loadbalance="roundrobin", timeout=2000)
 public class UserServiceImpl implements UserService {
+	Logger log = LoggerFactory.getLogger(this.getClass());
+	
 	static Date BASE_LINE = null;
 	
 	@Autowired
@@ -32,6 +37,7 @@ public class UserServiceImpl implements UserService {
 	
 	@Override
 	public ServiceResult<User> registerByMobile(String mobile, String password) {
+		Tracer.trace("account", mobile);
 		ServiceResult<User> result = new ServiceResult<User>();
 		//简单校验
 		if(mobile==null || mobile.isEmpty() || mobile.trim().length()!=11) {
@@ -43,6 +49,7 @@ public class UserServiceImpl implements UserService {
 		try { //注册
 			//1. 账号是否已经注册过
 			if(this.isRegistered(mobile)) {
+				log.info("[register] Already registered, mobile: " + mobile);
 				return result.fail("Account " + mobile + " already registered");
 			}
 			//2. 创建用户登录账号，分片字段account_hash，主键account，插入过程利用mycat全局序列生成了user_id
@@ -53,8 +60,11 @@ public class UserServiceImpl implements UserService {
 			userAccount.setPassword(DigestUtils.md5DigestAsHex(password.getBytes()));
 			userAccount.setAccountHash(this.getAccountHashcode(mobile));
 			if(dao.createUserAccount(userAccount)<=0) {
+				log.warn("[register] Failed to create user account, account: " + mobile);
 				return result.fail("Failed to create user account");
 			}
+			Tracer.trace("userId", userAccount.getUserId());
+			log.info("[register] User account created, account: " + mobile);
 			//3. 创建用户资料，主键和分片字段均为 user_id
 			User user = new User();
 			user.setUserId(userAccount.getUserId());
@@ -63,16 +73,20 @@ public class UserServiceImpl implements UserService {
 			user.setEmail("");
 			user.setCreatedAt(new Date());
 			if(dao.createUser(user)<=0) {
+				log.warn("[register] Failed to create user, user-id: " + userAccount.getUserId() + ", account: " + mobile);
 				return result.fail("Failed to create user");
 			}
+			log.info("[register] User created, user-id: " + user.getUserId() + ", account: " + userAccount.getAccount());
 			return result.success(user);
 		} catch (Exception ex) {
+			log.error("[register] System error, msg: " + ex.getMessage(), ex);
 			return result.fail("System error: " + ex.getMessage());
 		}
 	}
 
 	@Override
 	public ServiceResult<User> login(String account, String password) {
+		Tracer.trace("account", account);
 		ServiceResult<User> result = new ServiceResult<User>();
 		if(account==null || account.trim().isEmpty()) {
 			return result.fail("Empty account");
@@ -84,19 +98,25 @@ public class UserServiceImpl implements UserService {
 			//1. 通过account获取用户登录账号，分片键 account_hash
 			UserAccount userAccount = this.getUserAccount(account);
 			if(userAccount==null) {
+				log.debug("[login] Account not found, account: " + account);
 				return result.fail("Account " + account + " not found");
 			}
 			//   校验密码
 			if(!DigestUtils.md5DigestAsHex(password.getBytes()).equals(userAccount.getPassword())) {
+				log.debug("[login] Incorrect password, account: " + account);
 				return result.fail("Incorrect password");
 			}
 			//2. 通过user_id获取user对象，分片键 user_id
 			User user = dao.getUser(userAccount.getUserId());
 			if(user==null) {
+				log.warn("[login] User not found, account: " + account);
 				return result.fail("Account error");
 			}
+			log.info("[login] Success, user-id: " + user.getUserId() + ", account: " + account);
+			Tracer.trace("userId", user.getUserId());
 			return result.success(user);
 		} catch(Exception ex) {
+			log.error("[login] System error, msg: " + ex.getMessage(), ex);
 			return result.fail("System error: " + ex.getMessage());
 		}
 	}

@@ -5,7 +5,6 @@
 
 ##### 表结构
 ![](docs/images/table-schema.png) <br />
-建表SQL参考[sql-schema.sql](docs/sql-schema.sql)。
 
 - `user`: 会员表 <br />
   _分片字段_：`user_id` <br />
@@ -25,23 +24,24 @@
   _分片规则_：`(user_id % 32) => { 0-15: dn1, 16-31: dn2 }` <br />
   _数据节点_：`dn1`, `dn2`
 
-##### Tips
-- Mycat的全局序列不太方便的地方：插入数据后未找到有效获取本次生成的sequence值的方法；
-- Mycat 2.0在开发中，参考[Mycat2](https://github.com/MyCATApache/Mycat2) <br />
-  从新特性来看，结果集缓存、自动集群管理、支持负载均衡等主要特性，方向偏了，Mycat应该朝无状态化、为Mycat server降压减负的方向上发展，负载均衡、集群管理、缓存等可以交由第三方管理。
-- 简单性能对比测试 <br />
-  Mac book pro，单机测试，50并发线程，对相同的业务逻辑功能（使用手机号+密码注册会员）进行测试，TPS指被测试业务逻辑的每秒执行次数（包含`select from user_account` + `insert into user` + `insert into user_account`）：
-  - Mycat + MyBatis，分片: TPS在2200上下波动；
-  - MyBatis，不分片: TPS在2600上下波动；
-  - 纯JDBC，不分片: TPS在3400上下波动；<br />
-  单机测试，Mycat server的CPU占用对测试结果有一定影响。<br />
-  受单机资源限制，测试结果TPS高低不反映数据库吞吐率，而是反映平均执行时间，TPS越高执行速度越快。从结果看，中间加一层mycat后性能有一定下降，但幅度不大，不及MyBatis与原生JDBC之间的差异。
-- 分片方案：
-  - 尽量建立一层虚拟分片到实际物理节点的映射，方便物理节点扩容；
-  - 分片算法的选择，充分考虑简化扩容时的数据迁移、避免高并发插入时的热点问题、避免XA事物；
+##### 运行演示项目
+1. JDK8+，配置、部署Redis、MySQL、Mycat、SkyWalking；
+2. MySQL建表，参考[sql-schema.sql](docs/sql-schema.sql)；
+3. 打包：
+   ```sh
+   mvn clean package spring-boot:repackage
+   ```
+4. 运行：
+   ```sh
+   java -javaagent:F:\workspace\skywalking\agent\skywalking-agent.jar -Dskywalking.agent.service_name=item-service -jar item-service\target\item-service-0.0.1-SNAPSHOT.jar
+   java -javaagent:F:\workspace\skywalking\agent\skywalking-agent.jar -Dskywalking.agent.service_name=stock-service -jar stock-service\target\stock-service-0.0.1-SNAPSHOT.jar
+   java -javaagent:F:\workspace\skywalking\agent\skywalking-agent.jar -Dskywalking.agent.service_name=user-service -jar user-service\target\user-service-0.0.1-SNAPSHOT.jar
+   java -javaagent:F:\workspace\skywalking\agent\skywalking-agent.jar -Dskywalking.agent.service_name=order-service -jar order-service\target\order-service-0.0.1-SNAPSHOT.jar
+   java -javaagent:F:\workspace\skywalking\agent\skywalking-agent.jar -Dskywalking.agent.service_name=test-app -jar test-app\target\test-app-0.0.1-SNAPSHOT.jar
+   ```
 
 -------------------------------------------------------------------
-#### Mycat部署
+#### Mycat水平拆分
 [Mycat](http://www.mycat.io/)版本[1.6.7.3](http://dl.mycat.io/1.6.7.3/)，Mycat配置文件参考[docs/mycat-conf](https://github.com/liuzhibin-cn/my-demo/tree/master/docs/mycat-conf)。
 
 ##### Mycat配置
@@ -157,6 +157,96 @@ mysql -h localhost -P 9066 -uroot -p --protocol=TCP
 | dn2      | localhost | mysql | localhost | 3306 | W    |      0 |    5 |    5 |     623 |         0 |          0 |
 | dn4      | 127.0.0.1 | mysql | 127.0.0.1 | 3306 | W    |      0 |    5 |    5 |     623 |         0 |          0 |
 +----------+-----------+-------+-----------+------+------+--------+------+------+---------+-----------+------------+
+```
+
+##### Tips
+- Mycat的全局序列不太方便的地方：插入数据后未找到有效获取本次生成的sequence值的方法；
+- Mycat 2.0在开发中，参考[Mycat2](https://github.com/MyCATApache/Mycat2) <br />
+  从新特性来看，结果集缓存、自动集群管理、支持负载均衡等主要特性，方向偏了，Mycat应该朝无状态化、为Mycat server降压减负的方向上发展，负载均衡、集群管理、缓存等可以交由第三方管理。
+- 简单性能对比测试 <br />
+  Mac book pro，单机测试，50并发线程，对相同的业务逻辑功能（使用手机号+密码注册会员）进行测试，TPS指被测试业务逻辑的每秒执行次数（包含`select from user_account` + `insert into user` + `insert into user_account`）：
+  - Mycat + MyBatis，分片: TPS在2200上下波动；
+  - MyBatis，不分片: TPS在2600上下波动；
+  - 纯JDBC，不分片: TPS在3400上下波动；<br />
+  单机测试，Mycat server的CPU占用对测试结果有一定影响。<br />
+  受单机资源限制，测试结果TPS高低不反映数据库吞吐率，而是反映平均执行时间，TPS越高执行速度越快。从结果看，中间加一层mycat后性能有一定下降，但幅度不大，不及MyBatis与原生JDBC之间的差异。
+- 分片方案：
+  - 尽量建立一层虚拟分片到实际物理节点的映射，方便物理节点扩容；
+  - 分片算法的选择，充分考虑简化扩容时的数据迁移、避免高并发插入时的热点问题、避免XA事物；
+
+-------------------------------------------------------------------
+#### SkyWalking全链路跟踪
+[Apache SkyWalking](http://skywalking.apache.org/)版本[6.5.0](http://archive.apache.org/dist/skywalking/)
+
+##### 部署
+Windows环境单机部署，存储到MySQL：
+1. 下载[SkyWalking 6.5.0 Windows包](http://archive.apache.org/dist/skywalking/6.5.0/apache-skywalking-apm-6.5.0.zip)，解压；
+2. 下载[MySQL Connector/J](https://dev.mysql.com/downloads/connector/j/)放入`oap-libs`，本文使用`8.0.18`版本；
+3. 配置：
+   1. `config/application.yml`：`storage`注释掉`h2`，打开`mysql`，并设置JDBC连接、用户密码，添加`dataSource.useSSL: false`，其它配置使用默认值。Collector启动时会检查并自动创建MySQL表，无需手工创建；
+   2. `webapp/webapp.yml`：Web UI配置，本文采用默认值；
+4. 启动：`oapService.bat`启动Backend，`webappService.bat`启动Web UI，`startup.bat`启动所有；
+   > SkyWalking使用`start`批处理命令新开cmd窗口启动Backend和Web UI，使用cmd的默认代码页（Win10下为936），导致Console异常和日志信息的中文显示为乱码，本文通过注册表修改cmd默认代码页，可能需要重启才能生效，临时解决办法修改`oapService.bat`：
+   > ```
+   > @REM start "%OAP_PROCESS_TITLE%" %_EXECJAVA% "%OAP_OPTS%" -cp "%CLASSPATH%" org.apache.skywalking.oap.server.starter.OAPServerStartUp
+   > %_EXECJAVA% "%OAP_OPTS%" -cp "%CLASSPATH%" org.apache.skywalking.oap.server.starter.OAPServerStartUp
+   > ```
+
+##### 使用Agent
+配置`agent\config\agent.config`：
+```
+agent.service_name=${SW_AGENT_NAME:unknown}
+collector.backend_service=${SW_AGENT_COLLECTOR_BACKEND_SERVICES:192.168.31.108:11800}
+# 其它保留默认配置
+```
+
+启动应用时指定`-javaagent`和应用名称：
+```sh
+java -javaagent:F:\workspace\skywalking\agent\skywalking-agent.jar -Dskywalking.agent.service_name=item-service -jar item-service\target\item-service-0.0.1-SNAPSHOT.jar
+```
+
+##### 为链路跟踪添加属性
+SkyWalking链路跟踪只记录方法的全限定名，不记录参数值，可以通过代码来记录参数值。
+
+pom添加依赖项：
+```xml
+<dependency>
+    <groupId>org.apache.skywalking</groupId>
+    <artifactId>apm-toolkit-trace</artifactId>
+    <version>6.5.0</version>
+</dependency>
+```
+
+代码中在当前span上添加tag，链路跟踪中即可看到tag名称和值：
+```java
+ActiveSpan.tag("itemId", String.valueOf(itemId));
+```
+
+如果当前方法没有被SkyWalking跟踪，需要在方法上添加`@Trace`注解。
+
+> 1. SkyWalking通过AOP实现跟踪，因此静态方法上添加`@Trace`无效，只能运用于实例方法；
+> 2. SkyWalking默认跟踪Dubbo服务方法，因此无需额外添加`@Trace`注解，参考[Supported middleware, framework and library](https://github.com/apache/skywalking/blob/master/docs/en/setup/service-agent/java-agent/Supported-list.md)；
+
+##### 在日志中输出全局`trace-id`
+pom添加依赖项：
+```xml
+<dependency>
+    <groupId>org.apache.skywalking</groupId>
+    <artifactId>apm-toolkit-logback-1.x</artifactId>
+    <version>6.5.0</version>
+</dependency>
+```
+
+logback日志layout使用`org.apache.skywalking.apm.toolkit.log.logback.v1.x.TraceIdPatternLogbackLayout`，通过`%TID`输出`trace-id`：
+```xml
+<appender name="APP" class="ch.qos.logback.core.ConsoleAppender">
+    <encoder class="ch.qos.logback.core.encoder.LayoutWrappingEncoder">
+        <charset>UTF-8</charset>
+        <layout class="org.apache.skywalking.apm.toolkit.log.logback.v1.x.TraceIdPatternLogbackLayout">
+            <pattern>${CONSOLE_LOG_PATTERN:-%clr([%d{${LOG_DATEFORMAT_PATTERN:-yyMMdd HH:mm:ss.SSS}}]){faint} %clr(${LOG_LEVEL_PATTERN:-%5p}) %clr(${PID:- }){magenta} %clr(%tid){yellow}%clr(:){faint} %m%n${LOG_EXCEPTION_CONVERSION_WORD:-%wEx}}</pattern>
+        </layout>
+    </encoder>
+</appender>
 ```
 
 -------------------------------------------------------------------
