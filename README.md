@@ -181,7 +181,9 @@ Windows环境单机部署，存储到MySQL：
 1. 下载[SkyWalking 6.5.0 Windows包](http://archive.apache.org/dist/skywalking/6.5.0/apache-skywalking-apm-6.5.0.zip)，解压；
 2. 下载[MySQL Connector/J](https://dev.mysql.com/downloads/connector/j/)放入`oap-libs`，本文使用`8.0.18`版本；
 3. 配置：
-   1. `config/application.yml`：`storage`注释掉`h2`改用`mysql`，设置JDBC连接、用户密码，添加`dataSource.useSSL: false`，其它使用默认值。Backend启动时检查并自动创建MySQL表，无需手工创建；
+   1. `config/application.yml`：Backend启动时检查并自动创建MySQL表，无需手工创建；
+      - `storage`注释掉`h2`改用`mysql`，设置JDBC连接、用户密码，添加`dataSource.useSSL: false`；
+	  - `receiver-trace`、`service-mesh`下面的`bufferPath`指定一个绝对路径，使用默认配置时Mac和Windows环境都发现实际路径有点乱（Mac下两个路径都在skywalking父目录，Windows下一个在父目录一个在skywalking目录）；
    2. `webapp/webapp.yml`：Web UI配置，全部采用默认值；
 4. 启动：`oapService.bat`启动Backend，`webappService.bat`启动Web UI，`startup.bat`启动所有；
    > SkyWalking使用`start`批处理命令新开cmd窗口启动Backend和Web UI，使用cmd的默认代码页（Win10下为936），导致Console异常和日志信息的中文显示为乱码，本文通过注册表修改cmd默认代码页，可能需要重启才能生效，临时解决办法修改`oapService.bat`：
