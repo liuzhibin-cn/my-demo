@@ -192,6 +192,8 @@ Windows环境单机部署，演示环境存储到MySQL，生产环境存储采�
    > %_EXECJAVA% "%OAP_OPTS%" -cp "%CLASSPATH%" org.apache.skywalking.oap.server.starter.OAPServerStartUp
    > ```
 
+> Mac环境下载[apache-skywalking-apm-6.5.0.tar.gz](http://archive.apache.org/dist/skywalking/6.5.0/apache-skywalking-apm-6.5.0.tar.gz)即可，部署上没有其它特别之处。
+
 ##### 使用Agent
 配置`agent\config\agent.config`：
 ```
