@@ -13,6 +13,8 @@
 # 此时实际得到的Java TimeZone为Central Standard Time (USA) UT-6:00，而不是China Standard Time UT+8:00，导致存入MySQL的时间不正确。
 # 通过JDBC url的serverTimezone参数指定TimeZone ID全称可以避免这个问题。
 spring:
+  main:
+    allow-bean-definition-overriding: true
   output:
     ansi:
       enabled: always

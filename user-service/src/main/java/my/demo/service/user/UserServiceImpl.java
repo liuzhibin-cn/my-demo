@@ -4,11 +4,12 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
-import org.apache.dubbo.config.annotation.Service;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.DigestUtils;
+
+import com.alibaba.dubbo.config.annotation.Service;
 
 import my.demo.dao.user.UserDao;
 import my.demo.domain.User;
@@ -25,7 +26,7 @@ public class UserServiceImpl implements UserService {
 	
 	@Autowired
 	UserDao dao;
-	
+	 
 	static {
 		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
 		try {

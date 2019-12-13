@@ -3,18 +3,14 @@
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
+	
+    <parent>
+        <groupId>my.demo</groupId>
+        <artifactId>mydemo-parent</artifactId>
+        <version>0.0.1-SNAPSHOT</version>
+    </parent>
 
-	<groupId>org.liuzhibin.research</groupId>
 	<artifactId>user-service</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
-
-	<properties>
-		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-		<maven.compiler.source>8</maven.compiler.source>
-		<maven.compiler.target>8</maven.compiler.target>
-		<spring.boot.version>2.2.2.RELEASE</spring.boot.version>
-	</properties>
 
 	<profiles>
 		<profile>
@@ -42,21 +38,6 @@
 				</includes>
 			</resource>
 		</resources>
-
-		<plugins>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-resources-plugin</artifactId>
-				<configuration>
-					<!-- Spring-Boot为了保护application.yml和application.properties，修改了默认的占位符${...}为@...@，这里将其恢复 -->
-					<useDefaultDelimiters>true</useDefaultDelimiters>
-				</configuration>
-			</plugin>
-			<plugin>
-				<groupId>org.springframework.boot</groupId>
-				<artifactId>spring-boot-maven-plugin</artifactId>
-			</plugin>
-		</plugins>
 	</build>
 
 	<dependencies>
@@ -65,65 +46,25 @@
              <artifactId>service-client</artifactId>
              <version>0.0.1-SNAPSHOT</version>
         </dependency>
-        
-        <!-- https://github.com/apache/dubbo-spring-boot-project -->
         <dependency>
-             <groupId>org.apache.dubbo</groupId>
-             <artifactId>dubbo-spring-boot-starter</artifactId>
-             <version>2.7.4.1</version>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter</artifactId>
         </dependency>
-        <dependency>
-          <groupId>org.apache.dubbo</groupId>
-          <artifactId>dubbo</artifactId>
-          <version>2.7.4.1</version>
-        </dependency>
-        <dependency> <!-- dubbo: serialization -->
-          <groupId>de.ruedigermoeller</groupId>
-          <artifactId>fst</artifactId>
-          <version>2.57</version>
-        </dependency>
-        <dependency> <!-- dubbo: use redis registry, dubbo uses jedis client -->
-            <groupId>redis.clients</groupId>
-            <artifactId>jedis</artifactId>
-        </dependency>
-        
 		<dependency>
 			<groupId>org.mybatis.spring.boot</groupId>
 			<artifactId>mybatis-spring-boot-starter</artifactId>
-			<version>2.1.1</version>
 		</dependency>
 		<dependency>
 			<groupId>org.mybatis</groupId>
 			<artifactId>mybatis</artifactId>
-			<version>3.5.3</version>
 		</dependency>
 		<dependency>
 			<groupId>mysql</groupId>
 			<artifactId>mysql-connector-java</artifactId>
-			<version>8.0.18</version><!--$NO-MVN-MAN-VER$ -->
 		</dependency>
 		<dependency>
 			<groupId>org.apache.tomcat</groupId>
 			<artifactId>tomcat-jdbc</artifactId>
-			<version>9.0.29</version><!--$NO-MVN-MAN-VER$ -->
 		</dependency>
-		
-        <dependency>
-            <groupId>org.apache.skywalking</groupId>
-            <artifactId>apm-toolkit-logback-1.x</artifactId>
-            <version>6.5.0</version>
-        </dependency>
 	</dependencies>
-
-	<dependencyManagement>
-		<dependencies>
-			<dependency>
-				<groupId>org.springframework.boot</groupId>
-				<artifactId>spring-boot-dependencies</artifactId>
-				<version>${spring.boot.version}</version>
-				<type>pom</type>
-				<scope>import</scope>
-			</dependency>
-		</dependencies>
-	</dependencyManagement>
 </project>

@@ -3,19 +3,14 @@
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
+	
+    <parent>
+        <groupId>my.demo</groupId>
+        <artifactId>mydemo-parent</artifactId>
+        <version>0.0.1-SNAPSHOT</version>
+    </parent>
 
-	<groupId>my.demo</groupId>
 	<artifactId>item-service</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
-	<packaging>jar</packaging>
-
-	<properties>
-		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-		<maven.compiler.source>8</maven.compiler.source>
-		<maven.compiler.target>8</maven.compiler.target>
-		<spring.boot.version>2.2.2.RELEASE</spring.boot.version>
-	</properties>
 
 	<build>
 		<resources>
@@ -28,62 +23,17 @@
 				</includes>
 			</resource>
 		</resources>
-
-		<plugins>
-			<plugin>
-				<groupId>org.springframework.boot</groupId>
-				<artifactId>spring-boot-maven-plugin</artifactId>
-			</plugin>
-		</plugins>
 	</build>
 
-	<dependencies>
-       <dependency>
-             <groupId>my.demo</groupId>
-             <artifactId>service-client</artifactId>
-             <version>0.0.1-SNAPSHOT</version>
-        </dependency>
-	    <dependency>
-	      <groupId>org.springframework.boot</groupId>
-	      <artifactId>spring-boot-starter</artifactId>
-	    </dependency>
-        
-		<dependency> <!-- https://github.com/apache/dubbo-spring-boot-project -->
-		     <groupId>org.apache.dubbo</groupId>
-		     <artifactId>dubbo-spring-boot-starter</artifactId>
-		     <version>2.7.4.1</version>
-		</dependency>
-		<dependency>
-		  <groupId>org.apache.dubbo</groupId>
-		  <artifactId>dubbo</artifactId>
-		  <version>2.7.4.1</version>
-		</dependency>
-		<dependency> <!-- dubbo: serialization -->
-		  <groupId>de.ruedigermoeller</groupId>
-		  <artifactId>fst</artifactId>
-		  <version>2.57</version>
-		</dependency>
-		<dependency> <!-- dubbo: use redis registry, dubbo uses jedis client -->
-		    <groupId>redis.clients</groupId>
-		    <artifactId>jedis</artifactId>
-		</dependency>
-		
+    <dependencies>
         <dependency>
-            <groupId>org.apache.skywalking</groupId>
-            <artifactId>apm-toolkit-logback-1.x</artifactId>
-            <version>6.5.0</version>
+            <groupId>my.demo</groupId>
+            <artifactId>service-client</artifactId>
+            <version>0.0.1-SNAPSHOT</version>
         </dependency>
-	</dependencies>
-
-	<dependencyManagement>
-		<dependencies>
-			<dependency>
-				<groupId>org.springframework.boot</groupId>
-				<artifactId>spring-boot-dependencies</artifactId>
-				<version>${spring.boot.version}</version>
-				<type>pom</type>
-				<scope>import</scope>
-			</dependency>
-		</dependencies>
-	</dependencyManagement>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter</artifactId>
+        </dependency>
+    </dependencies>
 </project>

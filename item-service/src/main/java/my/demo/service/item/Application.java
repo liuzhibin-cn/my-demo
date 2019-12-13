@@ -1,12 +1,13 @@
 package my.demo.service.item;
 
-import org.apache.dubbo.config.spring.context.annotation.DubboComponentScan;
 import org.springframework.boot.WebApplicationType;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 
+import com.alibaba.dubbo.config.spring.context.annotation.DubboComponentScan;
+ 
 @Configuration
 @EnableAutoConfiguration
 @ComponentScan(basePackages={"my.demo.service.item"})

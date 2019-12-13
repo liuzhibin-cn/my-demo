@@ -3,9 +3,10 @@ package my.demo.service.stock;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.apache.dubbo.config.annotation.Service;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.alibaba.dubbo.config.annotation.Service;
 
 import my.demo.domain.Stock;
 import my.demo.service.ServiceResult;
@@ -53,6 +54,14 @@ public class StockServiceImpl implements StockService {
 		if(lockQty<=0) {
 			return new ServiceResult<Boolean>().fail("Illegal quantity " + lockQty + " to lock");
 		}
+		
+		//随机休眠一段时间模拟服务耗时
+		try {
+			long time = Math.round(Math.random() * 100);
+			Thread.sleep(time);
+		} catch (InterruptedException e) {}
+		
+		//锁定库存
 		Stock stock = stocks.get(itemId);
 		synchronized (stock) {
 			if(stock.getAvailableQty() < lockQty) {
@@ -65,4 +74,4 @@ public class StockServiceImpl implements StockService {
 		}
 	}
 
-}
+} 

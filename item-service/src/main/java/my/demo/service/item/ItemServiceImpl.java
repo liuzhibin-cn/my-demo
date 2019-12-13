@@ -5,13 +5,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.dubbo.config.annotation.Service;
+import com.alibaba.dubbo.config.annotation.Service;
 
 import my.demo.domain.Item;
 import my.demo.service.ItemService;
 import my.demo.service.ServiceResult;
 import my.demo.utils.Tracer;
-
+ 
 @Service(cluster="failfast", retries=0, loadbalance="roundrobin", timeout=2000)
 public class ItemServiceImpl implements ItemService {
 	private static Map<Integer, Item> items = new HashMap<>();

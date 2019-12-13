@@ -1,7 +1,9 @@
 spring:
-    output:
-        ansi:
-            enabled: always
+   main:
+      allow-bean-definition-overriding: true
+   output:
+      ansi:
+         enabled: always
 
 dubbo:
     application: # see com.alibaba.dubbo.config.ApplicationConfig

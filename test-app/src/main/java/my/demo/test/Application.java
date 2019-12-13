@@ -5,7 +5,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.apache.dubbo.config.annotation.Reference;
 import org.apache.skywalking.apm.toolkit.trace.Trace;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -15,6 +14,8 @@ import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
+
+import com.alibaba.dubbo.config.annotation.Reference;
 
 import my.demo.domain.Cart;
 import my.demo.domain.CartItem;
@@ -32,7 +33,7 @@ import my.demo.service.UserService;
 @ComponentScan(basePackages={"my.demo.test"})
 public class Application {
 	static Logger log = LoggerFactory.getLogger(Application.class);
-	
+
 	@Reference
 	ItemService itemService;
 	@Reference
@@ -55,10 +56,21 @@ public class Application {
 		context.close();
 	}
 	private void runTestCases(int loops) {
-		while(loops-->0) this.runTestCase();
+		//预热
+		this.runTestCaseWioutTrace();
+		//执行测试
+		while(loops-->0) {
+			this.runTestCaseWithTrace();
+		}
 	}
 	@Trace //强制SkyWalking跟踪该方法，产生全局trace-id，这样test-app的日志输出中即带有有效的trace-id了
-	private void runTestCase() {
+	private void runTestCaseWithTrace() {
+		this.runTestCaseDo();
+	}
+	private void runTestCaseWioutTrace() {
+		this.runTestCaseDo();
+	}
+	private void runTestCaseDo() {
 		log.debug("Start a test case");
 		//随机注册一个用户
 		String prefix = MOBILE_PREFIXS[(int)Math.round(Math.random()*1000) % MOBILE_PREFIXS.length];

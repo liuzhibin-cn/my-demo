@@ -13,30 +13,32 @@
 # 此时实际得到的Java TimeZone为Central Standard Time (USA) UT-6:00，而不是China Standard Time UT+8:00，导致存入MySQL的时间不正确。
 # 通过JDBC url的serverTimezone参数指定TimeZone ID全称可以避免这个问题。
 spring:
-  output:
-    ansi:
-      enabled: always
-  datasource:  
-    name: order-ds
-    type: org.apache.tomcat.jdbc.pool.DataSource 
-    driver-class-name: com.mysql.cj.jdbc.Driver  
-    url: ${db.url}
-    username: ${db.user}  
-    password: ${db.password}
-    tomcat:
-      defaultAutoCommit: true
-      defaultTransactionIsolation: 2
-      initialSize: 5
-      minIdle: 5
-      maxIdle: 5
-      maxActive: 5
-      maxWait: 2000
-      timeBetweenEvictionRunsMillis: 60000  
-      minEvictableIdleTimeMillis: 300000 
-      testOnBorrow: true
-      validationQuery: /* ping */ select 1
-      validationInterval: 30000
-      testWhileIdle: true
+   main:
+      allow-bean-definition-overriding: true
+   output:
+      ansi:
+         enabled: always
+   datasource:  
+      name: order-ds
+      type: org.apache.tomcat.jdbc.pool.DataSource 
+      driver-class-name: com.mysql.cj.jdbc.Driver  
+      url: ${db.url}
+      username: ${db.user}  
+      password: ${db.password}
+      tomcat:
+         defaultAutoCommit: true
+         defaultTransactionIsolation: 2
+         initialSize: 5
+         minIdle: 5
+         maxIdle: 5
+         maxActive: 5
+         maxWait: 2000
+         timeBetweenEvictionRunsMillis: 60000  
+         minEvictableIdleTimeMillis: 300000 
+         testOnBorrow: true
+         validationQuery: /* ping */ select 1
+         validationInterval: 30000
+         testWhileIdle: true
 
 # Spring Boot应用中mybatis的配置方法
 mybatis: # see MybatisProperties.class in mybatis-spring-boot-autoconfigure
