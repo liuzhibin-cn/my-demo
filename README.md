@@ -177,7 +177,7 @@ Mycat启动之后，`8066`为数据端口，`9066`为管理端口，支持Mycat�
 [Apache SkyWalking](http://skywalking.apache.org/)版本[6.5.0](http://archive.apache.org/dist/skywalking/)
 
 ##### 部署
-Windows环境单机部署，存储到MySQL：
+Windows环境单机部署，演示环境存储到MySQL，生产环境存储采用ElasticSearch：
 1. 下载[SkyWalking 6.5.0 Windows包](http://archive.apache.org/dist/skywalking/6.5.0/apache-skywalking-apm-6.5.0.zip)，解压；
 2. 下载[MySQL Connector/J](https://dev.mysql.com/downloads/connector/j/)放入`oap-libs`，本文使用`8.0.18`版本；
 3. 配置：
@@ -191,6 +191,8 @@ Windows环境单机部署，存储到MySQL：
    > @REM start "%OAP_PROCESS_TITLE%" %_EXECJAVA% "%OAP_OPTS%" -cp "%CLASSPATH%" org.apache.skywalking.oap.server.starter.OAPServerStartUp
    > %_EXECJAVA% "%OAP_OPTS%" -cp "%CLASSPATH%" org.apache.skywalking.oap.server.starter.OAPServerStartUp
    > ```
+
+> Mac环境下载[apache-skywalking-apm-6.5.0.tar.gz](http://archive.apache.org/dist/skywalking/6.5.0/apache-skywalking-apm-6.5.0.tar.gz)即可，部署上没有其它特别之处。
 
 ##### 使用Agent
 配置`agent\config\agent.config`：
