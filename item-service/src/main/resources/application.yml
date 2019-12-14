@@ -25,3 +25,12 @@ dubbo:
     registry: # see com.alibaba.dubbo.config.RegistryConfig
         id: redis
         address: redis://127.0.0.1:6379
+    provider:
+        filter: tracing
+
+zipkin:
+   serviceName: item-srvs
+   http:
+      url: http://192.168.31.108:9411/api/v2/spans
+      connectTimeout: 2000
+      readTimeout: 2000

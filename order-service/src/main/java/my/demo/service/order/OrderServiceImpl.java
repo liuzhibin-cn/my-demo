@@ -5,6 +5,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Random;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -137,7 +138,7 @@ public class OrderServiceImpl implements OrderService {
 			log.info("[create] User Order created: user-id: " + order.getUserId() + ", order-id: " + order.getOrderId());
 			
 			//6. 休眠一段时间模拟服务耗时
-			long time = Math.round(Math.random() * 150);
+			long time = new Random(System.currentTimeMillis()).nextInt(200);
 			Thread.sleep(time);
 			
 			return result.success(order);
@@ -153,7 +154,7 @@ public class OrderServiceImpl implements OrderService {
 	}
 	private long newId() {
 		//高43位毫秒数 + 低21位随机数
-		return ((System.currentTimeMillis() - BASE_LINE.getTime()) & 274877906943L << 10) | (Math.round(Math.random() * 1023));
+		return ((System.currentTimeMillis() - BASE_LINE.getTime()) & 274877906943L << 10) | new Random(System.currentTimeMillis()).nextInt(1023);
 	}
 	
 	@Override

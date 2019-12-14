@@ -2,6 +2,7 @@ package my.demo.service.stock;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Random;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -57,7 +58,7 @@ public class StockServiceImpl implements StockService {
 		
 		//随机休眠一段时间模拟服务耗时
 		try {
-			long time = Math.round(Math.random() * 100);
+			long time = new Random(System.currentTimeMillis()).nextInt(200);
 			Thread.sleep(time);
 		} catch (InterruptedException e) {}
 		

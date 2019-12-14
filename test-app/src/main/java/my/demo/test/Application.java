@@ -5,7 +5,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.apache.skywalking.apm.toolkit.trace.Trace;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.WebApplicationType;
@@ -63,7 +62,9 @@ public class Application {
 			this.runTestCaseWithTrace();
 		}
 	}
-	@Trace //强制SkyWalking跟踪该方法，产生全局trace-id，这样test-app的日志输出中即带有有效的trace-id了
+	//用于SkyWalking
+	//强制SkyWalking跟踪该方法，产生全局trace-id，这样test-app的日志输出中即带有有效的trace-id了
+	//@Trace 
 	private void runTestCaseWithTrace() {
 		this.runTestCaseDo();
 	}

@@ -3,23 +3,19 @@
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
+	
+    <parent>
+        <groupId>my.demo</groupId>
+        <artifactId>mydemo-parent</artifactId>
+        <version>0.0.1-SNAPSHOT</version>
+    </parent>
 
-	<groupId>my.demo</groupId>
 	<artifactId>service-client</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
-
-	<properties>
-		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-		<maven.compiler.source>8</maven.compiler.source>
-		<maven.compiler.target>8</maven.compiler.target>
-	</properties>
 	
 	<dependencies>
-       <dependency>
-          <groupId>org.apache.skywalking</groupId>
-          <artifactId>apm-toolkit-trace</artifactId>
-          <version>6.5.0</version>
-       </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter</artifactId>
+        </dependency>
 	</dependencies>
 </project>
