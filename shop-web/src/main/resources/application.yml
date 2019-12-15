@@ -1,0 +1,33 @@
+server.port: 8090
+
+spring:
+   application:
+      name: ${application.name}
+   main:
+      allow-bean-definition-overriding: true # dubbo-spring-boot-starter 0.2.1.RELEASE的bug，如果不允许覆盖会报错
+   output:
+      ansi:
+         enabled: always
+   zipkin: # spring-cloud-sleuth配置
+      base-url: http://192.168.31.108:9411  # ZipKin Server地址
+      sleuth:
+         sampler:
+            percentage: 1.0  # 采样比例，1.0表示100%采样
+
+dubbo:
+    scan:
+        basePackages: my.demo.test
+    application: # see com.alibaba.dubbo.config.ApplicationConfig
+        id: ${application.name}
+        name: ${application.name}
+        qosEnable: false
+    registry: # see com.alibaba.dubbo.config.RegistryConfig
+        id: redis
+        address: redis://127.0.0.1:6379
+    consumer:
+        filter: tracing
+
+zipkin:
+   server: http://192.168.31.108:9411/api/v2/spans
+   connectTimeout: 2000
+   readTimeout: 2000
