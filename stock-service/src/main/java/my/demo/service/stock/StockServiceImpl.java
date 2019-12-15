@@ -58,7 +58,7 @@ public class StockServiceImpl implements StockService {
 		
 		//随机休眠一段时间模拟服务耗时
 		try {
-			long time = new Random(System.currentTimeMillis()).nextInt(200);
+			long time = new Random(System.currentTimeMillis()).nextInt(50);
 			Thread.sleep(time);
 		} catch (InterruptedException e) {}
 		

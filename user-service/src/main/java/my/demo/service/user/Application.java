@@ -11,7 +11,7 @@ import com.alibaba.dubbo.config.spring.context.annotation.DubboComponentScan;
 
 @Configuration
 @EnableAutoConfiguration
-@ComponentScan(basePackages={"my.demo.service.user"})
+@ComponentScan(basePackages={"my.demo.service.user", "my.demo.utils"})
 @MapperScan(basePackages = { "my.demo.dao.user" })
 @DubboComponentScan(basePackages = { "my.demo.service.user" })
 public class Application {

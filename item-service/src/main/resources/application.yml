@@ -7,8 +7,8 @@ spring:
 
 dubbo:
     application: # see com.alibaba.dubbo.config.ApplicationConfig
-        id: srv-item
-        name: srv-item
+        id: ${application.name}-srv
+        name: ${application.name}-srv
         qosEnable: false
     protocol: # see com.alibaba.dubbo.config.ProtocolConfig
         id: dubbo
@@ -29,8 +29,6 @@ dubbo:
         filter: tracing
 
 zipkin:
-   serviceName: item-srvs
-   http:
-      url: http://192.168.31.108:9411/api/v2/spans
-      connectTimeout: 2000
-      readTimeout: 2000
+   server: http://192.168.31.108:9411/api/v2/spans
+   connectTimeout: 2000
+   readTimeout: 2000

@@ -12,6 +12,10 @@
 
 	<artifactId>stock-service</artifactId>
 	
+    <properties>
+       <application.name>stock</application.name>
+    </properties>
+	
 	<build>
 		<resources>
 			<resource>

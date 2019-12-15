@@ -11,6 +11,9 @@
     </parent>
 
 	<artifactId>item-service</artifactId>
+    <properties>
+       <application.name>item</application.name>
+    </properties>
 
 	<build>
 		<resources>

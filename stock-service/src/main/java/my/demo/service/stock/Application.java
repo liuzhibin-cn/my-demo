@@ -10,7 +10,7 @@ import com.alibaba.dubbo.config.spring.context.annotation.DubboComponentScan;
 
 @Configuration
 @EnableAutoConfiguration
-@ComponentScan(basePackages={"my.demo.service.stock"})
+@ComponentScan(basePackages={"my.demo.service.stock", "my.demo.utils"})
 @DubboComponentScan(basePackages = { "my.demo.service.stock" })
 public class Application {
 	public static void main(String[] args) {

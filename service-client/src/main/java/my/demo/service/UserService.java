@@ -17,4 +17,5 @@ public interface UserService {
 	 * @return 登录成功返回User对象
 	 */
 	ServiceResult<User> login(String account, String password);
+	ServiceResult<User> getUser(int userId);
 }

@@ -19,7 +19,7 @@ spring:
       ansi:
          enabled: always
    datasource:  
-      name: order-ds
+      name: ${application.name}-ds
       type: org.apache.tomcat.jdbc.pool.DataSource 
       driver-class-name: com.mysql.cj.jdbc.Driver  
       url: ${db.url}
@@ -46,8 +46,8 @@ mybatis: # see MybatisProperties.class in mybatis-spring-boot-autoconfigure
 
 dubbo:
     application: # see com.alibaba.dubbo.config.ApplicationConfig
-        id: srv-order
-        name: srv-order
+        id: ${application.name}-srv
+        name: ${application.name}-srv
         qosEnable: false
     protocol: # see com.alibaba.dubbo.config.ProtocolConfig
         id: dubbo
@@ -64,3 +64,12 @@ dubbo:
     registry: # see com.alibaba.dubbo.config.RegistryConfig
         id: redis
         address: redis://127.0.0.1:6379
+    provider:
+        filter: tracing
+    consumer:
+        filter: tracing
+
+zipkin:
+   server: http://192.168.31.108:9411/api/v2/spans
+   connectTimeout: 2000
+   readTimeout: 2000

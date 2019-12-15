@@ -1,15 +1,15 @@
 package my.demo.utils;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.stereotype.Component;
 
-@Component
 @ConfigurationProperties(prefix="zipkin")
 public class ZipkinProperties {
+	@Value("${dubbo.application.name}")
 	private String serviceName;
-	private String httpUrl;
-	private int httpConnectTimeout;
-	private int httpReadTimeout;
+	private String server;
+	private int connectTimeout;
+	private int readTimeout;
 	
 	public String getServiceName() {
 		return serviceName;
@@ -17,22 +17,22 @@ public class ZipkinProperties {
 	public void setServiceName(String serviceName) {
 		this.serviceName = serviceName;
 	}
-	public String getHttpUrl() {
-		return httpUrl;
+	public String getServer() {
+		return server;
 	}
-	public void setHttpUrl(String httpUrl) {
-		this.httpUrl = httpUrl;
+	public void setServer(String httpUrl) {
+		this.server = httpUrl;
 	}
-	public int getHttpConnectTimeout() {
-		return httpConnectTimeout;
+	public int getConnectTimeout() {
+		return connectTimeout;
 	}
-	public void setHttpConnectTimeout(int httpConnectTimeout) {
-		this.httpConnectTimeout = httpConnectTimeout;
+	public void setConnectTimeout(int httpConnectTimeout) {
+		this.connectTimeout = httpConnectTimeout;
 	}
-	public int getHttpReadTimeout() {
-		return httpReadTimeout;
+	public int getReadTimeout() {
+		return readTimeout;
 	}
-	public void setHttpReadTimeout(int httpReadTimeout) {
-		this.httpReadTimeout = httpReadTimeout;
+	public void setReadTimeout(int httpReadTimeout) {
+		this.readTimeout = httpReadTimeout;
 	}
 }

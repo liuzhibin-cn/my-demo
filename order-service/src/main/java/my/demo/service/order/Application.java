@@ -11,7 +11,7 @@ import com.alibaba.dubbo.config.spring.context.annotation.DubboComponentScan;
 
 @Configuration
 @EnableAutoConfiguration
-@ComponentScan(basePackages={"my.demo.service.order"})
+@ComponentScan(basePackages={"my.demo.service.order", "my.demo.utils"})
 @MapperScan(basePackages = { "my.demo.dao.order" })
 @DubboComponentScan(basePackages = { "my.demo.service.order" })
 public class Application {

@@ -122,6 +122,11 @@ public class UserServiceImpl implements UserService {
 		}
 	}
 	
+	@Override
+	public ServiceResult<User> getUser(int userId) {
+		return new ServiceResult<>(dao.getUser(userId));
+	}
+	
 	private UserAccount getUserAccount(String account) {
 		return dao.getUserAccount(account, this.getAccountHashcode(account));
 	}

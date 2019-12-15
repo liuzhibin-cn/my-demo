@@ -44,13 +44,14 @@ java -jar xxx-service-0.0.1-SNAPSHOT.jar.jar
 #### 全链路跟踪APM
 - PinPoint：
   1. 将项目中所有`logback.xml`使用`logback-pinpoint.xml`内容替换；
-  2. 部署和使用方法参考[docs/PinPoint演示](APM-PinPoint.md)；
+  2. 部署和使用方法参考[PinPoint演示](docs/APM-PinPoint.md)；
 - SkyWalking：
   1. 打开parent `pom.xml`中注释掉的SkyWalking依赖项；
   2. 打开service-item项目my.demo.utils.Tracer中注释掉的代码；
   3. 打开test-app项目my.demo.test.Application.runTestCaseWithTrace方法上注释掉的Trace注解；
   4. 将项目中所有`logback.xml`使用`logback-skywalking.xml`内容替换；
   5. 部署和使用方法参考[SkyWalking演示](docs/APM-SkyWalking.md)；
+- ZipKin：参考[ZipKin演示](docs/APM-ZipKin.md)；
 
 -------------------------------------------------------------------
 #### Mycat水平拆分
