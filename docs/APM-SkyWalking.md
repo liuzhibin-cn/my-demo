@@ -48,15 +48,15 @@ APM框架系列：
 
 ----------------------------------
 #### 客户端应用使用
-每台客户端机器上部署agent包，使用`javaagent`方式实现拦截，采集性能数据，部署使用方式简单。
+- `PinPoint`：采用`javaagent`方式，对应用完全无侵入，项目无需添加任何额外依赖项，无需修改代码，这点做得最好；
+- `SkyWalking`：采用`javaagent`方式，普通功能对应用无侵入，以下两项功能需要应用稍作修改：
+  - 中添加自定义Tag项：应用代码在`SkyWalking Span`中添加自定义Tag，可以按需输出方法参数值等关键信息，辅助应用排错和性能分析，`PinPoint`和`ZipKin`都不支持（可自行实现）；
+  - 日志中输出全局跟踪ID，需要添加`SkyWalking`依赖项；
+- `ZipKin`：没有采用`javaagent`方式，应用强依赖`ZipKin`，必须打包到应用中与应用一起运行，每个项目需要添加依赖项、配置，不同探针有不同的bean配置需求；
 
-- PinPoint：采用agent方式，对应用完全无侵入，项目无需添加任何额外依赖项，无需修改代码，这点做得最好；而ZipKin必须客户端项目引用相关依赖项，在项目中完成配置和必要的代码设置工作，是强依赖；
-- SkyWalking：采用agent方式，普通功能对应用无侵入，以下两项功能需要应用稍作修改：
-  - 中添加自定义Tag项：应用代码在SkyWalking Span中添加自定义Tag，可以按需输出方法参数值等关键信息，辅助应用排错和性能分析，PinPoint和ZipKin都不支持（可自行实现）；
-  - 日志中输出全局跟踪ID，需要添加SkyWalking依赖项；
-- ZipKin：没有采用agent方式，应用强依赖ZipKin，必须打包到应用中与应用一起运行，每个项目需要添加依赖项、配置，不同探针有不同的bean配置需求；
+支持情况参考[Supported middleware, framework and library](https://github.com/apache/skywalking/blob/master/docs/en/setup/service-agent/java-agent/Supported-list.md)，对支持框架的关键方法进行跟踪，例如Dubbo服务的consumer调用入口和provider服务方法入口，JDBC的`PrepareStatement`数据库操作等。
 
-##### agent使用
+##### 使用SkyWalking agent启动应用
 配置`agent\config\agent.config`：
 ```
 agent.service_name=${SW_AGENT_NAME:unknown}
@@ -65,17 +65,23 @@ collector.backend_service=${SW_AGENT_COLLECTOR_BACKEND_SERVICES:192.168.31.108:1
 ```
 
 启动应用时通过`-javaagent`指定SkyWalking代理，`-Dskywalking.agent.service_name`指定应用名称：
-```sh
-java -javaagent:F:\workspace\skywalking\agent\skywalking-agent.jar -Dskywalking.agent.service_name=item-service -jar item-service\target\item-service-0.0.1-SNAPSHOT.jar
-java -javaagent:F:\workspace\skywalking\agent\skywalking-agent.jar -Dskywalking.agent.service_name=stock-service -jar stock-service\target\stock-service-0.0.1-SNAPSHOT.jar
-java -javaagent:F:\workspace\skywalking\agent\skywalking-agent.jar -Dskywalking.agent.service_name=user-service -jar user-service\target\user-service-0.0.1-SNAPSHOT.jar
-java -javaagent:F:\workspace\skywalking\agent\skywalking-agent.jar -Dskywalking.agent.service_name=order-service -jar order-service\target\order-service-0.0.1-SNAPSHOT.jar
-java -javaagent:F:\workspace\skywalking\agent\skywalking-agent.jar -Dskywalking.agent.service_name=test-app -jar test-app\target\test-app-0.0.1-SNAPSHOT.jar
-```
 
-支持情况参考[Supported middleware, framework and library](https://github.com/apache/skywalking/blob/master/docs/en/setup/service-agent/java-agent/Supported-list.md)，对支持框架的关键方法进行跟踪，例如Dubbo服务的consumer调用入口和provider服务方法入口，JDBC的`PrepareStatement`数据库操作等。
+在[my-demo](https://github.com/liuzhibin-cn/my-demo)运行SkyWalking演示：
+1. 使用`skywalking`参数编译打包（或者手工打包，使用maven profile `dev,skywalking`）：
+   ```sh
+   sh $PROJECT_HOME/package.sh skywalking
+   ```
+2. 按下面脚本顺序启动服务和应用：
+   ```sh
+   java -javaagent:F:\workspace\skywalking\agent\skywalking-agent.jar -Dskywalking.agent.service_name=item-service -jar item-service\target\item-service-0.0.1-SNAPSHOT.jar
+   java -javaagent:F:\workspace\skywalking\agent\skywalking-agent.jar -Dskywalking.agent.service_name=stock-service -jar stock-service\target\stock-service-0.0.1-SNAPSHOT.jar
+   java -javaagent:F:\workspace\skywalking\agent\skywalking-agent.jar -Dskywalking.agent.service_name=user-service -jar user-service\target\user-service-0.0.1-SNAPSHOT.jar
+   java -javaagent:F:\workspace\skywalking\agent\skywalking-agent.jar -Dskywalking.agent.service_name=order-service -jar order-service\target\order-service-0.0.1-SNAPSHOT.jar
+   java -javaagent:F:\workspace\skywalking\agent\skywalking-agent.jar -Dskywalking.agent.service_name=shop-web -jar shop-web\target\shop-web-0.0.1-SNAPSHOT.jar
+   ```
+3. 访问[http://localhost:8090](http://localhost:8090)执行一些操作，即可在PinPoint界面查看结果；
 
-##### 添加链路跟踪方法
+##### 将方法加入链路跟踪
 业务代码中未被跟踪的方法，如果需要跟踪，则：
 1. pom添加依赖项：
    ```xml
@@ -109,7 +115,7 @@ ActiveSpan.tag("userId", String.valueOf(userId));
        <version>6.5.0</version>
    </dependency>
    ```
-2. logback日志layout使用`org.apache.skywalking.apm.toolkit.log.logback.v1.x.TraceIdPatternLogbackLayout`，通过`%TID`输出`trace-id`：
+2. logback日志layout使用`org.apache.skywalking.apm.toolkit.log.logback.v1.x.TraceIdPatternLogbackLayout`，通过`%tid`输出`trace-id`（`%tid`必须小写）：
    ```xml
    <appender name="APP" class="ch.qos.logback.core.ConsoleAppender">
        <encoder class="ch.qos.logback.core.encoder.LayoutWrappingEncoder">

@@ -54,23 +54,21 @@ APM框架系列：
 
 -------------------------
 #### 客户端应用使用
-每台客户端机器上部署agent包，使用`javaagent`方式实现拦截，采集性能数据，部署使用方式简单。
+- `PinPoint`：采用`javaagent`方式，对应用完全无侵入，项目无需添加任何额外依赖项，无需修改代码，这点做得最好；
+- `SkyWalking`：采用`javaagent`方式，普通功能对应用无侵入，以下两项功能需要应用稍作修改：
+  - 中添加自定义Tag项：应用代码在`SkyWalking Span`中添加自定义Tag，可以按需输出方法参数值等关键信息，辅助应用排错和性能分析，`PinPoint`和`ZipKin`都不支持（可自行实现）；
+  - 日志中输出全局跟踪ID，需要添加`SkyWalking`依赖项；
+- `ZipKin`：没有采用`javaagent`方式，应用强依赖`ZipKin`，必须打包到应用中与应用一起运行，每个项目需要添加依赖项、配置，不同探针有不同的bean配置需求；
 
-- PinPoint：采用agent方式，对应用完全无侵入，项目无需添加任何额外依赖项，无需修改代码，这点做得最好；而ZipKin必须客户端项目引用相关依赖项，在项目中完成配置和必要的代码设置工作，是强依赖；
-- SkyWalking：采用agent方式，普通功能对应用无侵入，以下两项功能需要应用稍作修改：
-  - 中添加自定义Tag项：应用代码在SkyWalking Span中添加自定义Tag，可以按需输出方法参数值等关键信息，辅助应用排错和性能分析，PinPoint和ZipKin都不支持（可自行实现）；
-  - 日志中输出全局跟踪ID，需要添加SkyWalking依赖项；
-- ZipKin：没有采用agent方式，应用强依赖ZipKin，必须打包到应用中与应用一起运行，每个项目需要添加依赖项、配置，不同探针有不同的bean配置需求；
+PinPoint对各个框架的支持情况参考[Supported Modules](https://naver.github.io/pinpoint/main.html#supported-modules)，对支持框架的关键方法进行跟踪，例如Dubbo服务的consumer调用入口和provider服务方法入口，JDBC的`PrepareStatement`数据库操作等。
 
-##### agent使用
+##### 使用PinPoint agent启动应用
 解压`pinpoint-agent-1.8.5.tar.gz`，配置`pinpoint.config`，其中的修改项如下：
 ```
 # Collector和演示项目部署在不同机器，这里指定Collector IP
 profiler.collector.ip=192.168.31.108
 # 演示项目类型
 profiler.applicationservertype=SPRING_BOOT
-# 为演示项目中的test-app启用跟踪
-profiler.entrypoint=my.demo.test.Application.runTestCaseWithTrace
 profiler.tomcat.conditional.transform=false
 ```
 
@@ -79,18 +77,22 @@ profiler.tomcat.conditional.transform=false
 - `-Dpinpoint.agentId=`：必须全局唯一，代表一个服务、应用实例；
 - `-Dpinpoint.applicationName=`：指定服务、应用名称。相同服务部署不同实例，`applicationName`相同，`agentId`不同；
 
-演示项目启动脚本：
-```sh
-java -javaagent:F:\workspace\pinpoint\agent\pinpoint-bootstrap-1.8.5.jar -Dpinpoint.agentId=item-srv-1 -Dpinpoint.applicationName=item-srv -jar item-service\target\item-service-0.0.1-SNAPSHOT.jar
-java -javaagent:F:\workspace\pinpoint\agent\pinpoint-bootstrap-1.8.5.jar -Dpinpoint.agentId=stock-srv-1 -Dpinpoint.applicationName=stock-srv -jar stock-service\target\stock-service-0.0.1-SNAPSHOT.jar
-java -javaagent:F:\workspace\pinpoint\agent\pinpoint-bootstrap-1.8.5.jar -Dpinpoint.agentId=user-srv-1 -Dpinpoint.applicationName=user-srv -jar user-service\target\user-service-0.0.1-SNAPSHOT.jar
-java -javaagent:F:\workspace\pinpoint\agent\pinpoint-bootstrap-1.8.5.jar -Dpinpoint.agentId=order-srv-1 -Dpinpoint.applicationName=order-srv -jar order-service\target\order-service-0.0.1-SNAPSHOT.jar
-java -javaagent:F:\workspace\pinpoint\agent\pinpoint-bootstrap-1.8.5.jar -Dpinpoint.agentId=shop-web-1 -Dpinpoint.applicationName=shop-web -jar shop-web\target\shop-web-0.0.1-SNAPSHOT.jar
-```
+在[my-demo](https://github.com/liuzhibin-cn/my-demo)中运行PinPoint演示：
+1. 使用`pinpoint`参数编译打包（或者手工打包，使用maven profile `dev,pinpoint`）：
+   ```sh
+   sh $PROJECT_HOME/package.sh pinpoint
+   ```
+2. 按下面脚本顺序启动服务和应用：
+   ```sh
+   java -javaagent:F:\workspace\pinpoint\agent\pinpoint-bootstrap-1.8.5.jar -Dpinpoint.agentId=item-srv-1 -Dpinpoint.applicationName=item-srv -jar item-service\target\item-service-0.0.1-SNAPSHOT.jar
+   java -javaagent:F:\workspace\pinpoint\agent\pinpoint-bootstrap-1.8.5.jar -Dpinpoint.agentId=stock-srv-1 -Dpinpoint.applicationName=stock-srv -jar stock-service\target\stock-service-0.0.1-SNAPSHOT.jar
+   java -javaagent:F:\workspace\pinpoint\agent\pinpoint-bootstrap-1.8.5.jar -Dpinpoint.agentId=user-srv-1 -Dpinpoint.applicationName=user-srv -jar user-service\target\user-service-0.0.1-SNAPSHOT.jar
+   java -javaagent:F:\workspace\pinpoint\agent\pinpoint-bootstrap-1.8.5.jar -Dpinpoint.agentId=order-srv-1 -Dpinpoint.applicationName=order-srv -jar order-service\target\order-service-0.0.1-SNAPSHOT.jar
+   java -javaagent:F:\workspace\pinpoint\agent\pinpoint-bootstrap-1.8.5.jar -Dpinpoint.agentId=shop-web-1 -Dpinpoint.applicationName=shop-web -jar shop-web\target\shop-web-0.0.1-SNAPSHOT.jar
+   ```
+3. 访问[http://localhost:8090](http://localhost:8090)执行一些操作，即可在PinPoint界面查看结果；
 
-支持情况参考[Supported Modules](https://naver.github.io/pinpoint/main.html#supported-modules)，对支持框架的关键方法进行跟踪，例如Dubbo服务的consumer调用入口和provider服务方法入口，JDBC的`PrepareStatement`数据库操作等。
-
-##### 添加链路跟踪方法
+##### 将方法加入链路跟踪
 代码中未被跟踪的方法，如果需要跟踪，通过`agent/pinpoint.config`配置：
 1. `profiler.entrypoint`：配置一个调用链跟踪的入口点，从此方法调用开始新建一个链路跟踪。必须配置类+方法的全限定名，多个方法逗号分隔，不支持通配符；
 2. `profiler.include`：在已有的调用链跟踪中，添加未被跟踪的方法。必须为类的全限定名，或者包的全限定名（支持通配符），则指定类或者包下的所有方法都将被跟踪；

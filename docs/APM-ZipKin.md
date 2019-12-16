@@ -47,7 +47,28 @@ java -jar zipkin.jar
 
 -------------------------
 #### 客户端应用使用
-对不同框架Instrumentation使用的拦截方案也不相同，需要参考具体的Instrumentation实现。
+- `PinPoint`：采用`javaagent`方式，对应用完全无侵入，项目无需添加任何额外依赖项，无需修改代码，这点做得最好；
+- `SkyWalking`：采用`javaagent`方式，普通功能对应用无侵入，以下两项功能需要应用稍作修改：
+  - 中添加自定义Tag项：应用代码在`SkyWalking Span`中添加自定义Tag，可以按需输出方法参数值等关键信息，辅助应用排错和性能分析，`PinPoint`和`ZipKin`都不支持（可自行实现）；
+  - 日志中输出全局跟踪ID，需要添加`SkyWalking`依赖项；
+- `ZipKin`：没有采用`javaagent`方式，应用强依赖`ZipKin`，必须打包到应用中与应用一起运行，每个项目需要添加依赖项、配置，不同探针有不同的bean配置需求；
+
+在[my-demo](https://github.com/liuzhibin-cn/my-demo)中运行ZipKin演示：
+1. 使用`zipkin`参数编译打包（或者手工打包，使用maven profile `dev,zipkin`）：
+   ```sh
+   sh $PROJECT_HOME/package.sh zipkin
+   ```
+2. 按下面脚本顺序启动服务和应用：
+   ```sh
+   java -jar item-service\target\item-service-0.0.1-SNAPSHOT.jar
+   java -jar stock-service\target\stock-service-0.0.1-SNAPSHOT.jar
+   java -jar user-service\target\user-service-0.0.1-SNAPSHOT.jar
+   java -jar order-service\target\order-service-0.0.1-SNAPSHOT.jar
+   java -jar shop-web\target\shop-web-0.0.1-SNAPSHOT.jar
+   ```
+3. 访问[http://localhost:8090](http://localhost:8090)执行一些操作，即可在PinPoint界面查看结果；
+
+对不同框架Instrumentation使用的拦截方案不同，具体使用方法参考各Instrumentation实现，下面是[my-demo](https://github.com/liuzhibin-cn/my-demo)中用到的几种。
 
 ##### SpringBoot Web项目
 最简单方案是使用[spring-cloud-sleuth](https://spring.io/projects/spring-cloud-sleuth)（项目不需要是SpringCloud服务，普通SpringBoot Web项目添加`spring-cloud-sleuth`依赖即可），[my-demo](https://github.com/liuzhibin-cn/my-demo)中的`shop-app`配置示例如下：

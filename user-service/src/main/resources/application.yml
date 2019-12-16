@@ -22,9 +22,9 @@ spring:
     name: ${application.name}-ds
     type: org.apache.tomcat.jdbc.pool.DataSource 
     driver-class-name: com.mysql.cj.jdbc.Driver  
-    url: ${db.url}
-    username: ${db.user}  
-    password: ${db.password}
+    url: jdbc:mysql://${mysql.host}:${mysql.port}/my-demo?connectTimeout=3000&socketTimeout=10000&characterEncoding=utf8&useTimezone=true&serverTimezone=Asia/Shanghai&zeroDateTimeBehavior=CONVERT_TO_NULL&useSSL=false${jdbc.interceptors}
+    username: ${mysql.user}  
+    password: ${mysql.password}
     tomcat:
       defaultAutoCommit: true
       defaultTransactionIsolation: 2
@@ -63,11 +63,11 @@ dubbo:
         keepAlive: true
     registry: # see com.alibaba.dubbo.config.RegistryConfig
         id: redis
-        address: redis://127.0.0.1:6379
+        address: redis://${redis.host}:${redis.port}
     provider:
         filter: ${dubbo.filter}
 
 zipkin:
-   server: http://192.168.31.108:9411/api/v2/spans
+   server: ${zipkin.base-url}/api/v2/spans
    connectTimeout: 2000
    readTimeout: 2000

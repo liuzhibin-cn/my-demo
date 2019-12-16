@@ -8,11 +8,8 @@ spring:
    output:
       ansi:
          enabled: always
-   zipkin: # spring-cloud-sleuth配置
-      base-url: http://192.168.31.108:9411  # ZipKin Server地址
-      sleuth:
-         sampler:
-            percentage: 1.0  # 采样比例，1.0表示100%采样
+   profiles:
+      active: ${activatedProperties}
 
 dubbo:
     scan:
@@ -23,11 +20,6 @@ dubbo:
         qosEnable: false
     registry: # see com.alibaba.dubbo.config.RegistryConfig
         id: redis
-        address: redis://127.0.0.1:6379
+        address: redis://${redis.host}:${redis.port}
     consumer:
         filter: ${dubbo.filter}
-
-zipkin:
-   server: http://192.168.31.108:9411/api/v2/spans
-   connectTimeout: 2000
-   readTimeout: 2000

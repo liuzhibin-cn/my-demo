@@ -14,19 +14,15 @@
 	
 	<properties>
 	   <application.name>user</application.name>
+	   <jdbc.interceptors></jdbc.interceptors>
 	</properties>
 
 	<profiles>
 		<profile>
-			<id>liuzhibin</id>
-			<activation>
-				<activeByDefault>true</activeByDefault>
-			</activation>
-			<properties>
-				<db.url>jdbc:mysql://localhost:8066/my-demo?connectTimeout=3000&amp;socketTimeout=10000&amp;characterEncoding=utf8&amp;useTimezone=true&amp;serverTimezone=Asia/Shanghai&amp;zeroDateTimeBehavior=CONVERT_TO_NULL&amp;useSSL=false&amp;queryInterceptors=brave.mysql8.TracingQueryInterceptor&amp;exceptionInterceptors=brave.mysql8.TracingExceptionInterceptor&amp;zipkinServiceName=db-${application.name}</db.url>
-				<db.user>mydemo</db.user>
-				<db.password>mydemo</db.password>
-			</properties>
+		    <id>zipkin</id>
+		    <properties>
+		        <jdbc.interceptors>&amp;queryInterceptors=brave.mysql8.TracingQueryInterceptor&amp;exceptionInterceptors=brave.mysql8.TracingExceptionInterceptor&amp;zipkinServiceName=db-${application.name}</jdbc.interceptors>
+		    </properties>
 		</profile>
 	</profiles>
 

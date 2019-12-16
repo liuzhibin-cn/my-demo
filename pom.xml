@@ -20,8 +20,10 @@
 		<zipkin-brave.version>5.9.1</zipkin-brave.version>
         <zipkin-reporter.version>2.12.0</zipkin-reporter.version>
         <skywalking.version>6.5.0</skywalking.version>
-        <!-- 排除ZipKin和SkyWalking依赖项 -->
+        
+        <!-- 默认排除ZipKin和SkyWalking依赖项 -->
         <excludeGroupIds>org.apache.skywalking,io.zipkin,io.zipkin.zipkin2,io.zipkin.brave,io.zipkin.reporter2,com.squareup.okhttp3,com.squareup.okio</excludeGroupIds>
+        <!-- 默认的logback layout类 -->
         <log.layout>ch.qos.logback.classic.PatternLayout</log.layout>
         <log.traceInfo></log.traceInfo>
         <dubbo.filter></dubbo.filter>
@@ -29,11 +31,28 @@
 
     <profiles>
         <profile>
+            <id>dev</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <properties>
+		        <!-- 为了演示项目便于修改，在parent pom定义了这个profile -->
+		        <mysql.host>localhost</mysql.host>
+		        <mysql.port>8066</mysql.port>
+		        <mysql.user>mydemo</mysql.user>
+		        <mysql.password>mydemo</mysql.password>
+				<redis.host>127.0.0.1</redis.host>
+				<redis.port>6379</redis.port>
+				<!-- zipkin.base-url：以端口号结束，不要添加反斜杠 -->
+				<zipkin.base-url>http://192.168.31.108:9411</zipkin.base-url>
+            </properties>
+        </profile>
+        <profile>
             <id>zipkin</id>
             <properties>
                 <!-- 排除SkyWalking依赖项 -->
                 <excludeGroupIds>org.apache.skywalking</excludeGroupIds>
-				<log.traceInfo> %clr([%X{traceId} : %X{spanId}]){yellow}</log.traceInfo>
+				<log.traceInfo>%clr([%X{traceId} : %X{spanId}]){yellow}</log.traceInfo>
 				<dubbo.filter>tracing</dubbo.filter>
             </properties>
         </profile>
@@ -43,13 +62,13 @@
                 <!-- 排除ZipKin依赖项 -->
                 <excludeGroupIds>io.zipkin,io.zipkin.zipkin2,io.zipkin.brave,io.zipkin.reporter2,com.squareup.okhttp3,com.squareup.okio</excludeGroupIds>
 				<log.layout>org.apache.skywalking.apm.toolkit.log.logback.v1.x.TraceIdPatternLogbackLayout</log.layout>
-				<log.traceInfo> %clr([%TID]){yellow}</log.traceInfo>
+				<log.traceInfo>%clr([%tid]){yellow}</log.traceInfo>
             </properties>
         </profile>
         <profile>
             <id>pinpoint</id>
             <properties>
-				<log.traceInfo> %clr([%X{PtxId} : %X{PspanId}]){yellow}</log.traceInfo>
+				<log.traceInfo>%clr([%X{PtxId} : %X{PspanId}]){yellow}</log.traceInfo>
             </properties>
         </profile>
     </profiles>

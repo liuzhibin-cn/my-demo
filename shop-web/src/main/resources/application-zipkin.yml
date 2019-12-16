@@ -1,0 +1,11 @@
+spring:
+   zipkin: # spring-cloud-sleuth配置
+      base-url: ${zipkin.base-url}  # ZipKin Server地址
+      sleuth:
+         sampler:
+            percentage: 1.0  # 采样比例，1.0表示100%采样
+
+zipkin:
+   server: ${zipkin.base-url}/api/v2/spans
+   connectTimeout: 2000
+   readTimeout: 2000

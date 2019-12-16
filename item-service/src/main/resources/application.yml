@@ -24,11 +24,11 @@ dubbo:
         keepAlive: true
     registry: # see com.alibaba.dubbo.config.RegistryConfig
         id: redis
-        address: redis://127.0.0.1:6379
+        address: redis://${redis.host}:${redis.port}
     provider:
         filter: ${dubbo.filter}
 
 zipkin:
-   server: http://192.168.31.108:9411/api/v2/spans
+   server: ${zipkin.base-url}/api/v2/spans
    connectTimeout: 2000
    readTimeout: 2000
