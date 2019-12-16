@@ -22,7 +22,7 @@ public class StockServiceImpl implements StockService {
 
 	@Override
 	public ServiceResult<Stock> getStock(int itemId) {
-		Tracer.trace("itemId", itemId);
+		Tracer.traceTag("itemId", itemId);
 		if(!stocks.containsKey(itemId)) {
 			synchronized (stocks) {
 				if(!stocks.containsKey(itemId)) {
@@ -46,8 +46,8 @@ public class StockServiceImpl implements StockService {
 
 	@Override
 	public ServiceResult<Boolean> lock(int itemId, int lockQty) {
-		Tracer.trace("itemId", itemId);
-		Tracer.trace("lockQty", lockQty);
+		Tracer.traceTag("itemId", itemId);
+		Tracer.traceTag("lockQty", lockQty);
 		if(!stocks.containsKey(itemId)) {
 			log.info("[lock] Stock not found, item-id: " + itemId);
 			return new ServiceResult<Boolean>().fail("Item " + itemId + " not found"); 

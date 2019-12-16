@@ -55,7 +55,7 @@ public class ItemServiceImpl implements ItemService {
 
 	@Override
 	public ServiceResult<Item> getItem(int itemId) {
-		Tracer.trace("itemId", itemId);
+		Tracer.traceTag("itemId", itemId);
 		Item item = items.get(itemId);
 		if(item==null) {
 			return new ServiceResult<Item>().fail("Item " + itemId + " not found");

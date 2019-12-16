@@ -1,6 +1,25 @@
+APM框架系列：
+- [APM之PinPoint部署和使用](https://github.com/liuzhibin-cn/my-demo/blob/master/docs/APM-PinPoint.md)
+- [APM之SkyWalking部署和使用](https://github.com/liuzhibin-cn/my-demo/blob/master/docs/APM-SkyWalking.md)
+- [APM之ZipKin部署和使用](https://github.com/liuzhibin-cn/my-demo/blob/master/docs/APM-ZipKin.md)
+
 ----------------------------------
 #### SkyWalking架构
 <img src="https://richie-leo.github.io/ydres/img/10/120/1011/architecture.jpeg" style="width:99%;max-width:800px;" />
+
+相关概念：
+- 数据模型：参考[SkyWalking Cross Process Propagation Headers Protocol](https://github.com/apache/skywalking/blob/master/docs/en/protocols/Skywalking-Cross-Process-Propagation-Headers-Protocol-v2.md)、[Trace Data Protocol v2](https://github.com/apache/skywalking/blob/master/docs/en/protocols/Trace-Data-Protocol-v2.md)：
+  - `TraceId`：标记一个调用链，全局唯一，对应[Google Dapper](http://research.google.com/pubs/pub36356.html)的`TraceId`；
+  - `Span`：标记一次方法调用。对每个监控方法调用生成一个`Span`，用父子关系记录方法调用层次关系：
+    - `EntrySpan`：服务提供者（如Dubbo provider、MQ consumer等）的入口方法（endpoint）生成`EntrySpan`；
+    - `ExitSpan`：服务消费者（如Dubbo consumer、MQ producer等）对服务的调用生成`ExitSpan`；
+    - `LocalSpan`：除了`EntrySpan`、`ExitSpan`情况，对其它方法的调用，生成`LocalSpan`；
+  - `Segment`：标记一次RPC调用。Span中包含了`LocalSpan`，与[Google Dapper](http://research.google.com/pubs/pub36356.html)的Span有差异，而`Segment`在概念上对应[Google Dapper](http://research.google.com/pubs/pub36356.html) Span；
+- 统计视图：
+  - `Service`层面：在应用或服务层面提供性能汇总统计分析，通过agent的`service_name`参数来标记；
+  - `Endpoint`层面：在方法层面提供性能汇总统计分析；
+  - `Instance`层面：对应用或服务的单个实例层面提供性能汇总统计分析，通过进程ID（或IP+端口号）来标记；
+  - `Database`层面：针对数据库的性能汇总统计（基于JDBC数据库操作采集的数据，比数据库层面的统计粒度更细）;
 
 ----------------------------------
 #### 部署SkyWalking
@@ -28,7 +47,16 @@
 > Mac环境下载[apache-skywalking-apm-6.5.0.tar.gz](http://archive.apache.org/dist/skywalking/6.5.0/apache-skywalking-apm-6.5.0.tar.gz)即可，部署上没有其它特别之处。
 
 ----------------------------------
-#### 客户端应用使用agent
+#### 客户端应用使用
+每台客户端机器上部署agent包，使用`javaagent`方式实现拦截，采集性能数据，部署使用方式简单。
+
+- PinPoint：采用agent方式，对应用完全无侵入，项目无需添加任何额外依赖项，无需修改代码，这点做得最好；而ZipKin必须客户端项目引用相关依赖项，在项目中完成配置和必要的代码设置工作，是强依赖；
+- SkyWalking：采用agent方式，普通功能对应用无侵入，以下两项功能需要应用稍作修改：
+  - 中添加自定义Tag项：应用代码在SkyWalking Span中添加自定义Tag，可以按需输出方法参数值等关键信息，辅助应用排错和性能分析，PinPoint和ZipKin都不支持（可自行实现）；
+  - 日志中输出全局跟踪ID，需要添加SkyWalking依赖项；
+- ZipKin：没有采用agent方式，应用强依赖ZipKin，必须打包到应用中与应用一起运行，每个项目需要添加依赖项、配置，不同探针有不同的bean配置需求；
+
+##### agent使用
 配置`agent\config\agent.config`：
 ```
 agent.service_name=${SW_AGENT_NAME:unknown}
@@ -45,19 +73,9 @@ java -javaagent:F:\workspace\skywalking\agent\skywalking-agent.jar -Dskywalking.
 java -javaagent:F:\workspace\skywalking\agent\skywalking-agent.jar -Dskywalking.agent.service_name=test-app -jar test-app\target\test-app-0.0.1-SNAPSHOT.jar
 ```
 
-----------------------------------
-#### 全链路跟踪
-在全链路跟踪、日志中输出跟踪信息方面：
-- PinPoint对应用完全无侵入，无需添加额外依赖项，无需修改代码，这点做得比SkyWalking好；
-- SkyWalking支持输出方法参数值；
+支持情况参考[Supported middleware, framework and library](https://github.com/apache/skywalking/blob/master/docs/en/setup/service-agent/java-agent/Supported-list.md)，对支持框架的关键方法进行跟踪，例如Dubbo服务的consumer调用入口和provider服务方法入口，JDBC的`PrepareStatement`数据库操作等。
 
-支持情况参考[Supported middleware, framework and library](https://github.com/apache/skywalking/blob/master/docs/en/setup/service-agent/java-agent/Supported-list.md)，对框架的关键方法进行跟踪，例如Dubbo服务的客户端调用和服务端入口，数据库的`PrepareStatement.execute()`等。
-
-参考[SkyWalking Cross Process Propagation Headers Protocol](https://github.com/apache/skywalking/blob/master/docs/en/protocols/Skywalking-Cross-Process-Propagation-Headers-Protocol-v2.md)、[Trace Data Protocol v2](https://github.com/apache/skywalking/blob/master/docs/en/protocols/Trace-Data-Protocol-v2.md)：
-- `TraceId`：标记一个调用链，全局唯一，对应于[Google Dapper](http://research.google.com/pubs/pub36356.html)的`TraceId`；
-- `Segment`：调用链上服务实例每次处理RPC请求将生成一个`Segment`；
-- `Span`：每次方法调用生成一个`Span`，用父子关系记录方法调用层次关系；
-
+##### 添加链路跟踪方法
 业务代码中未被跟踪的方法，如果需要跟踪，则：
 1. pom添加依赖项：
    ```xml
@@ -70,21 +88,19 @@ java -javaagent:F:\workspace\skywalking\agent\skywalking-agent.jar -Dskywalking.
 2. 在方法上添加`@Trace`注解；
    > SkyWalking通过AOP实现跟踪，静态方法添加`@Trace`无效，只能用于实例方法；
 
-----------------------------------
-#### 全链路跟踪添加方法参数值
-全链路跟踪只记录方法名，不记录参数值，可通过代码添加，在当前span上添加tag（必须是被SkyWalking跟踪的方法）：
+##### Span中添加自定义Tag
+链路跟踪只记录方法名，不记录参数值，可通过代码添加，在当前span上添加tag（必须是被SkyWalking跟踪的方法）：
 ```java
 ActiveSpan.tag("account", account);
 ActiveSpan.tag("userId", String.valueOf(userId));
 ```
 
-全链路跟踪中即查看tag名称和值：<br />
+链路跟踪中即查看tag名称和值：<br />
 <img src="https://richie-leo.github.io/ydres/img/10/120/1011/skywalking-span.png" style="width:99%;max-width:800px;" />
 
 记录SQL语句参数值，可以在`agent\config\agent.config`文件中将`plugin.mysql.trace_sql_parameters`设为true。
 
-----------------------------------
-#### 应用日志中输出全局`trace-id`
+##### 应用日志中输出全局TraceId
 1. pom添加依赖项：
    ```xml
    <dependency>
@@ -124,7 +140,7 @@ SkyWalking和PinPoint界面功能相差不大：
 [Service Dashboard] -> [Instance]：针对服务实例的性能汇总统计，服务实例所在JVM、CLR的性能监控情况：**平均响应时间**、**吞吐率**、**JVM堆内存**、**JVM非堆内存**、**JVM GC**、**CPU** <br />
 <img src="https://richie-leo.github.io/ydres/img/10/120/1011/skywalking-screen-instance.png" style="width:99%;max-width:900px;" />
 
-[Database Dashboard] -> [Database]：针对数据库的性能汇总统计（基于JDBC数据库操作采集到的数据）：**响应时间**、**吞吐率**、**慢查询排行** <br />
+[Database Dashboard] -> [Database]：针对数据库的性能汇总统计（基于JDBC数据库操作采集的数据，比数据库层面的统计粒度更细）：**响应时间**、**吞吐率**、**慢查询排行** <br />
 <img src="https://richie-leo.github.io/ydres/img/10/120/1011/skywalking-screen-database.png" style="width:99%;max-width:900px;" />
 
 全链路跟踪、性能分析：

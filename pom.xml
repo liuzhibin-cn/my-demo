@@ -15,11 +15,44 @@
 		<maven.compiler.source>8</maven.compiler.source>
 		<maven.compiler.target>8</maven.compiler.target>
 		<springboot.version>2.2.2.RELEASE</springboot.version>
-		<zipkin-reporter.version>2.12.0</zipkin-reporter.version>
-		<zipkin-brave.version>5.9.1</zipkin-brave.version>
 		<dubbo.version>2.6.7</dubbo.version>
 		<dubbo-springboot-starter.version>0.2.1.RELEASE</dubbo-springboot-starter.version>
+		<zipkin-brave.version>5.9.1</zipkin-brave.version>
+        <zipkin-reporter.version>2.12.0</zipkin-reporter.version>
+        <skywalking.version>6.5.0</skywalking.version>
+        <!-- 排除ZipKin和SkyWalking依赖项 -->
+        <excludeGroupIds>org.apache.skywalking,io.zipkin,io.zipkin.zipkin2,io.zipkin.brave,io.zipkin.reporter2,com.squareup.okhttp3,com.squareup.okio</excludeGroupIds>
+        <log.layout>ch.qos.logback.classic.PatternLayout</log.layout>
+        <log.traceInfo></log.traceInfo>
+        <dubbo.filter></dubbo.filter>
 	</properties>
+
+    <profiles>
+        <profile>
+            <id>zipkin</id>
+            <properties>
+                <!-- 排除SkyWalking依赖项 -->
+                <excludeGroupIds>org.apache.skywalking</excludeGroupIds>
+				<log.traceInfo> %clr([%X{traceId} : %X{spanId}]){yellow}</log.traceInfo>
+				<dubbo.filter>tracing</dubbo.filter>
+            </properties>
+        </profile>
+        <profile>
+            <id>skywalking</id>
+            <properties>
+                <!-- 排除ZipKin依赖项 -->
+                <excludeGroupIds>io.zipkin,io.zipkin.zipkin2,io.zipkin.brave,io.zipkin.reporter2,com.squareup.okhttp3,com.squareup.okio</excludeGroupIds>
+				<log.layout>org.apache.skywalking.apm.toolkit.log.logback.v1.x.TraceIdPatternLogbackLayout</log.layout>
+				<log.traceInfo> %clr([%TID]){yellow}</log.traceInfo>
+            </properties>
+        </profile>
+        <profile>
+            <id>pinpoint</id>
+            <properties>
+				<log.traceInfo> %clr([%X{PtxId} : %X{PspanId}]){yellow}</log.traceInfo>
+            </properties>
+        </profile>
+    </profiles>
 
 	<build>
 		<plugins>
@@ -36,6 +69,10 @@
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
 				<version>${springboot.version}</version>
+				<configuration>
+				    <!-- 根据maven profile排除相关依赖 -->
+	                <excludeGroupIds>${excludeGroupIds}</excludeGroupIds>
+				</configuration>
 			</plugin>
 		</plugins>
 	</build>
@@ -53,12 +90,12 @@
 			<artifactId>dubbo</artifactId>
 			<version>${dubbo.version}</version>
 		</dependency>
-        <dependency> <!-- dubbo: serialization -->
+        <dependency> <!-- 使用fst序列化 -->
 			<groupId>de.ruedigermoeller</groupId>
 			<artifactId>fst</artifactId>
 			<version>2.57</version>
         </dependency>
-        <dependency> <!-- dubbo: use redis registry, dubbo uses jedis client -->
+        <dependency> <!-- 使用Redis注册中心, Dubbo使用的jedis -->
             <groupId>redis.clients</groupId>
             <artifactId>jedis</artifactId>
         </dependency>
@@ -68,26 +105,30 @@
 		    <version>4.1.43.Final</version>
 		</dependency>
         
-        <!-- SkyWalking依赖 -->
-        <!-- <dependency>
+        <!-- SkyWalking依赖项 -->
+        <dependency>
            <groupId>org.apache.skywalking</groupId>
            <artifactId>apm-toolkit-trace</artifactId>
-           <version>6.5.0</version>
+           <version>${skywalking.version}</version>
         </dependency>
          <dependency>
              <groupId>org.apache.skywalking</groupId>
              <artifactId>apm-toolkit-logback-1.x</artifactId>
-             <version>6.5.0</version>
-         </dependency> -->
-         
-	     <dependency>
+             <version>${skywalking.version}</version>
+         </dependency>
+         <!-- ZipKin依赖项 -->
+         <dependency>
             <groupId>io.zipkin.brave</groupId>
             <artifactId>brave-instrumentation-dubbo-rpc</artifactId>
          </dependency>
          <dependency>
+            <groupId>io.zipkin.brave</groupId>
+            <artifactId>brave-context-slf4j</artifactId>
+         </dependency>
+         <dependency>
             <groupId>io.zipkin.reporter2</groupId>
             <artifactId>zipkin-sender-okhttp3</artifactId>
-        </dependency>
+         </dependency>
     </dependencies>
 
 	<dependencyManagement>
@@ -122,15 +163,8 @@
 				<type>pom</type>
 				<scope>import</scope>
 			</dependency>
-            <dependency>
-                <groupId>io.zipkin.reporter2</groupId>
-                <artifactId>zipkin-reporter-bom</artifactId>
-                <version>${zipkin-reporter.version}</version>
-                <type>pom</type>
-                <scope>import</scope>
-            </dependency>
 	        
-	        <!-- SpringBoot -->
+	        <!-- SpringBoot依赖项 -->
 			<dependency>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-dependencies</artifactId>

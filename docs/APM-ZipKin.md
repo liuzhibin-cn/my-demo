@@ -1,3 +1,8 @@
+APM框架系列：
+- [APM之PinPoint部署和使用](https://github.com/liuzhibin-cn/my-demo/blob/master/docs/APM-PinPoint.md)
+- [APM之SkyWalking部署和使用](https://github.com/liuzhibin-cn/my-demo/blob/master/docs/APM-SkyWalking.md)
+- [APM之ZipKin部署和使用](https://github.com/liuzhibin-cn/my-demo/blob/master/docs/APM-ZipKin.md)
+
 -------------------------
 #### ZipKin架构
 <img src="https://richie-leo.github.io/ydres/img/10/120/1013/zipkin-architecture.png" style="width:99%;max-width:550px;" />
@@ -13,7 +18,7 @@
   - [openzipkin/brave](https://github.com/openzipkin/brave)：Instrumentation探针项目，客户端引用；
   - [openzipkin/zipkin-reporter-java](https://github.com/openzipkin/zipkin-reporter-java)：Reporter指Instrumentation向Collector发送数据的方案，例如[okhttp3](https://github.com/openzipkin/zipkin-reporter-java/tree/master/okhttp3)、[Kafka](https://github.com/openzipkin/zipkin-reporter-java/tree/master/kafka)。首先Collector支持不同数据接收方式，Instrumentation发送方案也不一样；另外同一种Collector数据接收方案，也可以使用不同的客户端框架来完成，这些工作由reporter项目负责；
 - 链路跟踪：
-  - TraceId：标记一次全链路调用情况，全局唯一；
+  - TraceId：标记一次全链路调用，全局唯一；
   - SpanId：标记一次RPC调用；
   - Annotations：ZipKin跟踪RPC性能的方法，记录4个时间点来反映RPC调用性能细节：Client Start、Server Start、Server Finish、Client Finish，参考功*界面功能 -> 链路跟踪详情*；
   - Propagation：在RPC调用过程中Inject封装、Extract解封跟踪数据，例如[b3-propagation](https://github.com/openzipkin/b3-propagation)：<br />
@@ -21,7 +26,7 @@
 
 -------------------------
 #### 部署ZipKin Server
-使用当前[ZipKin Server](https://zipkin.io/)最新版本[2.19.2](https://github.com/openzipkin/zipkin/releases/tag/2.19.2)，使用[my-demo](https://github.com/liuzhibin-cn/my-demo)作为演示项目。
+使用当前[ZipKin Server](https://github.com/openzipkin/zipkin)最新版本[2.19.2](https://github.com/openzipkin/zipkin/releases/tag/2.19.2)，使用[my-demo](https://github.com/liuzhibin-cn/my-demo)作为演示项目。
 
 ZipKin默认按Docker容器部署方式发布，使用Docker或Java快速部署都非常方便。
 
@@ -31,7 +36,7 @@ curl -sSL https://zipkin.io/quickstart.sh | bash -s
 java -jar zipkin.jar
 ```
 
-存储到MySQL：
+存储到MySQL（只用到3个表）：
 1. MySQL创建zipkin数据库，执行[schema DDL](https://github.com/openzipkin/zipkin/blob/master/zipkin-storage/mysql-v1/src/main/resources/mysql.sql)建表；
 2. 启动ZipKin：
    ```sh
@@ -50,13 +55,9 @@ java -jar zipkin.jar
    ```xml
    <dependencies>
        <dependency>
-           <groupId>org.springframework.boot</groupId>
-           <artifactId>spring-boot-starter-web</artifactId>
+   	      <groupId>org.springframework.cloud</groupId>
+   		  <artifactId>spring-cloud-starter-zipkin</artifactId>
        </dependency>
-   <dependency>
-   		<groupId>org.springframework.cloud</groupId>
-   		<artifactId>spring-cloud-starter-zipkin</artifactId>
-   </dependency>
    </dependencies>
    <dependencyManagement>
        <dependencies>
@@ -105,13 +106,6 @@ java -jar zipkin.jar
 			<type>pom</type>
 			<scope>import</scope>
 		</dependency>
-        <dependency>
-            <groupId>io.zipkin.reporter2</groupId>
-            <artifactId>zipkin-reporter-bom</artifactId>
-            <version>2.12.0</version>
-            <type>pom</type>
-            <scope>import</scope>
-        </dependency>
    </dependencyManagement>
    ```
 2. 实现`ZipkinProperties`和`ZipkinConfiguration`：
@@ -190,6 +184,29 @@ java -jar zipkin.jar
    ```url
    ?queryInterceptors=brave.mysql8.TracingQueryInterceptor&exceptionInterceptors=brave.mysql8.TracingExceptionInterceptor&zipkinServiceName=db-order
    ```
+
+##### 应用日志中输出全局TraceId
+1. `pom.xml`添加依赖项：
+   ```xml
+   <dependency>
+       <groupId>io.zipkin.brave</groupId>
+       <artifactId>brave-context-slf4j</artifactId>
+   </dependency>
+   ```
+2. 为`brave.Tracing`配置slf4j的`MDCScopeDecorator`：
+   ```java
+	Tracing tracing = Tracing.newBuilder()
+		.localServiceName(properties.getServiceName())
+		.propagationFactory(ExtraFieldPropagation.newFactory(B3Propagation.FACTORY, "brave-trace"))
+		.sampler(Sampler.ALWAYS_SAMPLE)
+		.spanReporter(reporter)
+		//配置slf4j的MDCScopeDecorator
+		.currentTraceContext(ThreadLocalCurrentTraceContext.newBuilder().addScopeDecorator(MDCScopeDecorator.create()).build())
+		.build();
+   ```
+3. `logback.xml`通过`%X{traceId}`、`%X{spanId}`输出链路跟踪信息：
+
+<img src="https://richie-leo.github.io/ydres/img/10/120/1013/app-log.jpg" style="width:99%;max-width:820px;" />
 
 -------------------------
 #### 界面功能

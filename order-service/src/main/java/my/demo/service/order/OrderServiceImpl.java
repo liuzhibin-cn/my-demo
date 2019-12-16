@@ -42,7 +42,7 @@ public class OrderServiceImpl implements OrderService {
 	StockService stockService;
 	@Autowired
 	OrderDao orderDao;
-	
+
 	static {
 		try {
 			SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
@@ -66,7 +66,7 @@ public class OrderServiceImpl implements OrderService {
 		if(cart.getUserId()<=0) {
 			return result.fail("Invalid cart, empty member id");
 		}
-		Tracer.trace("userId", cart.getUserId());
+		Tracer.traceTag("userId", cart.getUserId());
 		
 		List<OrderDetail> lockList = new ArrayList<>(cart.getItems().size());
 		try {
@@ -97,7 +97,7 @@ public class OrderServiceImpl implements OrderService {
 				order.setDiscount( order.getDiscount() + cartItem.getDiscount() );
 				order.addDetail(detail);
 			} );
-			Tracer.trace("orderId", order.getOrderId());
+			Tracer.traceTag("orderId", order.getOrderId());
 			
 			//3. 锁定库存（简单起见，不处理锁定失败后释放问题）
 			for(OrderDetail detail : order.getDetails()) {
@@ -156,9 +156,9 @@ public class OrderServiceImpl implements OrderService {
 	@Override
 	public ServiceResult<List<Order>> findUserOrders(int userId, int offset, int count) {
 		try {
-			Tracer.trace("userId", userId);
-			Tracer.trace("offset", offset);
-			Tracer.trace("count", count);
+			Tracer.traceTag("userId", userId);
+			Tracer.traceTag("offset", offset);
+			Tracer.traceTag("count", count);
 			List<Long> orderIds = orderDao.findUserOrderIds(userId, offset, count);
 			if(orderIds==null || orderIds.isEmpty()) {
 				if(log.isDebugEnabled()) {
@@ -179,7 +179,7 @@ public class OrderServiceImpl implements OrderService {
 
 	@Override
 	public ServiceResult<List<OrderDetail>> getOrderDetails(long orderId) {
-		Tracer.trace("orderId", orderId);
+		Tracer.traceTag("orderId", orderId);
 		try {
 			List<OrderDetail> details = orderDao.getOrderDetails(orderId);
 			if(log.isDebugEnabled()) {

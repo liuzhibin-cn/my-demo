@@ -38,7 +38,7 @@ public class UserServiceImpl implements UserService {
 	
 	@Override
 	public ServiceResult<User> registerByMobile(String mobile, String password) {
-		Tracer.trace("account", mobile);
+		Tracer.traceTag("account", mobile);
 		ServiceResult<User> result = new ServiceResult<User>();
 		//简单校验
 		if(mobile==null || mobile.isEmpty() || mobile.trim().length()!=11) {
@@ -64,7 +64,7 @@ public class UserServiceImpl implements UserService {
 				log.warn("[register] Failed to create user account, account: " + mobile);
 				return result.fail("Failed to create user account");
 			}
-			Tracer.trace("userId", userAccount.getUserId());
+			Tracer.traceTag("userId", userAccount.getUserId());
 			log.info("[register] User account created, account: " + mobile);
 			//3. 创建用户资料，主键和分片字段均为 user_id
 			User user = new User();
@@ -87,7 +87,7 @@ public class UserServiceImpl implements UserService {
 
 	@Override
 	public ServiceResult<User> login(String account, String password) {
-		Tracer.trace("account", account);
+		Tracer.traceTag("account", account);
 		ServiceResult<User> result = new ServiceResult<User>();
 		if(account==null || account.trim().isEmpty()) {
 			return result.fail("Empty account");
@@ -114,7 +114,7 @@ public class UserServiceImpl implements UserService {
 				return result.fail("Account error");
 			}
 			log.info("[login] Success, user-id: " + user.getUserId() + ", account: " + account);
-			Tracer.trace("userId", user.getUserId());
+			Tracer.traceTag("userId", user.getUserId());
 			return result.success(user);
 		} catch(Exception ex) {
 			log.error("[login] System error, msg: " + ex.getMessage(), ex);

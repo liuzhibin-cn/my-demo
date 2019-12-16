@@ -1,13 +1,29 @@
+APM框架系列：
+- [APM之PinPoint部署和使用](https://github.com/liuzhibin-cn/my-demo/blob/master/docs/APM-PinPoint.md)
+- [APM之SkyWalking部署和使用](https://github.com/liuzhibin-cn/my-demo/blob/master/docs/APM-SkyWalking.md)
+- [APM之ZipKin部署和使用](https://github.com/liuzhibin-cn/my-demo/blob/master/docs/APM-ZipKin.md)
+
 -------------------------
 #### PinPoint架构
 <img src="https://richie-leo.github.io/ydres/img/10/120/1012/pinpoint-architecture.png" style="width:99%;max-width:600px;" />
 
+相关概念：
+- 数据模型：
+  - `TransactionId`：标记一个调用链，全局唯一，对应于[Google Dapper](http://research.google.com/pubs/pub36356.html)的`TraceId`；
+  - `SpanId`：标记一次RPC调用。每次RPC调用生成一个Span，Span通过父子关系记录RPC调用层次关系：<br />
+  <img src="https://richie-leo.github.io/ydres/img/10/120/1012/trace-behavior.png" style="width:99%;max-width:540px;" />
+   - `SpanEvent`：Span中的关键事件（函数调用）使用SpanEvent表示：<br />
+  <img src="https://richie-leo.github.io/ydres/img/10/120/1012/trace-data-structure.jpg" style="width:99%;max-width:700px;" />
+- 统计视图：
+  - Application层面：在应用或服务层面提供性能汇总统计分析，通过agent的`applicationName`参数来标记；
+  - Agent层面：对应用或服务的单个实例层面提供性能汇总统计分析，通过agent的`agentId`参数来标记；
+
 -------------------------
-#### 部署PinPoint
+#### 部署PinPoint Server
 [PinPoint](https://github.com/naver/pinpoint)版本[1.8.5](https://github.com/naver/pinpoint/releases/tag/1.8.5)，Mac环境单机部署，使用[my-demo](https://github.com/liuzhibin-cn/my-demo)作为演示项目。
 > [my-demo](https://github.com/liuzhibin-cn/my-demo)项目原本使用Apache Dubbo 2.7.4.1，但PinPoint不支持，无法采集到任何跟踪数据，因此改为Alibaba Dubbo 2.6.7。
 
-存储：只支持HBase，只用到10多个表。
+存储：只支持HBase，10多个表。
 
 本文将PinPoint Collector和Web UI部署在同一个Tomcat下。
 
@@ -37,7 +53,16 @@
 6. 启动Tomcat；
 
 -------------------------
-#### 客户端使用agent
+#### 客户端应用使用
+每台客户端机器上部署agent包，使用`javaagent`方式实现拦截，采集性能数据，部署使用方式简单。
+
+- PinPoint：采用agent方式，对应用完全无侵入，项目无需添加任何额外依赖项，无需修改代码，这点做得最好；而ZipKin必须客户端项目引用相关依赖项，在项目中完成配置和必要的代码设置工作，是强依赖；
+- SkyWalking：采用agent方式，普通功能对应用无侵入，以下两项功能需要应用稍作修改：
+  - 中添加自定义Tag项：应用代码在SkyWalking Span中添加自定义Tag，可以按需输出方法参数值等关键信息，辅助应用排错和性能分析，PinPoint和ZipKin都不支持（可自行实现）；
+  - 日志中输出全局跟踪ID，需要添加SkyWalking依赖项；
+- ZipKin：没有采用agent方式，应用强依赖ZipKin，必须打包到应用中与应用一起运行，每个项目需要添加依赖项、配置，不同探针有不同的bean配置需求；
+
+##### agent使用
 解压`pinpoint-agent-1.8.5.tar.gz`，配置`pinpoint.config`，其中的修改项如下：
 ```
 # Collector和演示项目部署在不同机器，这里指定Collector IP
@@ -49,7 +74,7 @@ profiler.entrypoint=my.demo.test.Application.runTestCaseWithTrace
 profiler.tomcat.conditional.transform=false
 ```
 
-启动应用：
+启动应用的JVM参数：
 - `-javaagent:`：指定PinPoint代理；
 - `-Dpinpoint.agentId=`：必须全局唯一，代表一个服务、应用实例；
 - `-Dpinpoint.applicationName=`：指定服务、应用名称。相同服务部署不同实例，`applicationName`相同，`agentId`不同；
@@ -60,32 +85,22 @@ java -javaagent:F:\workspace\pinpoint\agent\pinpoint-bootstrap-1.8.5.jar -Dpinpo
 java -javaagent:F:\workspace\pinpoint\agent\pinpoint-bootstrap-1.8.5.jar -Dpinpoint.agentId=stock-srv-1 -Dpinpoint.applicationName=stock-srv -jar stock-service\target\stock-service-0.0.1-SNAPSHOT.jar
 java -javaagent:F:\workspace\pinpoint\agent\pinpoint-bootstrap-1.8.5.jar -Dpinpoint.agentId=user-srv-1 -Dpinpoint.applicationName=user-srv -jar user-service\target\user-service-0.0.1-SNAPSHOT.jar
 java -javaagent:F:\workspace\pinpoint\agent\pinpoint-bootstrap-1.8.5.jar -Dpinpoint.agentId=order-srv-1 -Dpinpoint.applicationName=order-srv -jar order-service\target\order-service-0.0.1-SNAPSHOT.jar
-java -javaagent:F:\workspace\pinpoint\agent\pinpoint-bootstrap-1.8.5.jar -Dpinpoint.agentId=test-app -Dpinpoint.applicationName=test-app -jar test-app\target\test-app-0.0.1-SNAPSHOT.jar
+java -javaagent:F:\workspace\pinpoint\agent\pinpoint-bootstrap-1.8.5.jar -Dpinpoint.agentId=shop-web-1 -Dpinpoint.applicationName=shop-web -jar shop-web\target\shop-web-0.0.1-SNAPSHOT.jar
 ```
 
--------------------------
-#### 全链路跟踪
-在全链路跟踪、日志中输出跟踪信息方面：
-- PinPoint对应用完全无侵入，无需添加额外依赖项，无需修改代码，这点做得比SkyWalking好；
-- SkyWalking支持输出方法参数值；
+支持情况参考[Supported Modules](https://naver.github.io/pinpoint/main.html#supported-modules)，对支持框架的关键方法进行跟踪，例如Dubbo服务的consumer调用入口和provider服务方法入口，JDBC的`PrepareStatement`数据库操作等。
 
-支持情况参考[Supported Modules](https://naver.github.io/pinpoint/main.html#supported-modules)，对支持框架的关键方法进行跟踪，例如Dubbo服务的客户端调用和服务端入口，JDBC的`PrepareStatement`数据库操作等。
+##### 添加链路跟踪方法
+代码中未被跟踪的方法，如果需要跟踪，通过`agent/pinpoint.config`配置：
+1. `profiler.entrypoint`：配置一个调用链跟踪的入口点，从此方法调用开始新建一个链路跟踪。必须配置类+方法的全限定名，多个方法逗号分隔，不支持通配符；
+2. `profiler.include`：在已有的调用链跟踪中，添加未被跟踪的方法。必须为类的全限定名，或者包的全限定名（支持通配符），则指定类或者包下的所有方法都将被跟踪；
 
-`TransactionId`标记一个调用链，全局唯一，对应于[Google Dapper](http://research.google.com/pubs/pub36356.html)的`TraceId`；调用链上每次服务实例处理RPC请求将生成一个Span，Span通过父子关系记录RPC调用层次关系：<br />
-<img src="https://richie-leo.github.io/ydres/img/10/120/1012/trace-behavior.png" style="width:99%;max-width:540px;" />
+PinPoint这种方式比SkyWalking更灵活，不局限于应用的业务方法，对一些第三方框架、库也能开启跟踪。
 
-Span中每次方法调用生成一个SpanEvent：<br />
-<img src="https://richie-leo.github.io/ydres/img/10/120/1012/trace-data-structure.jpg" style="width:99%;max-width:700px;" />
-
-业务代码中未被跟踪的方法，如果需要跟踪，通过`agent/pinpoint.config`配置：
-1. `profiler.entrypoint`：配置一个全链路跟踪的入口点，新建一个全链路跟踪，必须配置类+方法的全限定名，多个方法逗号分隔，不支持通配符；
-2. `profiler.include`：类的全限定名，或者包的全限定名（支持通配符），则指定类或者包下的所有方法都将被跟踪；
-
--------------------------
-#### 应用日志中输出全局transaction-id
+##### 应用日志中输出全局transaction-id
 1. 修改`agent/pinpoint.config`：
    ```
-   profiler.logback.logging.transactioninfo=false
+   profiler.logback.logging.transactioninfo=true
    ````
 2. logback通过`%X{PtxId}`输出`TransactionId`，`%X{PspanId}`输出`SpanId`：
    ```
