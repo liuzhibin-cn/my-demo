@@ -5,9 +5,11 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-/**
- * 订单
- */
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
+import com.fasterxml.jackson.annotation.JsonFormat;
+
+@JsonAutoDetect(getterVisibility=Visibility.NONE, setterVisibility=Visibility.NONE, fieldVisibility=Visibility.ANY)
 public class Order implements Serializable {
 	private static final long serialVersionUID = -60380267375585244L;
 	private long orderId = 0;
@@ -16,12 +18,15 @@ public class Order implements Serializable {
 	private double total = 0;
 	private double discount = 0;
 	private double payment = 0;
+	@JsonFormat(pattern="yyyy-MM-dd HH:mm:ss.SSS", timezone="Asia/Shanghai")
 	private Date payTime = null;
 	private String payStatus = "";
 	private String contact = "";
 	private String phone = "";
 	private String address = "";
+	@JsonFormat(pattern="yyyy-MM-dd HH:mm:ss.SSS", timezone="Asia/Shanghai")
 	private Date createdAt = null;
+	@JsonFormat(pattern="yyyy-MM-dd HH:mm:ss.SSS", timezone="Asia/Shanghai")
 	private Date lastUpdate;
 	private List<OrderDetail> details;
 	
@@ -31,6 +36,9 @@ public class Order implements Serializable {
 	}
 	public List<OrderDetail> getDetails() {
 		return this.details==null ? new ArrayList<>(0) : this.details;
+	}
+	public void setDetails(List<OrderDetail> details) {
+		this.details = details;
 	}
 	
 	public long getOrderId() {

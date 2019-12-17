@@ -6,21 +6,101 @@
     <link rel="stylesheet" href="/static/main.css" />
     <link rel="stylesheet" href="/static/button.css" />
     <script src="/static/jquery.js" type="text/javascript"></script>
+    <style type="text/css">
+        .loginForm, .action, #response { margin:15px; padding:15px; border-radius: 5px; }
+        .loginForm, #response { border: 1px solid #ccc; width: 870px; }
+        input.loginForm { margin-left: 10px; } 
+        #labelNickname { padding-left:15px; }
+        .info { color:#666; font-size: 12px; line-height:16px; }
+        .error { color:#cc2222; font-size: 12px; line-height:16px; }
+    </style>
 </head>
 
 <body>
-    <div>
-        <span>Mobile: </span>
-        <input id="txtMobile" />
-        <span>Password: </span>
-        <input id="txtPassword" />
-    </div>
-    <div>
-        <a href="/item/list" class="button">Item List</a>
-        <a href="#" class="button">Register</a>
-        <a href="#" class="button">Login</a>
-        <a href="/order/create" class="button">Create Order</a>
-        <a href="/order/create" class="button">Run a Full TestCase</a>
-    </div>
+    <div class="center">
+	    <div class="loginForm">
+	       <div>
+		        <span>Account: </span>
+		        <input id="txtMobile" class="text" placeholder="Your Mobile" />
+		        <span>Password: </span>
+		        <input id="txtPassword" class="text" placeholder="Your Password" />
+                <a id="btnLogin" href="#" class="button button-action button-normal">Login</a>
+	            <a id="btnRegister" href="#" class="button button-action button-normal">Register</a>
+	        </div>
+	        <div style="margin-top:8px;">
+	           <span class="info">Current User: </span>
+	           <span id="labelLoginError" class="error"></span>
+	           <span id="labelUserId" class="info"></span>
+	           <span id="labelNickname" class="info"></span>
+	        </div>
+	    </div>
+	    <div class="action">
+	        <a id="btnItemList" href="#" class="button button-action button-normal">Item List</a>
+	        <a id="btnCreateOrder" href="#" class="button button-caution button-normal">Create Order(Login Required)</a>
+	        <a id="btnFullTest" href="#" class="button button-action button-normal">Run a Full TestCase</a>
+	    </div>
+        <pre id="response" class="info"></pre>
+	</div>
+	
+    <script type="text/javascript">
+    $(document).ready(function() {
+        $('#btnRegister').click(function() {
+            $.post({ url: "/register", data: { mobile: $('#txtMobile').val() , password: $('#txtPassword').val() }, dataType: 'text', success: function(data){
+                var json = toJSON(data);
+                if(json==null) {
+                	$('#labelLoginError').text(data==null ? '' : data);
+                	$('#labelUserId').text('');
+                    $('#labelNickname').text('');
+                } else {
+                	$('#labelLoginError').text('');
+	               	$('#labelUserId').text(json.userId);
+	                $('#labelNickname').text(json.nickname);
+                }
+            }});
+        });
+        $('#btnLogin').click(function() {
+            $.post({ url: "/login", data: { mobile: $('#txtMobile').val() , password: $('#txtPassword').val() }, dataType: 'text', success: function(data){
+                var json = toJSON(data);
+                if(json==null) {
+                    $('#labelLoginError').text(data==null ? '' : data);
+                    $('#labelUserId').text('');
+                    $('#labelNickname').text('');
+                } else {
+                    $('#labelLoginError').text('');
+                    $('#labelUserId').text(json.userId);
+                    $('#labelNickname').text(json.nickname);
+                }
+            }});
+        });
+        $('#btnItemList').click(function() {
+            $.get({ url: "/item/list", dataType:'text', success: function(data){
+            	$('#response').html(stringify(data));
+            }});
+        });
+        $('#btnCreateOrder').click(function() {
+            $.post({ url: "/order/create", dataType:'text', success: function(data){
+            	$('#response').html(stringify(data));
+            }});
+        });
+        $('#btnFullTest').click(function() {
+            $.get({ url: "/full-test", dataType:'text', success: function(data){
+            	$('#response').html(stringify(data));
+            }});
+        });
+        function toJSON(data) {
+        	if(data==null || data=='') return null;
+        	try {
+        		return $.parseJSON(data);
+        	} catch {
+        		return null;
+        	}
+        }
+        function stringify(data) {
+        	var json = toJSON(data);
+        	if(json==null) return data;
+        	return JSON.stringify(json, null, '  ');
+        }
+    });
+    </script>
 </body>
 </html>

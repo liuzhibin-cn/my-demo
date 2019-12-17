@@ -3,6 +3,11 @@ package my.demo.domain;
 import java.io.Serializable;
 import java.util.Date;
 
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
+import com.fasterxml.jackson.annotation.JsonFormat;
+
+@JsonAutoDetect(getterVisibility=Visibility.NONE, setterVisibility=Visibility.NONE, fieldVisibility=Visibility.ANY)
 public class OrderDetail implements Serializable {
 	private static final long serialVersionUID = 7609913567717327072L;
 	private int detailId;
@@ -13,7 +18,9 @@ public class OrderDetail implements Serializable {
 	private double price;
 	private double subtotal;
 	private double discount;
+	@JsonFormat(pattern="yyyy-MM-dd HH:mm:ss.SSS", timezone="Asia/Shanghai")
 	private Date createdAt;
+	@JsonFormat(pattern="yyyy-MM-dd HH:mm:ss.SSS", timezone="Asia/Shanghai")
 	private Date lastUpdate;
 	
 	public int getDetailId() {

@@ -52,7 +52,7 @@ public class ShopController {
 		return "home";
 	}
 	
-	@RequestMapping(value="/register", method=RequestMethod.GET) //简单起见使用GET请求
+	@RequestMapping(value="/register", method=RequestMethod.POST) //简单起见使用GET请求
 	public @ResponseBody Object register(HttpServletResponse response, @RequestParam(name="mobile") String mobile, @RequestParam(name="password") String password) {
 		ServiceResult<User> r = userService.registerByMobile(mobile, password);
 		if(!r.isSuccess()) return "Register failed: " + r.getMessage();
@@ -61,7 +61,7 @@ public class ShopController {
 		response.addCookie(cookie);
 		return r.getResult();
 	}
-	@RequestMapping(value="/login", method=RequestMethod.GET)
+	@RequestMapping(value="/login", method=RequestMethod.POST)
 	public @ResponseBody Object login(HttpServletResponse response, @RequestParam(name="mobile") String mobile, @RequestParam(name="password") String password) {
 		ServiceResult<User> r = userService.login(mobile, password);
 		if(!r.isSuccess()) return "Login failed: " + r.getMessage();
@@ -70,7 +70,7 @@ public class ShopController {
 		response.addCookie(cookie);
 		return r.getResult();
 	}
-	@RequestMapping(value="/order/create", method=RequestMethod.GET)
+	@RequestMapping(value="/order/create", method=RequestMethod.POST)
 	public @ResponseBody Object createOrder(@CookieValue(name="user-id", required=false, defaultValue="0") int userId) {
 		if(userId<=0) return "Please login first";
 		ServiceResult<User> userResult = userService.getUser(userId);

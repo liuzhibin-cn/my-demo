@@ -10,6 +10,8 @@ spring:
          enabled: always
    profiles:
       active: ${activatedProperties}
+   mvc:
+      static-path-pattern: /static/**
 
 dubbo:
     scan:

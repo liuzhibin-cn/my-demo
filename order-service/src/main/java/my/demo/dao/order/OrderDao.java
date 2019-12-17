@@ -27,6 +27,10 @@ public interface OrderDao {
 	
 	List<Order> findOrders(@Param("orderIds") List<Long> orderIds);
 	
+	@Select("select * from order_header where order_id = #{orderId}")
+	@ResultMap("order")
+	Order getOrder(long orderId);
+	
 	@Select("select * from order_detail where order_id = #{orderId}")
 	@ResultMap("orderDetail")
 	List<OrderDetail> getOrderDetails(long orderId);

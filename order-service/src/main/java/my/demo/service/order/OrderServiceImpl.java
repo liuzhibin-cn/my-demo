@@ -136,8 +136,12 @@ public class OrderServiceImpl implements OrderService {
 			//5. 维护用户ID、订单ID索引表
 			orderDao.createUserOrder(order.getUserId(), order.getOrderId());
 			log.info("[create] User Order created: user-id: " + order.getUserId() + ", order-id: " + order.getOrderId());
+			
+			//6. 从数据库读取订单返回
+			Order persisted = orderDao.getOrder(order.getOrderId());
+			persisted.setDetails(orderDao.getOrderDetails(persisted.getOrderId()));
 						
-			return result.success(order);
+			return result.success(persisted);
 		} catch(Exception ex) {
 			log.error("[create] System error, user-id: " + cart.getUserId() + ", msg: " + ex.getMessage(), ex);
 			return result.fail("System error: " + ex.getMessage());

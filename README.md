@@ -4,23 +4,23 @@
 
 ##### 数据库水平拆分
 使用Mycat分库分表：
-- Mycat实现了MySQL协议，MySQL客户端、任何开发语言都能像直接使用MySQL一样，使用MySQL客户端和各种Connector连接Mycat；
-- Mycat解析SQL语句，根据SQL参数和分片规则配置进行路由，对结果集进行汇总、排序、聚合等，实现分库分表、读写分离等功能，对应用端透明；
+- Mycat实现了MySQL协议，MySQL命令行客户端、任何开发语言都能像直接连接MySQL一样连接Mycat，对客户端透明，支持所有开发语言；
+- Mycat解析SQL语句，根据SQL参数和分片规则进行路由，跨分片查询对结果集进行汇总、重排序、分页、聚合等，为应用提供分库分表、读写分离等功能；
 
-部署和使用参考[MyCat Sharding](https://github.com/liuzhibin-cn/my-demo/blob/master/docs/Mycat-Sharding.md)
+Mycat部署和使用参考[MyCat Sharding](https://github.com/liuzhibin-cn/my-demo/blob/master/docs/Mycat-Sharding.md)
 
 ##### APM全链路监控
-演示项目支持PinPoint、SkyWalking、ZipKin三种APM工具进行全链路跟踪和性能分析，通过不同的maven profile打包即可，具体参考项目代码和：[PinPoint部署和使用](https://github.com/liuzhibin-cn/my-demo/blob/master/docs/APM-PinPoint.md)、[SkyWalking部署和使用](https://github.com/liuzhibin-cn/my-demo/blob/master/docs/APM-SkyWalking.md)、[ZipKin部署和使用](https://github.com/liuzhibin-cn/my-demo/blob/master/docs/APM-ZipKin.md)
+演示项目支持[PinPoint](https://github.com/naver/pinpoint)、[SkyWalking](http://skywalking.apache.org/)、[ZipKin](https://zipkin.io/)三种APM工具进行全链路跟踪和性能分析，通过不同的maven profile打包即可，具体参考项目代码和：[PinPoint部署和使用](https://github.com/liuzhibin-cn/my-demo/blob/master/docs/APM-PinPoint.md)、[SkyWalking部署和使用](https://github.com/liuzhibin-cn/my-demo/blob/master/docs/APM-SkyWalking.md)、[ZipKin部署和使用](https://github.com/liuzhibin-cn/my-demo/blob/master/docs/APM-ZipKin.md)
 
 -------------------------------------------------------------------
 #### 运行演示项目
-1. JDK8+，部署好Redis（Dubbo注册中心）、MySQL、Mycat；
-2. MySQL建表，参考[sql-schema.sql](docs/sql-schema.sql)；
-3. 修改配置信息：<br />
-   为了方便起见，配置信息全部放在了[parent pom](https://github.com/liuzhibin-cn/my-demo/blob/master/pom.xml)的`dev` profile中了，修改这里就可以。
-4. 编译打包：<br />
+1. JDK8+，部署好Redis（用于Dubbo注册中心）、MySQL、Mycat；
+   创建数据库、表，部署配置Mycat参考[MyCat Sharding](https://github.com/liuzhibin-cn/my-demo/blob/master/docs/Mycat-Sharding.md)。
+2. 修改项目配置：<br />
+   方便起见配置信息全放在[parent pom](https://github.com/liuzhibin-cn/my-demo/blob/master/pom.xml)的`dev` profile中，修改这里即可。
+3. 编译打包：<br />
    运行[package.sh](https://github.com/liuzhibin-cn/my-demo/blob/master/package.sh)，脚本会install parent pom和`service-client`，然后编译打包其它服务和应用。
-5. 运行演示项目：<br />
+4. 运行演示项目：<br />
    依次启动`item-service`、`stock-service`、`user-service`、`order-service`，最后启动`shop-web`:
    ```sh
    java -jar item-service\target\item-service-0.0.1-SNAPSHOT.jar
@@ -29,7 +29,7 @@
    java -jar order-service\target\order-service-0.0.1-SNAPSHOT.jar
    java -jar shop-web\target\shop-web-0.0.1-SNAPSHOT.jar
    ```
-6. 通过[http://localhost:8090](http://localhost:8090)访问
+6. 通过[http://localhost:8090](http://localhost:8090)访问，执行操作查看效果；
 
 -------------------------------------------------------------------
 #### Dubbo基础用法
