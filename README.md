@@ -24,8 +24,9 @@ Mycat部署和使用参考[MyCat Sharding](https://github.com/liuzhibin-cn/my-de
 
 -------------------------------------------------------------------
 #### 运行演示项目
-1. JDK8+，部署好Redis（用于Dubbo注册中心）、MySQL、Mycat；
+1. JDK8+，部署好Redis（用于Dubbo注册中心）、MySQL、Mycat；<br />
    创建数据库、表，部署配置Mycat参考[MyCat Sharding](https://github.com/liuzhibin-cn/my-demo/blob/master/docs/Mycat-Sharding.md)。
+   > 如果不想部署Mycat，可以在直接使用一个本地MySQL库代替，将项目中的JDBC连接指向这个MySQL库即可。
 2. 修改项目配置：<br />
    方便起见配置信息全放在[parent pom](https://github.com/liuzhibin-cn/my-demo/blob/master/pom.xml)的`dev` profile中，修改这里即可。
 3. 编译打包：<br />
