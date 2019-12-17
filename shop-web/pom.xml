@@ -41,6 +41,8 @@
 					<include>application.yml</include>
 					<include>application-zipkin.yml</include>
 					<include>logback.xml</include>
+					<include>templates/**</include>
+					<include>static/**</include>
 				</includes>
 			</resource>
 		</resources>
@@ -55,6 +57,16 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
+            <exclusions>
+            	<exclusion>
+            		<groupId>org.hibernate.validator</groupId>
+            		<artifactId>hibernate-validator</artifactId>
+            	</exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-thymeleaf</artifactId>
         </dependency>
 	</dependencies>
 	<dependencyManagement>

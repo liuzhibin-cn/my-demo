@@ -10,11 +10,12 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.CookieValue;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.alibaba.dubbo.config.annotation.Reference;
 
@@ -29,7 +30,7 @@ import my.demo.service.ServiceResult;
 import my.demo.service.StockService;
 import my.demo.service.UserService;
 
-@RestController
+@Controller
 @RequestMapping(value="/")
 public class ShopController {
 	Logger log = LoggerFactory.getLogger(getClass());
@@ -46,8 +47,13 @@ public class ShopController {
 	@Reference
 	OrderService orderService;
 	
+	@RequestMapping(value = { "/", "" }, method=RequestMethod.GET)
+	public String home() {
+		return "home";
+	}
+	
 	@RequestMapping(value="/register", method=RequestMethod.GET) //简单起见使用GET请求
-	public Object register(HttpServletResponse response, @RequestParam(name="mobile") String mobile, @RequestParam(name="password") String password) {
+	public @ResponseBody Object register(HttpServletResponse response, @RequestParam(name="mobile") String mobile, @RequestParam(name="password") String password) {
 		ServiceResult<User> r = userService.registerByMobile(mobile, password);
 		if(!r.isSuccess()) return "Register failed: " + r.getMessage();
 		Cookie cookie = new Cookie(COOKIE_NAME, String.valueOf(r.getResult().getUserId()));
@@ -56,7 +62,7 @@ public class ShopController {
 		return r.getResult();
 	}
 	@RequestMapping(value="/login", method=RequestMethod.GET)
-	public Object login(HttpServletResponse response, @RequestParam(name="mobile") String mobile, @RequestParam(name="password") String password) {
+	public @ResponseBody Object login(HttpServletResponse response, @RequestParam(name="mobile") String mobile, @RequestParam(name="password") String password) {
 		ServiceResult<User> r = userService.login(mobile, password);
 		if(!r.isSuccess()) return "Login failed: " + r.getMessage();
 		Cookie cookie = new Cookie(COOKIE_NAME, String.valueOf(r.getResult().getUserId()));
@@ -65,7 +71,7 @@ public class ShopController {
 		return r.getResult();
 	}
 	@RequestMapping(value="/order/create", method=RequestMethod.GET)
-	public Object createOrder(@CookieValue(name="user-id", required=false, defaultValue="0") int userId) {
+	public @ResponseBody Object createOrder(@CookieValue(name="user-id", required=false, defaultValue="0") int userId) {
 		if(userId<=0) return "Please login first";
 		ServiceResult<User> userResult = userService.getUser(userId);
 		if(!userResult.isSuccess()) return "Get user " + userId + " error: " + userResult.getMessage();
@@ -74,8 +80,12 @@ public class ShopController {
 		return this.createOrder(cart);
 	}
 	@RequestMapping(value="/full-test", method=RequestMethod.GET)
-	public TestResult fullTestCase(@RequestParam(name="count", required=false, defaultValue="1") int count) {
+	public @ResponseBody TestResult fullTestCase(@RequestParam(name="count", required=false, defaultValue="1") int count) {
 		return this.runFullTestCase(count);
+	}
+	@RequestMapping(value="/item/list", method=RequestMethod.GET)
+	public @ResponseBody Object findItems() {
+		return itemService.findItem().getResult();
 	}
 	
 	private TestResult runFullTestCase(int count) {

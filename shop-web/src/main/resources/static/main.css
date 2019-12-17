@@ -1,0 +1,11 @@
+* { -webkit-box-sizing: border-box; -moz-box-sizing: border-box; box-sizing: border-box; }
+
+*, html, body, p, td, th, div, span, input, button, select, textarea, label, li 
+{ font-size: 12px; font-family:tahoma,arial,'Hiragino Sans GB','\5b8b\4f53',sans-serif; margin:0; padding:0; line-height:18px; }
+body { padding:10px; }
+
+table, tr, td, th { border-collapse:collapse; vertical-align:middle; }
+td, th { border-top: 1px solid #999; border-left: 1px solid #999; padding: 1px 2px; }
+th { font-weight:600 ; }
+table { border-bottom: 1px solid #999; border-right: 1px solid #999; }
+input.text { padding:2px 5px;margin:2px 1px;border:1px solid #ddd;border-radius:3px;outline:0; }

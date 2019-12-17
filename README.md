@@ -1,41 +1,35 @@
 -------------------------------------------------------------------
 #### 架构
 ![](docs/images/architecture.png) <br />
-`ItemService`、`StockService`没有建表，应用中生成mock数据。
+
+##### 数据库水平拆分
+使用Mycat分库分表：
+- Mycat实现了MySQL协议，MySQL客户端、任何开发语言都能像直接使用MySQL一样，使用MySQL客户端和各种Connector连接Mycat；
+- Mycat解析SQL语句，根据SQL参数和分片规则配置进行路由，对结果集进行汇总、排序、聚合等，实现分库分表、读写分离等功能，对应用端透明；
+
+部署和使用参考[MyCat Sharding](https://github.com/liuzhibin-cn/my-demo/blob/master/docs/Mycat-Sharding.md)
+
+##### APM全链路监控
+演示项目支持PinPoint、SkyWalking、ZipKin三种APM工具进行全链路跟踪和性能分析，通过不同的maven profile打包即可，具体参考项目代码和：[PinPoint部署和使用](https://github.com/liuzhibin-cn/my-demo/blob/master/docs/APM-PinPoint.md)、[SkyWalking部署和使用](https://github.com/liuzhibin-cn/my-demo/blob/master/docs/APM-SkyWalking.md)、[ZipKin部署和使用](https://github.com/liuzhibin-cn/my-demo/blob/master/docs/APM-ZipKin.md)
 
 -------------------------------------------------------------------
 #### 运行演示项目
-1. JDK8+，配置、部署Redis、MySQL、Mycat、SkyWalking；
+1. JDK8+，部署好Redis（Dubbo注册中心）、MySQL、Mycat；
 2. MySQL建表，参考[sql-schema.sql](docs/sql-schema.sql)；
-3. 运行演示项目：
-   1. 先本地编译安装`service-client`：`mvn install`；
-   2. 依次启动`item-service`、`stock-service`、`user-service`、`order-service`，最后启动`test-app`执行演示用例；
-
-运行SpringBoot项目方法：
-```sh
-# 1. 直接用maven运行
-mvn spring-boot:run
-# 2. 打包运行
-mvn clean package spring-boot:repackage
-java -jar xxx-service-0.0.1-SNAPSHOT.jar.jar
-```
-
--------------------------------------------------------------------
-#### 数据库水平拆分
-参考[]()
-
--------------------------------------------------------------------
-#### 全链路跟踪APM
-- PinPoint：
-  1. 将项目中所有`logback.xml`使用`logback-pinpoint.xml`内容替换；
-  2. 部署和使用方法参考[PinPoint演示](docs/APM-PinPoint.md)；
-- SkyWalking：
-  1. 打开parent `pom.xml`中注释掉的SkyWalking依赖项；
-  2. 打开service-item项目my.demo.utils.Tracer中注释掉的代码；
-  3. 打开test-app项目my.demo.test.Application.runTestCaseWithTrace方法上注释掉的Trace注解；
-  4. 将项目中所有`logback.xml`使用`logback-skywalking.xml`内容替换；
-  5. 部署和使用方法参考[SkyWalking演示](docs/APM-SkyWalking.md)；
-- ZipKin：参考[ZipKin演示](docs/APM-ZipKin.md)；
+3. 修改配置信息：<br />
+   为了方便起见，配置信息全部放在了[parent pom](https://github.com/liuzhibin-cn/my-demo/blob/master/pom.xml)的`dev` profile中了，修改这里就可以。
+4. 编译打包：<br />
+   运行[package.sh](https://github.com/liuzhibin-cn/my-demo/blob/master/package.sh)，脚本会install parent pom和`service-client`，然后编译打包其它服务和应用。
+5. 运行演示项目：<br />
+   依次启动`item-service`、`stock-service`、`user-service`、`order-service`，最后启动`shop-web`:
+   ```sh
+   java -jar item-service\target\item-service-0.0.1-SNAPSHOT.jar
+   java -jar stock-service\target\stock-service-0.0.1-SNAPSHOT.jar
+   java -jar user-service\target\user-service-0.0.1-SNAPSHOT.jar
+   java -jar order-service\target\order-service-0.0.1-SNAPSHOT.jar
+   java -jar shop-web\target\shop-web-0.0.1-SNAPSHOT.jar
+   ```
+6. 通过[http://localhost:8090](http://localhost:8090)访问
 
 -------------------------------------------------------------------
 #### Dubbo基础用法
