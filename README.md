@@ -5,7 +5,7 @@
 ##### 数据库水平拆分
 使用Mycat分库分表：
 - Mycat实现了MySQL协议，MySQL命令行客户端、任何开发语言都能像直接连接MySQL一样连接Mycat，对客户端透明，支持所有开发语言；
-- Mycat解析SQL语句，根据SQL参数和分片规则进行路由，跨分片查询对结果集进行汇总、重排序、分页、聚合等，为应用提供分库分表、读写分离等功能；
+- Mycat解析SQL语句，根据SQL参数和分片规则进行路由，跨分片查询对结果集进行汇总、重排序、分页、聚合等，将分库分表、读写分离等数据存储伸缩方案与应用隔离；
 
 Mycat部署和使用参考[MyCat Sharding](https://github.com/liuzhibin-cn/my-demo/blob/master/docs/Mycat-Sharding.md)
 

@@ -1,3 +1,9 @@
+#### Mycat架构
+<img src="https://richie-leo.github.io/ydres/img/10/120/mycat-architecture.jpg" style="width:99%;max-width:550px;" />
+
+- Mycat实现了MySQL协议，MySQL命令行客户端、任何开发语言都能像直接连MySQL一样连接Mycat，对客户端透明，支持所有开发语言；
+- Mycat解析SQL语句，根据SQL参数和分片规则进行路由，跨分片查询对结果集进行汇总、重排序、分页、聚合等，将分库分表、读写分离等数据存储伸缩方案与应用隔离；
+
 #### 演示方案说明
 ##### 表结构及拆分方案
 使用[my-demo](https://github.com/liuzhibin-cn/my-demo)项目作为演示，运行项目查看演示效果。
