@@ -123,7 +123,7 @@ public class UserServiceImpl implements UserService {
 	}
 	
 	@Override
-	public ServiceResult<User> getUser(int userId) {
+	public ServiceResult<User> getUser(long userId) {
 		return new ServiceResult<>(dao.getUser(userId));
 	}
 	

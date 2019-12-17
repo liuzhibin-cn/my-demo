@@ -16,8 +16,8 @@
         <result property="createdAt" column="created_at" />
         <result property="lastUpdate" column="last_update" />
     </resultMap>
-    <resultMap id="orderDetail" type="my.demo.domain.OrderDetail">
-        <result property="detailId" column="detail_id" />
+    <resultMap id="orderItem" type="my.demo.domain.OrderItem">
+        <result property="orderItemId" column="order_item_id" />
         <result property="orderId" column="order_id" />
         <result property="itemId" column="item_id" />
         <result property="title" column="title" />
@@ -30,6 +30,6 @@
     </resultMap>
     
     <select id="findOrders" resultMap="order">
-        select * from order_header where order_id in <foreach item="id" index="index" collection="orderIds" open="(" separator="," close=")">#{id}</foreach>
+        select * from ord_order where order_id in <foreach item="id" index="index" collection="orderIds" open="(" separator="," close=")">#{id}</foreach>
     </select>
 </mapper>

@@ -15,28 +15,38 @@
 			<algorithm>order-func</algorithm>
 		</rule>
 	</tableRule>
-        <tableRule name="user-rule">
-                <rule>
-                        <columns>user_id</columns>
-                        <algorithm>user-func</algorithm>
-                </rule>
-        </tableRule>
-        <tableRule name="user-account-rule">
-                <rule>
-                        <columns>account_hash</columns>
-                        <algorithm>user-account-func</algorithm>
-                </rule>
-        </tableRule>
+	<tableRule name="user-order-rule">
+		<rule>
+			<columns>user_id</columns>
+			<algorithm>user-order-func</algorithm>
+		</rule>
+	</tableRule>
+	<tableRule name="user-rule">
+		<rule>
+			<columns>user_id</columns>
+			<algorithm>user-func</algorithm>
+		</rule>
+	</tableRule>
+	<tableRule name="user-account-rule">
+		<rule>
+			<columns>account_hash</columns>
+			<algorithm>user-account-func</algorithm>
+		</rule>
+	</tableRule>
 
 	<function name="order-func" class="io.mycat.route.function.PartitionByPattern">
 		<property name="patternValue">32</property> <!-- 对32求模 -->
 		<property name="mapFile">order-partition.txt</property> <!-- 求模结果按照文件配置的规则映射到分片 -->
 	</function>
-        <function name="user-func" class="io.mycat.route.function.PartitionByPattern">
-                <property name="patternValue">32</property> <!-- 对32求模 -->
-                <property name="mapFile">user-partition.txt</property> <!-- 求模结果按照文件配置的规则映射到分片 -->
-        </function>
-        <function name="user-account-func" class="io.mycat.route.function.PartitionByMod">
-                <property name="count">2</property> <!-- 数据分为2片 -->
-        </function>
+	<function name="user-order-func" class="io.mycat.route.function.PartitionByPattern">
+		<property name="patternValue">32</property> <!-- 对32求模 -->
+		<property name="mapFile">order-partition.txt</property> <!-- 公用订单的分片规则 -->
+	</function>
+	<function name="user-func" class="io.mycat.route.function.PartitionByPattern">
+			<property name="patternValue">32</property> <!-- 对32求模 -->
+			<property name="mapFile">user-partition.txt</property> <!-- 求模结果按照文件配置的规则映射到分片 -->
+	</function>
+	<function name="user-account-func" class="io.mycat.route.function.PartitionByMod">
+			<property name="count">2</property> <!-- 数据分为2片 -->
+	</function>
 </mycat:rule>

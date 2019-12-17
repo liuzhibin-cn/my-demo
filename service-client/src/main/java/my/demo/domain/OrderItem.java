@@ -8,9 +8,9 @@ import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonFormat;
 
 @JsonAutoDetect(getterVisibility=Visibility.NONE, setterVisibility=Visibility.NONE, fieldVisibility=Visibility.ANY)
-public class OrderDetail implements Serializable {
+public class OrderItem implements Serializable {
 	private static final long serialVersionUID = 7609913567717327072L;
-	private int detailId;
+	private long orderItemId;
 	private long orderId;
 	private int itemId;
 	private String title;
@@ -23,11 +23,11 @@ public class OrderDetail implements Serializable {
 	@JsonFormat(pattern="yyyy-MM-dd HH:mm:ss.SSS", timezone="Asia/Shanghai")
 	private Date lastUpdate;
 	
-	public int getDetailId() {
-		return detailId;
+	public long getOrderItemId() {
+		return orderItemId;
 	}
-	public void setDetailId(int detailId) {
-		this.detailId = detailId;
+	public void setOrderItemId(long detailId) {
+		this.orderItemId = detailId;
 	}
 	public long getOrderId() {
 		return orderId;

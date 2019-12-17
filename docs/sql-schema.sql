@@ -98,15 +98,15 @@ INSERT INTO MYCAT_SEQUENCE(name,current_value,increment) VALUES ('ORDERDETAIL', 
 INSERT INTO MYCAT_SEQUENCE(name,current_value,increment) VALUES ('USER', 2906300, 20);
 
 -- ====================================================================
--- mydemo-dn1: order_header, order_detail, user, user_account, user_order
+-- mydemo-dn1: ord_order, ord_order_item, user, usr_user_account, ord_user_order
 -- ====================================================================
 DROP DATABASE IF EXISTS `mydemo-dn1`;
 CREATE SCHEMA `mydemo-dn1` DEFAULT CHARACTER SET utf8 ;
 USE `mydemo-dn1`;
-DROP TABLE IF EXISTS `order_header`;
-CREATE TABLE `order_header` (
+DROP TABLE IF EXISTS `ord_order`;
+CREATE TABLE `ord_order` (
   `order_id` BIGINT NOT NULL DEFAULT 0 COMMENT '订单ID',
-  `user_id` INT NOT NULL DEFAULT 0 COMMENT '会员ID',
+  `user_id` BIGINT NOT NULL DEFAULT 0 COMMENT '会员ID',
   `status` VARCHAR(10) NOT NULL DEFAULT '' COMMENT '订单状态',
   `total` DECIMAL(10,2) NOT NULL DEFAULT 0 COMMENT '总金额',
   `discount` DECIMAL(10,2) NOT NULL DEFAULT 0 COMMENT '优惠金额',
@@ -120,9 +120,9 @@ CREATE TABLE `order_header` (
   `last_update` TIMESTAMP NOT NULL DEFAULT current_timestamp on update current_timestamp COMMENT '最后更新时间',
   PRIMARY KEY (`order_id`)
 ) ENGINE = InnoDB DEFAULT CHARACTER SET = utf8 COLLATE=utf8_general_ci COMMENT = '订单主表';
-DROP TABLE IF EXISTS `order_detail`;
-CREATE TABLE `order_detail` (
-  `detail_id` INT NOT NULL DEFAULT 0 COMMENT '订单明细ID',
+DROP TABLE IF EXISTS `ord_order_item`;
+CREATE TABLE `ord_order_item` (
+  `order_item_id` BIGINT NOT NULL DEFAULT 0 COMMENT '订单明细ID',
   `order_id` BIGINT NOT NULL DEFAULT 0 COMMENT '订单ID',
   `item_id` INT NOT NULL DEFAULT 0 COMMENT '产品ID',
   `title` VARCHAR(100) NOT NULL DEFAULT '' COMMENT '产品标题',
@@ -132,12 +132,18 @@ CREATE TABLE `order_detail` (
   `discount` DECIMAL(10,2) NOT NULL DEFAULT 0 COMMENT '优惠金额',
   `created_at` DATETIME NOT NULL DEFAULT current_timestamp COMMENT '创建时间',
   `last_update` DATETIME NOT NULL DEFAULT current_timestamp on update current_timestamp COMMENT '最后更新时间',
-  PRIMARY KEY (`detail_id`),
+  PRIMARY KEY (`order_item_id`),
   INDEX `ix_order_id` (`order_id` ASC)
 ) ENGINE = InnoDB DEFAULT CHARACTER SET = utf8 COLLATE=utf8_general_ci COMMENT = '订单明细';
-DROP TABLE IF EXISTS `user`;
-CREATE TABLE `user` (
-  `user_id` INT NOT NULL DEFAULT 0 COMMENT '会员ID',
+DROP TABLE IF EXISTS `ord_user_order`;
+CREATE TABLE `ord_user_order` (
+  `user_id` BIGINT NOT NULL DEFAULT 0 COMMENT '会员ID',
+  `order_id` BIGINT NOT NULL DEFAULT 0 COMMENT '订单ID',
+  PRIMARY KEY (`user_id`, `order_id`)
+) ENGINE = InnoDB DEFAULT CHARACTER SET = utf8 COLLATE=utf8_general_ci COMMENT = '会员：会员ID与订单ID对应关系';
+DROP TABLE IF EXISTS `usr_user`;
+CREATE TABLE `usr_user` (
+  `user_id` BIGINT NOT NULL DEFAULT 0 COMMENT '会员ID',
   `nickname` VARCHAR(30) NOT NULL DEFAULT '' COMMENT '昵称',
   `mobile` VARCHAR(11) NOT NULL DEFAULT '' COMMENT '邮箱',
   `email` VARCHAR(40) NOT NULL DEFAULT '' COMMENT '手机号',
@@ -145,33 +151,27 @@ CREATE TABLE `user` (
   `last_update` DATETIME NOT NULL DEFAULT current_timestamp on update current_timestamp COMMENT '最后更新时间',
   PRIMARY KEY (`user_id`)
 ) ENGINE = InnoDB DEFAULT CHARACTER SET = utf8 COLLATE=utf8_general_ci COMMENT = '会员主表';
-DROP TABLE IF EXISTS `user_account`;
-CREATE TABLE `user_account` (
+DROP TABLE IF EXISTS `usr_user_account`;
+CREATE TABLE `usr_user_account` (
   `account` VARCHAR(30) NOT NULL DEFAULT '' COMMENT '登录账号',
   `password` VARCHAR(50) NOT NULL DEFAULT '' COMMENT '密码',
-  `user_id` INT NOT NULL DEFAULT 0 COMMENT '会员ID',
+  `user_id` BIGINT NOT NULL DEFAULT 0 COMMENT '会员ID',
   `account_hash` int not null default 0 comment 'account的hashcode，分片字段',
   PRIMARY KEY (`account`),
   INDEX ix_account_hash (account_hash asc),
   INDEX ix_user_id (user_id asc)
 ) ENGINE = InnoDB DEFAULT CHARACTER SET = utf8 COLLATE=utf8_general_ci COMMENT = '会员登录账号';
-DROP TABLE IF EXISTS `user_order`;
-CREATE TABLE `user_order` (
-  `user_id` INT NOT NULL DEFAULT 0 COMMENT '会员ID',
-  `order_id` BIGINT NOT NULL DEFAULT 0 COMMENT '订单ID',
-  PRIMARY KEY (`user_id`, `order_id`)
-) ENGINE = InnoDB DEFAULT CHARACTER SET = utf8 COLLATE=utf8_general_ci COMMENT = '会员：会员ID与订单ID对应关系';
 
 -- ====================================================================
--- mydemo-dn2: order_header, order_detail, user, user_account, user_order
+-- mydemo-dn2: ord_order, ord_order_item, user, usr_user_account, ord_user_order
 -- ====================================================================
 DROP DATABASE IF EXISTS `mydemo-dn2`;
 CREATE SCHEMA `mydemo-dn2` DEFAULT CHARACTER SET utf8 ;
 USE `mydemo-dn2`;
-DROP TABLE IF EXISTS `order_header`;
-CREATE TABLE `order_header` (
+DROP TABLE IF EXISTS `ord_order`;
+CREATE TABLE `ord_order` (
   `order_id` BIGINT NOT NULL DEFAULT 0 COMMENT '订单ID',
-  `user_id` INT NOT NULL DEFAULT 0 COMMENT '会员ID',
+  `user_id` BIGINT NOT NULL DEFAULT 0 COMMENT '会员ID',
   `status` VARCHAR(10) NOT NULL DEFAULT '' COMMENT '订单状态',
   `total` DECIMAL(10,2) NOT NULL DEFAULT 0 COMMENT '总金额',
   `discount` DECIMAL(10,2) NOT NULL DEFAULT 0 COMMENT '优惠金额',
@@ -185,9 +185,9 @@ CREATE TABLE `order_header` (
   `last_update` TIMESTAMP NOT NULL DEFAULT current_timestamp on update current_timestamp COMMENT '最后更新时间',
   PRIMARY KEY (`order_id`)
 ) ENGINE = InnoDB DEFAULT CHARACTER SET = utf8 COLLATE=utf8_general_ci COMMENT = '订单主表';
-DROP TABLE IF EXISTS `order_detail`;
-CREATE TABLE `order_detail` (
-  `detail_id` INT NOT NULL DEFAULT 0 COMMENT '订单明细ID',
+DROP TABLE IF EXISTS `ord_order_item`;
+CREATE TABLE `ord_order_item` (
+  `order_item_id` BIGINT NOT NULL DEFAULT 0 COMMENT '订单明细ID',
   `order_id` BIGINT NOT NULL DEFAULT 0 COMMENT '订单ID',
   `item_id` INT NOT NULL DEFAULT 0 COMMENT '产品ID',
   `title` VARCHAR(100) NOT NULL DEFAULT '' COMMENT '产品标题',
@@ -197,12 +197,18 @@ CREATE TABLE `order_detail` (
   `discount` DECIMAL(10,2) NOT NULL DEFAULT 0 COMMENT '优惠金额',
   `created_at` DATETIME NOT NULL DEFAULT current_timestamp COMMENT '创建时间',
   `last_update` DATETIME NOT NULL DEFAULT current_timestamp on update current_timestamp COMMENT '最后更新时间',
-  PRIMARY KEY (`detail_id`),
+  PRIMARY KEY (`order_item_id`),
   INDEX `ix_order_id` (`order_id` ASC)
 ) ENGINE = InnoDB DEFAULT CHARACTER SET = utf8 COLLATE=utf8_general_ci COMMENT = '订单明细';
-DROP TABLE IF EXISTS `user`;
-CREATE TABLE `user` (
-  `user_id` INT NOT NULL DEFAULT 0 COMMENT '会员ID',
+DROP TABLE IF EXISTS `ord_user_order`;
+CREATE TABLE `ord_user_order` (
+  `user_id` BIGINT NOT NULL DEFAULT 0 COMMENT '会员ID',
+  `order_id` BIGINT NOT NULL DEFAULT 0 COMMENT '订单ID',
+  PRIMARY KEY (`user_id`, `order_id`)
+) ENGINE = InnoDB DEFAULT CHARACTER SET = utf8 COLLATE=utf8_general_ci COMMENT = '会员：会员ID与订单ID对应关系';
+DROP TABLE IF EXISTS `usr_user`;
+CREATE TABLE `usr_user` (
+  `user_id` BIGINT NOT NULL DEFAULT 0 COMMENT '会员ID',
   `nickname` VARCHAR(30) NOT NULL DEFAULT '' COMMENT '昵称',
   `mobile` VARCHAR(11) NOT NULL DEFAULT '' COMMENT '邮箱',
   `email` VARCHAR(40) NOT NULL DEFAULT '' COMMENT '手机号',
@@ -210,72 +216,72 @@ CREATE TABLE `user` (
   `last_update` DATETIME NOT NULL DEFAULT current_timestamp on update current_timestamp COMMENT '最后更新时间',
   PRIMARY KEY (`user_id`)
 ) ENGINE = InnoDB DEFAULT CHARACTER SET = utf8 COLLATE=utf8_general_ci COMMENT = '会员主表';
-DROP TABLE IF EXISTS `user_account`;
-CREATE TABLE `user_account` (
+DROP TABLE IF EXISTS `usr_user_account`;
+CREATE TABLE `usr_user_account` (
   `account` VARCHAR(30) NOT NULL DEFAULT '' COMMENT '登录账号',
   `password` VARCHAR(50) NOT NULL DEFAULT '' COMMENT '密码',
-  `user_id` INT NOT NULL DEFAULT 0 COMMENT '会员ID',
+  `user_id` BIGINT NOT NULL DEFAULT 0 COMMENT '会员ID',
   `account_hash` int not null default 0 comment 'account的hashcode，分片字段',
   PRIMARY KEY (`account`),
   INDEX ix_account_hash (account_hash asc),
   INDEX ix_user_id (user_id asc)
 ) ENGINE = InnoDB DEFAULT CHARACTER SET = utf8 COLLATE=utf8_general_ci COMMENT = '会员登录账号';
-DROP TABLE IF EXISTS `user_order`;
-CREATE TABLE `user_order` (
-  `user_id` INT NOT NULL DEFAULT 0 COMMENT '会员ID',
+
+-- ====================================================================
+-- mydemo-dn3: ord_order, ord_order_item, ord_user_order
+-- ====================================================================
+DROP DATABASE IF EXISTS `mydemo-dn3`;
+CREATE SCHEMA `mydemo-dn3` DEFAULT CHARACTER SET utf8 ;
+USE `mydemo-dn3`;
+DROP TABLE IF EXISTS `ord_order`;
+CREATE TABLE `ord_order` (
+  `order_id` BIGINT NOT NULL DEFAULT 0 COMMENT '订单ID',
+  `user_id` BIGINT NOT NULL DEFAULT 0 COMMENT '会员ID',
+  `status` VARCHAR(10) NOT NULL DEFAULT '' COMMENT '订单状态',
+  `total` DECIMAL(10,2) NOT NULL DEFAULT 0 COMMENT '总金额',
+  `discount` DECIMAL(10,2) NOT NULL DEFAULT 0 COMMENT '优惠金额',
+  `payment` DECIMAL(10,2) NOT NULL DEFAULT 0 COMMENT '付款金额',
+  `pay_time` DATETIME NOT NULL DEFAULT '1900-01-01' COMMENT '付款时间',
+  `pay_status` VARCHAR(10) NOT NULL DEFAULT '' COMMENT '付款状态',
+  `contact` VARCHAR(30) NOT NULL DEFAULT '' COMMENT '收货人',
+  `phone` VARCHAR(20) NOT NULL DEFAULT '' COMMENT '电话',
+  `address` VARCHAR(70) NOT NULL DEFAULT '' COMMENT '详细地址',
+  `created_at` DATETIME NOT NULL DEFAULT current_timestamp COMMENT '下单时间',
+  `last_update` TIMESTAMP NOT NULL DEFAULT current_timestamp on update current_timestamp COMMENT '最后更新时间',
+  PRIMARY KEY (`order_id`)
+) ENGINE = InnoDB DEFAULT CHARACTER SET = utf8 COLLATE=utf8_general_ci COMMENT = '订单主表';
+DROP TABLE IF EXISTS `ord_order_item`;
+CREATE TABLE `ord_order_item` (
+  `order_item_id` BIGINT NOT NULL DEFAULT 0 COMMENT '订单明细ID',
+  `order_id` BIGINT NOT NULL DEFAULT 0 COMMENT '订单ID',
+  `item_id` INT NOT NULL DEFAULT 0 COMMENT '产品ID',
+  `title` VARCHAR(100) NOT NULL DEFAULT '' COMMENT '产品标题',
+  `quantity` INT NOT NULL DEFAULT 0 COMMENT '数量',
+  `price` DECIMAL(10,2) NOT NULL DEFAULT 0 COMMENT '价格',
+  `subtotal` DECIMAL(10,2) NOT NULL DEFAULT 0 COMMENT '小计金额',
+  `discount` DECIMAL(10,2) NOT NULL DEFAULT 0 COMMENT '优惠金额',
+  `created_at` DATETIME NOT NULL DEFAULT current_timestamp COMMENT '创建时间',
+  `last_update` DATETIME NOT NULL DEFAULT current_timestamp on update current_timestamp COMMENT '最后更新时间',
+  PRIMARY KEY (`order_item_id`),
+  INDEX `ix_order_id` (`order_id` ASC)
+) ENGINE = InnoDB DEFAULT CHARACTER SET = utf8 COLLATE=utf8_general_ci COMMENT = '订单明细';
+DROP TABLE IF EXISTS `ord_user_order`;
+CREATE TABLE `ord_user_order` (
+  `user_id` BIGINT NOT NULL DEFAULT 0 COMMENT '会员ID',
   `order_id` BIGINT NOT NULL DEFAULT 0 COMMENT '订单ID',
   PRIMARY KEY (`user_id`, `order_id`)
 ) ENGINE = InnoDB DEFAULT CHARACTER SET = utf8 COLLATE=utf8_general_ci COMMENT = '会员：会员ID与订单ID对应关系';
 
 -- ====================================================================
--- mydemo-dn3: order_header, order_detail
--- ====================================================================
-DROP DATABASE IF EXISTS `mydemo-dn3`;
-CREATE SCHEMA `mydemo-dn3` DEFAULT CHARACTER SET utf8 ;
-USE `mydemo-dn3`;
-DROP TABLE IF EXISTS `order_header`;
-CREATE TABLE `order_header` (
-  `order_id` BIGINT NOT NULL DEFAULT 0 COMMENT '订单ID',
-  `user_id` INT NOT NULL DEFAULT 0 COMMENT '会员ID',
-  `status` VARCHAR(10) NOT NULL DEFAULT '' COMMENT '订单状态',
-  `total` DECIMAL(10,2) NOT NULL DEFAULT 0 COMMENT '总金额',
-  `discount` DECIMAL(10,2) NOT NULL DEFAULT 0 COMMENT '优惠金额',
-  `payment` DECIMAL(10,2) NOT NULL DEFAULT 0 COMMENT '付款金额',
-  `pay_time` DATETIME NOT NULL DEFAULT '1900-01-01' COMMENT '付款时间',
-  `pay_status` VARCHAR(10) NOT NULL DEFAULT '' COMMENT '付款状态',
-  `contact` VARCHAR(30) NOT NULL DEFAULT '' COMMENT '收货人',
-  `phone` VARCHAR(20) NOT NULL DEFAULT '' COMMENT '电话',
-  `address` VARCHAR(70) NOT NULL DEFAULT '' COMMENT '详细地址',
-  `created_at` DATETIME NOT NULL DEFAULT current_timestamp COMMENT '下单时间',
-  `last_update` TIMESTAMP NOT NULL DEFAULT current_timestamp on update current_timestamp COMMENT '最后更新时间',
-  PRIMARY KEY (`order_id`)
-) ENGINE = InnoDB DEFAULT CHARACTER SET = utf8 COLLATE=utf8_general_ci COMMENT = '订单主表';
-DROP TABLE IF EXISTS `order_detail`;
-CREATE TABLE `order_detail` (
-  `detail_id` INT NOT NULL DEFAULT 0 COMMENT '订单明细ID',
-  `order_id` BIGINT NOT NULL DEFAULT 0 COMMENT '订单ID',
-  `item_id` INT NOT NULL DEFAULT 0 COMMENT '产品ID',
-  `title` VARCHAR(100) NOT NULL DEFAULT '' COMMENT '产品标题',
-  `quantity` INT NOT NULL DEFAULT 0 COMMENT '数量',
-  `price` DECIMAL(10,2) NOT NULL DEFAULT 0 COMMENT '价格',
-  `subtotal` DECIMAL(10,2) NOT NULL DEFAULT 0 COMMENT '小计金额',
-  `discount` DECIMAL(10,2) NOT NULL DEFAULT 0 COMMENT '优惠金额',
-  `created_at` DATETIME NOT NULL DEFAULT current_timestamp COMMENT '创建时间',
-  `last_update` DATETIME NOT NULL DEFAULT current_timestamp on update current_timestamp COMMENT '最后更新时间',
-  PRIMARY KEY (`detail_id`),
-  INDEX `ix_order_id` (`order_id` ASC)
-) ENGINE = InnoDB DEFAULT CHARACTER SET = utf8 COLLATE=utf8_general_ci COMMENT = '订单明细';
-
--- ====================================================================
--- mydemo-dn4: order_header, order_detail
+-- mydemo-dn4: ord_order, ord_order_item, ord_user_order
 -- ====================================================================
 DROP DATABASE IF EXISTS `mydemo-dn4`;
 CREATE SCHEMA `mydemo-dn4` DEFAULT CHARACTER SET utf8 ;
 USE `mydemo-dn4`;
-DROP TABLE IF EXISTS `order_header`;
-CREATE TABLE `order_header` (
+DROP TABLE IF EXISTS `ord_order`;
+CREATE TABLE `ord_order` (
   `order_id` BIGINT NOT NULL DEFAULT 0 COMMENT '订单ID',
-  `user_id` INT NOT NULL DEFAULT 0 COMMENT '会员ID',
+  `user_id` BIGINT NOT NULL DEFAULT 0 COMMENT '会员ID',
   `status` VARCHAR(10) NOT NULL DEFAULT '' COMMENT '订单状态',
   `total` DECIMAL(10,2) NOT NULL DEFAULT 0 COMMENT '总金额',
   `discount` DECIMAL(10,2) NOT NULL DEFAULT 0 COMMENT '优惠金额',
@@ -289,9 +295,9 @@ CREATE TABLE `order_header` (
   `last_update` TIMESTAMP NOT NULL DEFAULT current_timestamp on update current_timestamp COMMENT '最后更新时间',
   PRIMARY KEY (`order_id`)
 ) ENGINE = InnoDB DEFAULT CHARACTER SET = utf8 COLLATE=utf8_general_ci COMMENT = '订单主表';
-DROP TABLE IF EXISTS `order_detail`;
-CREATE TABLE `order_detail` (
-  `detail_id` INT NOT NULL DEFAULT 0 COMMENT '订单明细ID',
+DROP TABLE IF EXISTS `ord_order_item`;
+CREATE TABLE `ord_order_item` (
+  `order_item_id` BIGINT NOT NULL DEFAULT 0 COMMENT '订单明细ID',
   `order_id` BIGINT NOT NULL DEFAULT 0 COMMENT '订单ID',
   `item_id` INT NOT NULL DEFAULT 0 COMMENT '产品ID',
   `title` VARCHAR(100) NOT NULL DEFAULT '' COMMENT '产品标题',
@@ -301,6 +307,12 @@ CREATE TABLE `order_detail` (
   `discount` DECIMAL(10,2) NOT NULL DEFAULT 0 COMMENT '优惠金额',
   `created_at` DATETIME NOT NULL DEFAULT current_timestamp COMMENT '创建时间',
   `last_update` DATETIME NOT NULL DEFAULT current_timestamp on update current_timestamp COMMENT '最后更新时间',
-  PRIMARY KEY (`detail_id`),
+  PRIMARY KEY (`order_item_id`),
   INDEX `ix_order_id` (`order_id` ASC)
 ) ENGINE = InnoDB DEFAULT CHARACTER SET = utf8 COLLATE=utf8_general_ci COMMENT = '订单明细';
+DROP TABLE IF EXISTS `ord_user_order`;
+CREATE TABLE `ord_user_order` (
+  `user_id` BIGINT NOT NULL DEFAULT 0 COMMENT '会员ID',
+  `order_id` BIGINT NOT NULL DEFAULT 0 COMMENT '订单ID',
+  PRIMARY KEY (`user_id`, `order_id`)
+) ENGINE = InnoDB DEFAULT CHARACTER SET = utf8 COLLATE=utf8_general_ci COMMENT = '会员：会员ID与订单ID对应关系';

@@ -18,7 +18,7 @@ import my.demo.dao.order.OrderDao;
 import my.demo.domain.Cart;
 import my.demo.domain.Item;
 import my.demo.domain.Order;
-import my.demo.domain.OrderDetail;
+import my.demo.domain.OrderItem;
 import my.demo.domain.Stock;
 import my.demo.service.ItemService;
 import my.demo.service.OrderService;
@@ -68,7 +68,7 @@ public class OrderServiceImpl implements OrderService {
 		}
 		Tracer.traceTag("userId", cart.getUserId());
 		
-		List<OrderDetail> lockList = new ArrayList<>(cart.getItems().size());
+		List<OrderItem> lockList = new ArrayList<>(cart.getItems().size());
 		try {
 			//2. 创建订单、订单明细对象
 			Order order = new Order();
@@ -82,53 +82,53 @@ public class OrderServiceImpl implements OrderService {
 			order.setAddress(cart.getAddress());
 			order.setCreatedAt(new Date());		
 			cart.getItems().forEach( cartItem -> {
-				OrderDetail detail = new OrderDetail();
-				detail.setOrderId(order.getOrderId());
-				detail.setItemId(cartItem.getItemId());
+				OrderItem orderItem = new OrderItem();
+				orderItem.setOrderId(order.getOrderId());
+				orderItem.setItemId(cartItem.getItemId());
 				//获取产品名称
 				Item item = itemService.getItem(cartItem.getItemId()).getResult();
-				detail.setTitle(item.getTitle());
-				detail.setQuantity(cartItem.getQuantity());
-				detail.setPrice(cartItem.getPrice());
-				detail.setSubtotal(cartItem.getSubtotal());
-				detail.setDiscount(cartItem.getDiscount());
-				detail.setCreatedAt(new Date());
+				orderItem.setTitle(item.getTitle());
+				orderItem.setQuantity(cartItem.getQuantity());
+				orderItem.setPrice(cartItem.getPrice());
+				orderItem.setSubtotal(cartItem.getSubtotal());
+				orderItem.setDiscount(cartItem.getDiscount());
+				orderItem.setCreatedAt(new Date());
 				order.setTotal( order.getTotal() + cartItem.getSubtotal() );
 				order.setDiscount( order.getDiscount() + cartItem.getDiscount() );
-				order.addDetail(detail);
+				order.addOrderItem(orderItem);
 			} );
 			Tracer.traceTag("orderId", order.getOrderId());
 			
 			//3. 锁定库存（简单起见，不处理锁定失败后释放问题）
-			for(OrderDetail detail : order.getDetails()) {
+			for(OrderItem orderItem : order.getOrderItems()) {
 				//检查可用库存
-				ServiceResult<Stock> stockResult = stockService.getStock(detail.getItemId());
+				ServiceResult<Stock> stockResult = stockService.getStock(orderItem.getItemId());
 				if(!stockResult.isSuccess()) {
-					log.info("[create] Get stock error, item-id: " + detail.getItemId() + ", msg: " + stockResult.getMessage());
+					log.info("[create] Get stock error, item-id: " + orderItem.getItemId() + ", msg: " + stockResult.getMessage());
 					break;
 				}
-				if(stockResult.getResult().getAvailableQty()<detail.getQuantity()) {
-					log.info("[create] Stock not enough, item-id: " + detail.getItemId() 
+				if(stockResult.getResult().getAvailableQty()<orderItem.getQuantity()) {
+					log.info("[create] Stock not enough, item-id: " + orderItem.getItemId() 
 						+ ", available-qty: " + stockResult.getResult().getAvailableQty()
-						+ ", request-qty: " + detail.getQuantity());
+						+ ", request-qty: " + orderItem.getQuantity());
 					break;
 				}
 				//锁定库存
-				ServiceResult<Boolean> lockResult = stockService.lock(detail.getItemId(), detail.getQuantity());
-				if(lockResult.isSuccess() && lockResult.getResult()) lockList.add(detail);
+				ServiceResult<Boolean> lockResult = stockService.lock(orderItem.getItemId(), orderItem.getQuantity());
+				if(lockResult.isSuccess() && lockResult.getResult()) lockList.add(orderItem);
 				else {
-					log.info("[create] Lock stock error, item-id: " + detail.getItemId() + ", msg: " + lockResult.getMessage());
+					log.info("[create] Lock stock error, item-id: " + orderItem.getItemId() + ", msg: " + lockResult.getMessage());
 					break;
 				}
 			}
-			if(lockList.size() != order.getDetails().size()) {
+			if(lockList.size() != order.getOrderItems().size()) {
 				return result.fail("Failed to lock stock");
 			}
 			
 			//4. 插入订单、订单明细数据（简单起见，不处理创建失败后库存释放问题）
-			order.getDetails().forEach(detail -> {
-				orderDao.createOrderDetail(detail);
-				log.info("[create] Detail created, item-id: " + detail.getItemId());
+			order.getOrderItems().forEach(orderItem -> {
+				orderDao.createOrderItem(orderItem);
+				log.info("[create] OrderItem created, item-id: " + orderItem.getItemId());
 			});
 			orderDao.createOrder(order);
 			log.debug("[create] Order created, order-id: " + order.getOrderId());
@@ -139,7 +139,7 @@ public class OrderServiceImpl implements OrderService {
 			
 			//6. 从数据库读取订单返回
 			Order persisted = orderDao.getOrder(order.getOrderId());
-			persisted.setDetails(orderDao.getOrderDetails(persisted.getOrderId()));
+			persisted.setOrderItems(orderDao.getOrderItems(persisted.getOrderId()));
 						
 			return result.success(persisted);
 		} catch(Exception ex) {
@@ -149,7 +149,7 @@ public class OrderServiceImpl implements OrderService {
 			if(!lockList.isEmpty()) this.unlockStock(lockList);
 		}
 	}
-	private void unlockStock(List<OrderDetail> list) {
+	private void unlockStock(List<OrderItem> list) {
 		//未实现
 	}
 	private long newId() {
@@ -158,7 +158,7 @@ public class OrderServiceImpl implements OrderService {
 	}
 	
 	@Override
-	public ServiceResult<List<Order>> findUserOrders(int userId, int offset, int count) {
+	public ServiceResult<List<Order>> findUserOrders(long userId, int offset, int count) {
 		try {
 			Tracer.traceTag("userId", userId);
 			Tracer.traceTag("offset", offset);
@@ -182,17 +182,17 @@ public class OrderServiceImpl implements OrderService {
 	}
 
 	@Override
-	public ServiceResult<List<OrderDetail>> getOrderDetails(long orderId) {
+	public ServiceResult<List<OrderItem>> getOrderItems(long orderId) {
 		Tracer.traceTag("orderId", orderId);
 		try {
-			List<OrderDetail> details = orderDao.getOrderDetails(orderId);
+			List<OrderItem> orderItems = orderDao.getOrderItems(orderId);
 			if(log.isDebugEnabled()) {
-				log.debug("[get-detail] order-id: " + orderId + ", details: " + details.size());
+				log.debug("[get-item] order-id: " + orderId + ", order-items: " + orderItems.size());
 			}
-			return new ServiceResult<List<OrderDetail>>(details);
+			return new ServiceResult<List<OrderItem>>(orderItems);
 		} catch(Exception ex) {
-			log.error("[get-detail] System error: " + ex.getMessage(), ex);
-			return new ServiceResult<List<OrderDetail>>().fail("System error: " + ex.getMessage());
+			log.error("[get-item] System error: " + ex.getMessage(), ex);
+			return new ServiceResult<List<OrderItem>>().fail("System error: " + ex.getMessage());
 		}
 	}
 } 

@@ -1,18 +1,20 @@
 <?xml version="1.0"?>
 <!DOCTYPE mycat:schema SYSTEM "schema.dtd">
 <mycat:schema xmlns:mycat="http://io.mycat/">
-	<schema name="my-demo" checkSQLschema="false" sqlMaxLimit="100">
+	<schema name="db-order" checkSQLschema="false" sqlMaxLimit="100">
 		<!--
 			name: 如果多个table的配置完全一样，name可以配置为多个table名，使用逗号分隔（使用场景？全局表可以）
 			primaryKey: 可以不指定主键
 			autoIncrement: true表示使用数据库自增长主键；如果使用全局sequence handler，将autoIncrement设为false（默认false）
 		-->
-		<table name="order_header" primaryKey="order_id" dataNode="dn$1-4" rule="order-rule">
-			<childTable name="order_detail" primaryKey="detail_id" joinKey="order_id" parentKey="order_id" />
+		<table name="ord_order" primaryKey="order_id" dataNode="dn$1-4" rule="order-rule">
+			<childTable name="ord_order_item" primaryKey="order_item_id" joinKey="order_id" parentKey="order_id" />
 		</table>
-		<table name="user" primaryKey="user_id" dataNode="dn1, dn2" rule="user-rule" />
-		<table name="user_account" primaryKey="account" dataNode="dn1, dn2" rule="user-account-rule" />
-		<table name="user_order" dataNode="dn1, dn2" rule="user-rule" />
+		<table name="ord_user_order" dataNode="dn$1-4" rule="user-order-rule" />
+	</schema>
+	<schema name="db-user" checkSQLschema="false" sqlMaxLimit="100">
+		<table name="usr_user" primaryKey="user_id" dataNode="dn1, dn2" rule="user-rule" />
+		<table name="usr_user_account" primaryKey="account" dataNode="dn1, dn2" rule="user-account-rule" />
 	</schema>
 	<dataNode name="dn0" dataHost="db1" database="mydemo-dn0" />
 	<dataNode name="dn1" dataHost="db1" database="mydemo-dn1" />

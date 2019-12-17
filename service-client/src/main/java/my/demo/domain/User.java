@@ -10,7 +10,7 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 @JsonAutoDetect(getterVisibility=Visibility.NONE, setterVisibility=Visibility.NONE, fieldVisibility=Visibility.ANY)
 public class User implements Serializable {
 	private static final long serialVersionUID = -5284692770015499256L;
-	private int userId;
+	private long userId;
 	private String nickname;
 	private String mobile;
 	private String email;
@@ -22,10 +22,10 @@ public class User implements Serializable {
 	/**
 	 * 用户ID
 	 */
-	public int getUserId() {
+	public long getUserId() {
 		return userId;
 	}
-	public void setUserId(int userId) {
+	public void setUserId(long userId) {
 		this.userId = userId;
 	}
 	/**

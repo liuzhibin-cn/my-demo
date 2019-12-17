@@ -147,8 +147,8 @@ public class ShopController {
 			return true;
 		}
 		userOrderResult.getResult().forEach(o -> {
-			log.debug("[show-order] order:" + o.getOrderId() + ", details:" + o.getDetails().size());
-			orderService.getOrderDetails(o.getOrderId()).getResult().forEach(detail -> {
+			log.debug("[show-order] order:" + o.getOrderId() + ", details:" + o.getOrderItems().size());
+			orderService.getOrderItems(o.getOrderId()).getResult().forEach(detail -> {
 				log.debug("[show-order]     item:" + detail.getItemId() + ", qty:" + detail.getQuantity() 
 					+ ", amt:" + String.format("%.2f", detail.getSubtotal()) + ", discount:" + String.format("%.2f", detail.getDiscount()));
 			});

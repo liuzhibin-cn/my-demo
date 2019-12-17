@@ -6,13 +6,13 @@ import java.util.List;
 
 public class Cart implements Serializable {
 	private static final long serialVersionUID = -1531734075915913410L;
-	private int userId;
+	private long userId;
 	private String contact;
 	private String phone;
 	private String address;
 	private List<CartItem> items;
 	
-	public Cart(int userId) {
+	public Cart(long userId) {
 		this.userId = userId;
 		this.items = new ArrayList<>();
 	}
@@ -33,10 +33,10 @@ public class Cart implements Serializable {
 		return this;
 	}
 
-	public int getUserId() {
+	public long getUserId() {
 		return userId;
 	}
-	public void setUserId(int userId) {
+	public void setUserId(long userId) {
 		this.userId = userId;
 	}
 	public String getContact() {
