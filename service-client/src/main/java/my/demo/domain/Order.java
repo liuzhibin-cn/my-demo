@@ -28,17 +28,17 @@ public class Order implements Serializable {
 	private Date createdAt = null;
 	@JsonFormat(pattern="yyyy-MM-dd HH:mm:ss.SSS", timezone="Asia/Shanghai")
 	private Date lastUpdate;
-	private List<OrderItem> details;
+	private List<OrderItem> items;
 	
-	public void addOrderItem(OrderItem detail) {
-		if(this.details==null) this.details = new ArrayList<>();
-		this.details.add(detail);
+	public void addOrderItem(OrderItem orderItem) {
+		if(this.items==null) this.items = new ArrayList<>();
+		this.items.add(orderItem);
 	}
 	public List<OrderItem> getOrderItems() {
-		return this.details==null ? new ArrayList<>(0) : this.details;
+		return this.items==null ? new ArrayList<>(0) : this.items;
 	}
-	public void setOrderItems(List<OrderItem> details) {
-		this.details = details;
+	public void setOrderItems(List<OrderItem> orderItems) {
+		this.items = orderItems;
 	}
 	
 	public long getOrderId() {

@@ -32,7 +32,7 @@ public interface OrderDao {
 	Order getOrder(long orderId);
 	
 	@Select("select * from ord_order_item where order_id = #{orderId}")
-	@ResultMap("orderDetail")
+	@ResultMap("orderItem")
 	List<OrderItem> getOrderItems(long orderId);
 	
 	// ================================================================

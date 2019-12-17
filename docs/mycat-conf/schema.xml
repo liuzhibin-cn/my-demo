@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <!DOCTYPE mycat:schema SYSTEM "schema.dtd">
 <mycat:schema xmlns:mycat="http://io.mycat/">
-	<schema name="db-order" checkSQLschema="false" sqlMaxLimit="100">
+	<schema name="db_order" checkSQLschema="false" sqlMaxLimit="100">
 		<!--
 			name: 如果多个table的配置完全一样，name可以配置为多个table名，使用逗号分隔（使用场景？全局表可以）
 			primaryKey: 可以不指定主键
@@ -12,7 +12,7 @@
 		</table>
 		<table name="ord_user_order" dataNode="dn$1-4" rule="user-order-rule" />
 	</schema>
-	<schema name="db-user" checkSQLschema="false" sqlMaxLimit="100">
+	<schema name="db_user" checkSQLschema="false" sqlMaxLimit="100">
 		<table name="usr_user" primaryKey="user_id" dataNode="dn1, dn2" rule="user-rule" />
 		<table name="usr_user_account" primaryKey="account" dataNode="dn1, dn2" rule="user-account-rule" />
 	</schema>
@@ -47,7 +47,7 @@
 		</writeHost>
 	</dataHost>
 	<dataHost name="db2" maxCon="5" minCon="5" balance="0" writeType="0" dbType="mysql" dbDriver="native" switchType="-1" slaveThreshold="100" maxRetryCount="0">
-                <heartbeat>select user()</heartbeat>
-                <writeHost host="127.0.0.1" url="127.0.0.1:3306" user="root" password="1234" />
-        </dataHost>
+		<heartbeat>select user()</heartbeat>
+		<writeHost host="127.0.0.1" url="127.0.0.1:3306" user="root" password="1234" />
+	</dataHost>
 </mycat:schema>

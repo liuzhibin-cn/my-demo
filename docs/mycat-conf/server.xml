@@ -36,6 +36,6 @@
 <!-- 设置为不需要密码登录时(nonePasswordLogin=1)，mycat使用这里的用户、密码登录 -->
 <user name="mydemo" defaultAccount="true">
 	<property name="password">mydemo</property>
-	<property name="schemas">db-user,db-order</property>
+	<property name="schemas">db_user,db_order</property>
 </user>
 </mycat:server>

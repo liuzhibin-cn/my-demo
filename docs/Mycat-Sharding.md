@@ -14,41 +14,43 @@
 拆分情况：<br />
 <img src="https://richie-leo.github.io/ydres/img/10/120/mycat-sharding-tables.png" style="width:99%;max-width:450px;" />
 
-- `user`: 会员表
-  - _分片字段_：`user_id`
-  - _分片规则_：`(user_id % 32) => { 0-15: dn1, 16-31: dn2 }`
-  - _数据节点_：`dn1`, `dn2`
-- `user_account`: 会员登录账号表 
-  - _分片字段_：`account_hash`（`account.hashCode()`的绝对值）
-  - _分片规则_：`(account_hash % 2) => { 0: dn1, 1: dn2 }`
-  - _数据节点_：`dn1`, `dn2` 
-- `order_header`: 订单主表。`order_id`创建订单时由订单服务在应用代码中生成，`detail_id`使用Mycat全局序列生成；
-  - _分片字段_：`order_id`
-  - _分片规则_：`(order_id % 32) => { 0-7: dn1, 8-15: dn2, 16-23: dn3, 24-31: dn4 }`
-  - _数据节点_：`dn1`, `dn2`, `dn3`, `dn4`
-- `order_detail`：订单明细表，与`order_header`以父子关系表进行分片（Mycat ER分片），分片情况同`order_header`
-- `user_order`: `user_id`与`order_id`的自定义索引表，用于查询会员订单列表
-  - _分片字段_：`user_id` 
-  - _分片规则_：`(user_id % 32) => { 0-15: dn1, 16-31: dn2 }` 
-  - _数据节点_：`dn1`, `dn2`
+- 逻辑库`db_user`：
+  - `usr_user`: 会员表
+    - _分片字段_：`user_id`
+    - _分片规则_：`(user_id % 32) => { 0-15: dn1, 16-31: dn2 }`
+    - _数据节点_：`dn1`, `dn2`
+  - `usr_user_account`: 会员登录账号表 
+    - _分片字段_：`account_hash`（`account.hashCode()`的绝对值）
+    - _分片规则_：`(account_hash % 2) => { 0: dn1, 1: dn2 }`
+    - _数据节点_：`dn1`, `dn2` 
+- 逻辑库`db_order`：
+  - `ord_order`: 订单主表。`order_id`创建订单时由订单服务在应用代码中生成；
+    - _分片字段_：`order_id`
+    - _分片规则_：`(order_id % 32) => { 0-7: dn1, 8-15: dn2, 16-23: dn3, 24-31: dn4 }`
+    - _数据节点_：`dn1`, `dn2`, `dn3`, `dn4`
+  - `ord_order_item`：订单明细表，与`ord_order`以父子关系表进行分片（Mycat ER分片），分片情况同`ord_order`
+  - `ord_user_order`: `user_id`与`order_id`的自定义索引表，用于查询会员订单列表
+    - _分片字段_：`user_id` 
+    - _分片规则_：`(user_id % 32) => { 0-7: dn1, 8-15: dn2, 16-23: dn3, 24-31: dn4 }` 
+    - _数据节点_：`dn1`, `dn2`, `dn3`, `dn4`
 
 ##### 关键流程说明
 - 会员注册
-  1. 使用`account`, `account_hash`, ... 插入`user_account`表，`account_hash`确定分片。利用Mycat全局序列生成`user_id`；
-  2. 使用`user_id`, ...插入`user`表，`user_id`确定分片；
+  1. 使用`account`, `account_hash`, ... 插入`usr_user_account`表，`account_hash`确定分片。利用Mycat全局序列生成`user_id`；
+  2. 使用`user_id`, ...插入`usr_user`表，`user_id`确定分片；
 - 会员登录
-  1. 使用`account`, `account_hash`查`user_account`表，`account_hash`确定分片。得到`user_id`；
-  2. 使用`user_id`查`user`表，得到会员数据，`user_id`确定分片；
+  1. 使用`account`, `account_hash`查`usr_user_account`表，`account_hash`确定分片。得到`user_id`；
+  2. 使用`user_id`查`usr_user`表，得到会员数据，`user_id`确定分片；
   3. 将`user_id`保存到session，后续用户请求通过session获得`user_id`，用来读取会员数据；
 - 下单
   1. 由订单服务在应用中生成`order_id`，`user_id`登录时已保存到session，整个会话期间可获得；
-  2. 插入`order_header`表，`order_id`确定分片；
-  3. 插入`order_detail`表，`order_id`确定分片；
-  4. 插入`user_order`表，`user_id`确定分片；<br />
-     > 自定义索引表的数据维护，可以采用MQ方式异步写，由订单服务 -> MQ -> `user_order`；也可以用Canal订阅方式，由MySQL -> Canal -> MQ -> `user_order`。
+  2. 插入`ord_order`表，`order_id`确定分片；
+  3. 插入`ord_order_item`表，`order_id`确定分片；
+  4. 插入`ord_user_order`表，`user_id`确定分片；<br />
+     > 自定义索引表的数据维护，可以采用MQ方式异步写，由订单服务 -> MQ -> `ord_user_order`；也可以用Canal订阅方式，由MySQL -> Canal -> MQ -> `ord_user_order`。
 - 查询会员订单列表
-  1. 查`user_order`表，`user_id`确定分片，得到`order_id`列表；
-  2. 用`order_id`列表查`order_header`，获得订单数据，`order_id`确定分片；
+  1. 查`ord_user_order`表，`user_id`确定分片，得到`order_id`列表；
+  2. 用`order_id`列表查`ord_order`，获得订单数据，`order_id`确定分片；
 
 #### 部署Mycat Server
 [Mycat](http://www.mycat.io/)版本[1.6.7.3](http://dl.mycat.io/1.6.7.3/)，Mycat配置文件参考[docs/mycat-conf](https://github.com/liuzhibin-cn/my-demo/tree/master/docs/mycat-conf)
@@ -61,19 +63,21 @@
   <!-- 为Mycat逻辑库定义用户、密码 -->
   <user name="mydemo" defaultAccount="true">
     <property name="password">mydemo</property>
-    <property name="schemas">my-demo</property>
+    <property name="schemas">db_user,db_order</property>
   </user>
   ```
 - [schema.xml](https://github.com/liuzhibin-cn/my-demo/blob/master/docs/mycat-conf/schema.xml)：配置dataHost、dataNode、逻辑schema：
   ```xml
   <mycat:schema xmlns:mycat="http://io.mycat/">
-	  <schema name="my-demo" checkSQLschema="false" sqlMaxLimit="100">
-		<table name="order_header" primaryKey="order_id" dataNode="dn$1-4" rule="order-rule">
-			<childTable name="order_detail" primaryKey="detail_id" joinKey="order_id" parentKey="order_id" />
+	  <schema name="db_order" checkSQLschema="false" sqlMaxLimit="100">
+		<table name="ord_order" primaryKey="order_id" dataNode="dn$1-4" rule="order-rule">
+			<childTable name="ord_order_item" primaryKey="order_item_id" joinKey="order_id" parentKey="order_id" />
 		</table>
-		<table name="user" primaryKey="user_id" dataNode="dn1, dn2" rule="user-rule" />
-		<table name="user_account" primaryKey="account" dataNode="dn1, dn2" rule="user-account-rule" />
-		<table name="user_order" dataNode="dn1, dn2" rule="user-rule" />
+		<table name="ord_user_order" dataNode="dn$1-4" rule="user-order-rule" />
+	  </schema>
+	  <schema name="db_user" checkSQLschema="false" sqlMaxLimit="100">
+		<table name="usr_user" primaryKey="user_id" dataNode="dn1, dn2" rule="user-rule" />
+		<table name="usr_user_account" primaryKey="account" dataNode="dn1, dn2" rule="user-account-rule" />
 	  </schema>
 	  <dataNode name="dn0" dataHost="db1" database="mydemo-dn0" />
 	  <dataNode name="dn1" dataHost="db1" database="mydemo-dn1" />
@@ -99,6 +103,18 @@
 			<algorithm>order-func</algorithm>
 		</rule>
 	  </tableRule>
+	  <tableRule name="user-order-rule">
+		<rule>
+			<columns>user_id</columns>
+			<algorithm>user-order-func</algorithm>
+		</rule>
+	  </tableRule>
+	  <tableRule name="user-rule">
+		<rule>
+			<columns>user_id</columns>
+			<algorithm>user-func</algorithm>
+		</rule>
+	  </tableRule>
 	  <tableRule name="user-account-rule">
 		<rule>
 			<columns>account_hash</columns>
@@ -106,12 +122,20 @@
 		</rule>
 	  </tableRule>
 	  <function name="order-func" class="io.mycat.route.function.PartitionByPattern">
-		<property name="patternValue">32</property> <!-- 对32求模 -->
-		<!-- 求模结果按照文件配置的规则映射到分片 -->
-		<property name="mapFile">order-partition.txt</property> 
+		  <property name="patternValue">32</property> <!-- 对32求模 -->
+		  <!-- 求模结果按照文件配置的规则映射到分片 -->
+		  <property name="mapFile">order-partition.txt</property> 
+	  </function>
+	  <function name="user-order-func" class="io.mycat.route.function.PartitionByPattern">
+		  <property name="patternValue">32</property>
+		  <property name="mapFile">order-partition.txt</property> <!-- 与订单公用分片规则 -->
+	  </function>
+	  <function name="user-func" class="io.mycat.route.function.PartitionByPattern">
+		  <property name="patternValue">32</property> <!-- 对32求模 -->
+		  <property name="mapFile">user-partition.txt</property> <!-- 求模结果按照文件配置的规则映射到分片 -->
 	  </function>
 	  <function name="user-account-func" class="io.mycat.route.function.PartitionByMod">
-		<property name="count">2</property> <!-- 数据分为2片 -->
+		  <property name="count">2</property> <!-- 数据分为2片 -->
 	  </function>
   </mycat:rule>
   ```
@@ -174,7 +198,7 @@ Mycat启动之后，`8066`为数据端口，`9066`为管理端口，不能操作
 - Mycat 2.0在开发中，参考[Mycat2](https://github.com/MyCATApache/Mycat2) <br />
   从新特性来看，结果集缓存、自动集群管理、支持负载均衡等主要特性没有必要由Mycat管理，使用第三方即可。
 - 简单性能对比测试 <br />
-  Mac book pro，单机测试，50并发线程，对相同的业务逻辑功能（使用手机号+密码注册会员）进行测试，TPS指被测试业务逻辑的每秒执行次数（包含`select from user_account` + `insert into user` + `insert into user_account`）：
+  Mac book pro，单机测试，50并发线程，对相同的业务逻辑功能（使用手机号+密码注册会员）进行测试，TPS指被测试业务逻辑的每秒执行次数（包含`select from usr_user_account` + `insert into usr_user` + `insert into usr_user_account`）：
   - Mycat + MyBatis，分片: TPS在2200上下波动；
   - MyBatis，不分片: TPS在2600上下波动；
   - 纯JDBC，不分片: TPS在3400上下波动；<br />
