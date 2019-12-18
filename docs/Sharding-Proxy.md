@@ -50,7 +50,7 @@
 2. 下载[mysql-connector-java-5.1.47.tar.gz](https://cdn.mysql.com//Downloads/Connector-J/mysql-connector-java-5.1.47.tar.gz)，将`mysql-connector-java-5.1.47.jar`拷贝到`lib`目录。
    > 使用`MySQL Connector/J 8.0`以上版本会报错，改回官方使用的版本。
 3. 配置分库分表规则。实现[MyCat数据库水平拆分](https://github.com/liuzhibin-cn/my-demo/blob/master/docs/Mycat-Sharding.md)同等效果的规则配置如下（详细配置文件参考[docs/sharding-proxy-conf](https://github.com/liuzhibin-cn/my-demo/tree/master/docs/sharding-proxy-conf)）：
-   - `server.yaml`
+   - [server.yaml](https://github.com/liuzhibin-cn/my-demo/blob/master/docs/sharding-proxy-conf/server.yaml)
      ```yaml
      authentication:
        users: # 定义逻辑库用户密码
@@ -64,7 +64,7 @@
        proxy.transaction.type: LOCAL
        sql.show: true
      ```
-   - `config-user.yaml`
+   - [config-user.yaml](https://github.com/liuzhibin-cn/my-demo/blob/master/docs/sharding-proxy-conf/config-user.yaml)
      ```yaml
      schemaName: db_user # 逻辑库名称
      dataSources: #数据源配置，可配置多个
@@ -98,7 +98,7 @@
                worker.id: 1
                max.tolerate.time.difference.milliseconds: 600000 # 允许的系统时钟回拨10分钟
      ```
-   - `config-order.yaml`
+   - [config-order.yaml](https://github.com/liuzhibin-cn/my-demo/blob/master/docs/sharding-proxy-conf/config-order.yaml)
      ```yaml
      schemaName: db_order
      dataSources: #数据源配置，可配置多个
@@ -150,11 +150,11 @@
 
 #### 使用Sharding-Proxy
 对[my-demo](https://github.com/liuzhibin-cn/my-demo)项目稍作修改即可使用`Sharding-Proxy`：
-1. `parent pom.xml`中MySQL端口号修改为`3307`（`Sharding-Proxy`端口号）；
-2. `parent pom.xml`中将`mysql-connector-java`版本改为5.1.47；
+1. [pom.xml](https://github.com/liuzhibin-cn/my-demo/blob/master/pom.xml)中MySQL端口号修改为`3307`（`Sharding-Proxy`端口号）；
+2. [pom.xml](https://github.com/liuzhibin-cn/my-demo/blob/master/pom.xml)中将`mysql-connector-java`版本改为5.1.47；
    > `Sharding-Proxy`使用的`MySQL Connect/J`版本较低，使用`8.0`以上版本否则会报错。
 3. `user-service`和`order-service`修改（主要是降低`mysql-connector-java`版本的修改，及`Mycat`和`Sharding-Proxy`全局序列使用方式不同）：
-   - `application.yml`
+   - [order-service application.yml](https://github.com/liuzhibin-cn/my-demo/blob/master/order-service/src/main/resources/application.yml)、[user-service application.yml](https://github.com/liuzhibin-cn/my-demo/blob/master/user-service/src/main/resources/application.yml)
      ```yml
      datasource:
        name: ${application.name}-ds
@@ -166,7 +166,7 @@
        driver-class-name: com.mysql.jdbc.Driver  
        url: jdbc:mysql://${mysql.host}:${mysql.port}/db_user?connectTimeout=3000&socketTimeout=10000&characterEncoding=utf8&useTimezone=true&serverTimezone=Asia/Shanghai&zeroDateTimeBehavior=convertToNull&useSSL=false${jdbc.interceptors}
      ```
-   - `UserDao`
+   - [UserDao](https://github.com/liuzhibin-cn/my-demo/blob/master/user-service/src/main/java/my/demo/dao/user/UserDao.java)
      ```java
  	 //SQL for Mycat
 	 //@Insert("insert into usr_user_account(account, password, user_id, account_hash) values (#{account}, #{password}, next value for MYCATSEQ_USER, #{accountHash})")
@@ -177,7 +177,7 @@
     	, statement="select user_id from usr_user_account where account=#{account} and account_hash=#{accountHash}")
 	 int createUserAccount(UserAccount userAccount);
      ```
-   - `OrderDao`
+   - [OrderDao.java](https://github.com/liuzhibin-cn/my-demo/blob/master/order-service/src/main/java/my/demo/dao/order/OrderDao.java)
      ```java
 	 //SQL for Mycat
 	 //@Insert("insert into ord_order_item (order_item_id, order_id, item_id, title, quantity, price, subtotal, discount, created_at) " 

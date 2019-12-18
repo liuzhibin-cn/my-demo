@@ -3,7 +3,7 @@
 ![](docs/images/architecture.png) <br />
 
 ##### 数据库水平拆分
-本项目演示了使用Mycat和Sharding-Proxy进行分库分表，参考[MyCat数据库水平拆分](https://github.com/liuzhibin-cn/my-demo/blob/master/docs/Mycat-Sharding.md)、[Sharding-Proxy分库分表](https://github.com/liuzhibin-cn/my-demo/blob/master/docs/Sharding-Proxy.md)。
+本项目演示了使用[Mycat](https://github.com/MyCATApache/Mycat-Server)和[Sharding-Proxy](https://shardingsphere.apache.org/)进行分库分表，参考[MyCat数据库水平拆分](https://github.com/liuzhibin-cn/my-demo/blob/master/docs/Mycat-Sharding.md)、[Sharding-Proxy分库分表](https://github.com/liuzhibin-cn/my-demo/blob/master/docs/Sharding-Proxy.md)。
 
 项目默认采用Mycat，如果不想部署Mycat，直接使用一个本地MySQL库运行演示项目，需要做如下修改：
 1. [pom.xml](https://github.com/liuzhibin-cn/my-demo/blob/master/pom.xml)中修改`maven profile: dev`属性，改为本地MySQL端口号；
@@ -11,6 +11,10 @@
 3. [UserDao.java](https://github.com/liuzhibin-cn/my-demo/blob/master/user-service/src/main/java/my/demo/dao/user/UserDao.java)修改`createUserAccount`的SQL语句，由Mycat全局序列改为MySQL自增字段；
 
 由Mycat改为Sharding-Proxy，参考[Sharding-Proxy分库分表](https://github.com/liuzhibin-cn/my-demo/blob/master/docs/Sharding-Proxy.md)。
+
+整体上Mycat、Sharding-Proxy、[DRDS](https://help.aliyun.com/document_detail/118010.html)：
+- 通过实现MySQL协议成为独立的中间件，将分库分表、读写分离等数据存储层的弹性伸缩方案与应用隔离，并且实现语言无关；
+- 都支持分库、读写分离，一定程度上支持跨分片的查询、分页、排序、聚合等功能，对应用透明；
 
 ##### APM全链路监控
 演示项目支持[PinPoint](https://github.com/naver/pinpoint)、[SkyWalking](http://skywalking.apache.org/)、[ZipKin](https://zipkin.io/)三种APM工具进行全链路跟踪和性能分析，通过不同maven profile打包即可，具体参考项目代码和：[PinPoint部署和使用](https://github.com/liuzhibin-cn/my-demo/blob/master/docs/APM-PinPoint.md)、[SkyWalking部署和使用](https://github.com/liuzhibin-cn/my-demo/blob/master/docs/APM-SkyWalking.md)、[ZipKin部署和使用](https://github.com/liuzhibin-cn/my-demo/blob/master/docs/APM-ZipKin.md)。
