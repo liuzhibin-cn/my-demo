@@ -71,7 +71,7 @@ public class ShopController {
 		return r.getResult();
 	}
 	@RequestMapping(value="/order/create", method=RequestMethod.POST)
-	public @ResponseBody Object createOrder(@CookieValue(name="user-id", required=false, defaultValue="0") int userId) {
+	public @ResponseBody Object createOrder(@CookieValue(name="user-id", required=false, defaultValue="0") long userId) {
 		if(userId<=0) return "Please login first";
 		ServiceResult<User> userResult = userService.getUser(userId);
 		if(!userResult.isSuccess()) return "Get user " + userId + " error: " + userResult.getMessage();
@@ -134,24 +134,13 @@ public class ShopController {
 		Cart cart = this.addCart(user, items);
 		
 		//下单
-		this.createOrder(cart);
+		Order order = this.createOrder(cart);
 		
-		//查用户订单列表
-		ServiceResult<List<Order>> userOrderResult = orderService.findUserOrders(user.getUserId(), 0, 10);
-		if(!userOrderResult.isSuccess()) {
-			log.info("[find-order] failed, msg:" + userOrderResult.getMessage());
-			return true;
-		}
-		if(userOrderResult.getResult().isEmpty()) {
-			log.info("[find-order] no orders found");
-			return true;
-		}
-		userOrderResult.getResult().forEach(o -> {
-			log.debug("[show-order] order:" + o.getOrderId() + ", details:" + o.getOrderItems().size());
-			orderService.getOrderItems(o.getOrderId()).getResult().forEach(detail -> {
-				log.debug("[show-order]     item:" + detail.getItemId() + ", qty:" + detail.getQuantity() 
-					+ ", amt:" + String.format("%.2f", detail.getSubtotal()) + ", discount:" + String.format("%.2f", detail.getDiscount()));
-			});
+		//打印
+		log.debug("[show-order] order:" + order.getOrderId() + ", items:" + order.getOrderItems().size());
+		order.getOrderItems().forEach(orderItem -> {
+			log.debug("[show-order]     item:" + orderItem.getItemId() + ", qty:" + orderItem.getQuantity() 
+				+ ", amt:" + String.format("%.2f", orderItem.getSubtotal()) + ", discount:" + String.format("%.2f", orderItem.getDiscount()));
 		});
 		return true;
 	}

@@ -166,7 +166,10 @@
 	        <dependency>
 	            <groupId>mysql</groupId>
 	            <artifactId>mysql-connector-java</artifactId>
+	            <!-- for Mycat -->
 	            <version>8.0.18</version><!--$NO-MVN-MAN-VER$ -->
+	            <!-- for Sharding-Proxy -->
+	            <!-- version>5.1.47</version-->
 	        </dependency>
 	        <dependency>
 	            <groupId>org.apache.tomcat</groupId>

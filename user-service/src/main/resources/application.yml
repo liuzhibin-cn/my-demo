@@ -21,8 +21,12 @@ spring:
   datasource:  
     name: ${application.name}-ds
     type: org.apache.tomcat.jdbc.pool.DataSource 
-    driver-class-name: com.mysql.cj.jdbc.Driver  
+    # for Mycat
+    driver-class-name: com.mysql.cj.jdbc.Driver
     url: jdbc:mysql://${mysql.host}:${mysql.port}/db_user?connectTimeout=3000&socketTimeout=10000&characterEncoding=utf8&useTimezone=true&serverTimezone=Asia/Shanghai&zeroDateTimeBehavior=CONVERT_TO_NULL&useSSL=false${jdbc.interceptors}
+    # for Sharding-Proxy
+    #driver-class-name: com.mysql.jdbc.Driver  
+    #url: jdbc:mysql://${mysql.host}:${mysql.port}/db_user?connectTimeout=3000&socketTimeout=10000&characterEncoding=utf8&useTimezone=true&serverTimezone=Asia/Shanghai&zeroDateTimeBehavior=convertToNull&useSSL=false${jdbc.interceptors}
     username: ${mysql.user}  
     password: ${mysql.password}
     tomcat:
