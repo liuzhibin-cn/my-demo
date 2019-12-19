@@ -12,7 +12,8 @@
 - 分片相关，参考[核心概念-SQL](https://shardingsphere.apache.org/document/current/cn/features/sharding/concept/sql/)、[核心概念-分片](https://shardingsphere.apache.org/document/current/cn/features/sharding/concept/sharding/)：
   - 分库：将数据分片存入不同的数据库schema；
   - 分表：将数据分片存入同一个数据库schema下不同的表中，例如`t_order_0`、``t_order_1`；
-    > 这是Sharding-Proxy不同于Mycat和DRDS的地方。在解决逻辑分片与物理存储对应关系方面，DRDS和Mycat都采用在同一个MySQL实例下创建多个schema，每个schema作为dataNode对应一个逻辑分片。数据量或访问压力增加时，增加MySQL实例（服务器），迁移数据重新平衡。这种方案不涉及分片规则调整，以schema为单位的数据迁移方案很多。整体看，分表带来的好处有限，却增加了中间件的复杂度。
+    > 这与行业常说的分库分表有区别，通常所说的分库指按微服务、业务方式垂直拆分，分表指对某些表进行水平拆分。<br />
+    > Sharding-Proxy的分表是个特有概念。在解决逻辑分片与物理存储对应关系方面，DRDS和Mycat都采用在同一个MySQL实例下创建多个schema，每个schema作为dataNode对应一个逻辑分片。数据量或访问压力增加时，增加MySQL实例（服务器），迁移数据重新平衡。这种方案不涉及分片规则调整，以schema为单位的数据迁移方案很多。整体看，Sharding-Proxy的分表带来的作用有限，不是一个必要功能。
   - 数据源：指分片规则中的dataSources配置，与数据库schema对应；
   - 数据节点：数据分片的最小单元，数据源和表组成，例如：`ds_0.t_order_0`, `ds_0.t_order_1`；
   - 绑定表：父子关系表，分片字段和规则一样，关联数据落在同一个分片上；
@@ -40,7 +41,7 @@
 - 分布式事务：参考[分布式事务](https://shardingsphere.apache.org/document/current/cn/features/transaction/)，支持XA事务、Saga柔性事务、[Seata柔性事务](http://seata.io/zh-cn/index.html)（阿里2019开源的分布式事务框架）；
 
 #### 演示方案说明
-使用[my-demo](https://github.com/liuzhibin-cn/my-demo)项目作为演示，演示环境和详细方案参考[MyCat数据库水平拆分](https://github.com/liuzhibin-cn/my-demo/blob/master/docs/Mycat-Sharding.md)。
+使用[my-demo](https://github.com/liuzhibin-cn/my-demo)项目作为演示，演示环境和详细方案参考[MyCat分库分表概览](https://github.com/liuzhibin-cn/my-demo/blob/master/docs/Sharding-Mycat-Overview-Quickstart.md)。
 
 #### 部署Sharding-Proxy
 使用[Sharding-Proxy 4.0.0-RC3](https://www.apache.org/dyn/closer.cgi?path=incubator/shardingsphere/4.0.0-RC3/apache-shardingsphere-incubating-4.0.0-RC3-sharding-proxy-bin.tar.gz)：
@@ -49,8 +50,8 @@
    > 注意：Windows环境用WinRAR解压会将文件名较长的截断，导致启动时无法加载相关jar，报找不到Java Main Class错误。需要使用tar解压。
 2. 下载[mysql-connector-java-5.1.47.tar.gz](https://cdn.mysql.com//Downloads/Connector-J/mysql-connector-java-5.1.47.tar.gz)，将`mysql-connector-java-5.1.47.jar`拷贝到`lib`目录。
    > 使用`MySQL Connector/J 8.0`以上版本会报错，改回官方使用的版本。
-3. 配置分库分表规则。实现[MyCat数据库水平拆分](https://github.com/liuzhibin-cn/my-demo/blob/master/docs/Mycat-Sharding.md)同等效果的规则配置如下（详细配置文件参考[docs/sharding-proxy-conf](https://github.com/liuzhibin-cn/my-demo/tree/master/docs/sharding-proxy-conf)）：
-   - [server.yaml](https://github.com/liuzhibin-cn/my-demo/blob/master/docs/sharding-proxy-conf/server.yaml)
+3. 配置分库分表规则。实现[MyCat分库分表概览](https://github.com/liuzhibin-cn/my-demo/blob/master/docs/Sharding-Mycat-Overview-Quickstart.md)同等效果的规则配置如下（详细配置文件参考[docs/sharding-proxy-conf](https://github.com/liuzhibin-cn/my-demo/tree/master/docs/sharding-proxy-conf)）：
+   - `server.yaml`
      ```yaml
      authentication:
        users: # 定义逻辑库用户密码
@@ -64,7 +65,7 @@
        proxy.transaction.type: LOCAL
        sql.show: true
      ```
-   - [config-user.yaml](https://github.com/liuzhibin-cn/my-demo/blob/master/docs/sharding-proxy-conf/config-user.yaml)
+   - `config-user.yaml`
      ```yaml
      schemaName: db_user # 逻辑库名称
      dataSources: #数据源配置，可配置多个
@@ -98,7 +99,7 @@
                worker.id: 1
                max.tolerate.time.difference.milliseconds: 600000 # 允许的系统时钟回拨10分钟
      ```
-   - [config-order.yaml](https://github.com/liuzhibin-cn/my-demo/blob/master/docs/sharding-proxy-conf/config-order.yaml)
+   - `config-order.yaml`
      ```yaml
      schemaName: db_order
      dataSources: #数据源配置，可配置多个
@@ -150,11 +151,11 @@
 
 #### 使用Sharding-Proxy
 对[my-demo](https://github.com/liuzhibin-cn/my-demo)项目稍作修改即可使用`Sharding-Proxy`：
-1. [pom.xml](https://github.com/liuzhibin-cn/my-demo/blob/master/pom.xml)中MySQL端口号修改为`3307`（`Sharding-Proxy`端口号）；
-2. [pom.xml](https://github.com/liuzhibin-cn/my-demo/blob/master/pom.xml)中将`mysql-connector-java`版本改为5.1.47；
+1. `parent pom.xml`中MySQL端口号修改为`3307`（`Sharding-Proxy`端口号）；
+2. `parent pom.xml`中将`mysql-connector-java`版本改为5.1.47；
    > `Sharding-Proxy`使用的`MySQL Connect/J`版本较低，使用`8.0`以上版本否则会报错。
 3. `user-service`和`order-service`修改（主要是降低`mysql-connector-java`版本的修改，及`Mycat`和`Sharding-Proxy`全局序列使用方式不同）：
-   - [order-service application.yml](https://github.com/liuzhibin-cn/my-demo/blob/master/order-service/src/main/resources/application.yml)、[user-service application.yml](https://github.com/liuzhibin-cn/my-demo/blob/master/user-service/src/main/resources/application.yml)
+   - `application.yml`
      ```yml
      datasource:
        name: ${application.name}-ds
@@ -166,7 +167,7 @@
        driver-class-name: com.mysql.jdbc.Driver  
        url: jdbc:mysql://${mysql.host}:${mysql.port}/db_user?connectTimeout=3000&socketTimeout=10000&characterEncoding=utf8&useTimezone=true&serverTimezone=Asia/Shanghai&zeroDateTimeBehavior=convertToNull&useSSL=false${jdbc.interceptors}
      ```
-   - [UserDao](https://github.com/liuzhibin-cn/my-demo/blob/master/user-service/src/main/java/my/demo/dao/user/UserDao.java)
+   - `UserDao`
      ```java
  	 //SQL for Mycat
 	 //@Insert("insert into usr_user_account(account, password, user_id, account_hash) values (#{account}, #{password}, next value for MYCATSEQ_USER, #{accountHash})")
@@ -177,7 +178,7 @@
     	, statement="select user_id from usr_user_account where account=#{account} and account_hash=#{accountHash}")
 	 int createUserAccount(UserAccount userAccount);
      ```
-   - [OrderDao.java](https://github.com/liuzhibin-cn/my-demo/blob/master/order-service/src/main/java/my/demo/dao/order/OrderDao.java)
+   - `OrderDao`
      ```java
 	 //SQL for Mycat
 	 //@Insert("insert into ord_order_item (order_item_id, order_id, item_id, title, quantity, price, subtotal, discount, created_at) " 

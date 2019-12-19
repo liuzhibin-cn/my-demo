@@ -3,16 +3,16 @@
 ![](docs/images/architecture.png) <br />
 
 ##### 数据库水平拆分
-本项目演示了使用[Mycat](https://github.com/MyCATApache/Mycat-Server)和[Sharding-Proxy](https://shardingsphere.apache.org/)进行分库分表，参考[MyCat数据库水平拆分](https://github.com/liuzhibin-cn/my-demo/blob/master/docs/Mycat-Sharding.md)、[Sharding-Proxy分库分表](https://github.com/liuzhibin-cn/my-demo/blob/master/docs/Sharding-Proxy.md)。
+本项目演示了使用[Mycat](https://github.com/MyCATApache/Mycat-Server)和[Sharding-Proxy](https://shardingsphere.apache.org/)进行分库分表，参考[MyCat分库分表概览](https://github.com/liuzhibin-cn/my-demo/blob/master/docs/Sharding-Mycat-Overview-Quickstart.md)、[Sharding-Proxy分库分表概览](https://github.com/liuzhibin-cn/my-demo/blob/master/docs/Sharding-Sharding-Proxy-Overview-Quickstart.md)，这2个分库分表开源方案与[DRDS](https://help.aliyun.com/document_detail/118010.html)对比，参考[DRDS产品架构概览](https://github.com/liuzhibin-cn/my-demo/blob/master/docs/Sharding-DRDS-Overview.md)。
 
 项目默认采用Mycat，如果不想部署Mycat，直接使用一个本地MySQL库运行演示项目，需要做如下修改：
 1. [pom.xml](https://github.com/liuzhibin-cn/my-demo/blob/master/pom.xml)中修改`maven profile: dev`属性，改为本地MySQL端口号；
 2. [OrderDao.java](https://github.com/liuzhibin-cn/my-demo/blob/master/order-service/src/main/java/my/demo/dao/order/OrderDao.java)修改`createOrderItem`的SQL语句，由Mycat全局序列改为MySQL自增字段；
 3. [UserDao.java](https://github.com/liuzhibin-cn/my-demo/blob/master/user-service/src/main/java/my/demo/dao/user/UserDao.java)修改`createUserAccount`的SQL语句，由Mycat全局序列改为MySQL自增字段；
 
-由Mycat改为Sharding-Proxy，参考[Sharding-Proxy分库分表](https://github.com/liuzhibin-cn/my-demo/blob/master/docs/Sharding-Proxy.md)。
+由Mycat改为Sharding-Proxy，参考[Sharding-Proxy分库分表概览](https://github.com/liuzhibin-cn/my-demo/blob/master/docs/Sharding-Sharding-Proxy-Overview-Quickstart.md)。
 
-整体上Mycat、Sharding-Proxy、[DRDS](https://help.aliyun.com/document_detail/118010.html)：
+整体上Mycat、Sharding-Proxy、DRDS：
 - 通过实现MySQL协议成为独立的中间件，将分库分表、读写分离等数据存储层的弹性伸缩方案与应用隔离，并且实现语言无关；
 - 都支持分库、读写分离，一定程度上支持跨分片的查询、分页、排序、聚合等功能，对应用透明；
 
@@ -32,7 +32,7 @@
 -------------------------------------------------------------------
 #### 运行演示项目
 1. JDK8+，部署好Redis（用于Dubbo注册中心）、MySQL、Mycat；<br />
-   创建数据库、表，部署配置Mycat参考[MyCat Sharding](https://github.com/liuzhibin-cn/my-demo/blob/master/docs/Mycat-Sharding.md)。
+   创建数据库、表，部署配置Mycat参考[MyCat分库分表概览](https://github.com/liuzhibin-cn/my-demo/blob/master/docs/Sharding-Mycat-Overview-Quickstart.md)。
    > 如果不想部署Mycat，可以在直接使用一个本地MySQL库代替，将项目中的JDBC连接指向这个MySQL库即可。
 2. 修改项目配置：<br />
    方便起见配置信息全放在[parent pom](https://github.com/liuzhibin-cn/my-demo/blob/master/pom.xml)的`dev` profile中，修改这里即可。

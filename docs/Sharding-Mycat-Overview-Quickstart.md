@@ -52,6 +52,9 @@
   1. 查`ord_user_order`表，`user_id`确定分片，得到`order_id`列表；
   2. 用`order_id`列表查`ord_order`，获得订单数据，`order_id`确定分片；
 
+##### 物理部署
+`dn0~4`可以分别部署在不同机器的MySQL实例上，演示项目方便起见只使用了一个MySQL实例，多实例部署只需修改配置文件中`dataNode`与`dataHost`映射关系即可。
+
 #### 部署Mycat Server
 [Mycat](http://www.mycat.io/)版本[1.6.7.3](http://dl.mycat.io/1.6.7.3/)，Mycat配置文件参考[docs/mycat-conf](https://github.com/liuzhibin-cn/my-demo/tree/master/docs/mycat-conf)
 

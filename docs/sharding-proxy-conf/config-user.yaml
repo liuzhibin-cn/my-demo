@@ -30,9 +30,9 @@ shardingRule:
         inline: 
           shardingColumn: account_hash
           algorithmExpression: ds_${account_hash % 2}
-      keyGenerator:
-        type: SNOWFLAKE
-        column: user_id
+      keyGenerator: # 插入usr_user_account时自动生成user_id值
+        type: SNOWFLAKE # 生成算法
+        column: user_id # 字段
         props: 
           worker.id: 1
           max.tolerate.time.difference.milliseconds: 600000 # 允许的系统时钟回拨10分钟
