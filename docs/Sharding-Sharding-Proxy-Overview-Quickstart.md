@@ -1,11 +1,11 @@
 #### 项目情况
-[ShardingSphere](https://shardingsphere.apache.org/)前身是当当网开源的Sharding-JDBC，2018年京东选择将它作为云化数据库中间件，加大投入力度，合作成立社区，更名为ShardingSphere，加入Apache孵化项目。目前包括：
+[ShardingSphere](https://shardingsphere.apache.org/)前身是当当网开源的Sharding-JDBC，2018年京东选择将它作为云化数据库中间件（对标阿里云的DRDS），加大投入力度，合作成立社区，更名为ShardingSphere，加入Apache孵化项目。目前包括：
 - [Sharding-JDBC](https://shardingsphere.apache.org/document/current/cn/manual/sharding-jdbc/)：客户端分库分表组件；<br />
-  <img src="https://richie-leo.github.io/ydres/img/10/120/1015/sharding-jdbc-brief.jpg" style="width:99%;max-width:300px;" />
+  <img src="https://richie-leo.github.io/ydres/img/10/120/1015/sharding-jdbc-brief.jpg" style="max-width:300px;" />
 - [Sharding-Proxy](https://shardingsphere.apache.org/document/current/cn/manual/sharding-proxy/)：实现MySQL协议，面向客户端语言无关，本身采用`Sharding-JDBC`与后端数据库通讯，总体架构方案上与Mycat、DRDS类似；<br />
-  <img src="https://richie-leo.github.io/ydres/img/10/120/1015/sharding-proxy-brief_v2.jpg" style="width:99%;max-width:560px;" />
+  <img src="https://richie-leo.github.io/ydres/img/10/120/1015/sharding-proxy-brief_v2.jpg" style="max-width:560px;" />
 - [Sharding-Sidecar](https://shardingsphere.apache.org/document/current/cn/manual/sharding-sidecar/)：开发中尚未发布，类似Service Mesh的Sidecar，实现Database Mesh能力；<br />
-  <img src="https://richie-leo.github.io/ydres/img/10/120/1015/sharding-sidecar-brief_v2.jpg" style="width:99%;max-width:560px;" />
+  <img src="https://richie-leo.github.io/ydres/img/10/120/1015/sharding-sidecar-brief_v2.jpg" style="max-width:560px;" />
 - [Sharding-UI](https://shardingsphere.apache.org/document/current/cn/manual/sharding-ui/)：提供界面管理功能，通过Zookeeper动态管理`Sharding-Proxy`的配置；
 
 #### Sharding-Proxy相关概念
@@ -19,7 +19,7 @@
   - 绑定表：父子关系表，分片字段和规则一样，关联数据落在同一个分片上；
   - 广播表：每个数据源中都存在的表，表结构和数据完全一样；
 - 路由：参考[内核剖析-路由引擎](https://shardingsphere.apache.org/document/current/cn/features/sharding/principle/route/)<br />
-  <img src="https://richie-leo.github.io/ydres/img/10/120/1015/route_architecture.jpg" style="width:99%;max-width:400px;" />
+  <img src="https://richie-leo.github.io/ydres/img/10/120/1015/route_architecture.jpg" style="max-width:400px;" />
   - 直接路由：客户端通过hint指定分片键值。分片规则必须为Hint方式，且不分表；
   - 笛卡尔路由：指关联查询无法确定分片（非绑定表），必须按2个表数据节点的笛卡尔积组合执行；
   - 广播路由：不能确定分片的单表查询：
@@ -36,7 +36,7 @@
   - 连接限制模式：对同一个数据节点下的分表，只使用一个连接，串行在各分表上执行；对不同数据节点仍采用多线程执行。这种模式在结果集合并时，不能采用基于游标的流式合并，只能将每个分片数据全部读取到内存，再进行合并；
   - 内存限制模式：不限制连接数，同一个数据节点中有多个分表，使用多线程、多链接并行执行。处理结果集合并时，可以采用基于游标的流式合并，节约内存开销；
 - 归并引擎：参考[内核剖析-归并引擎](https://shardingsphere.apache.org/document/current/cn/features/sharding/principle/merge/)，处理结果集合并。<br />
-  <img src="https://richie-leo.github.io/ydres/img/10/120/1015/merge_architecture_cn.jpg" style="width:99%;max-width:450px;" />
+  <img src="https://richie-leo.github.io/ydres/img/10/120/1015/merge_architecture_cn.jpg" style="max-width:450px;" />
   - 流式合并：前提是各分片返回的数据是有序的，使用游标，每次next取数即可完成合并操作，避免将全部数据加载到内存后再合并。
 - 分布式事务：参考[分布式事务](https://shardingsphere.apache.org/document/current/cn/features/transaction/)，支持XA事务、Saga柔性事务、[Seata柔性事务](http://seata.io/zh-cn/index.html)（阿里2019开源的分布式事务框架）；
 

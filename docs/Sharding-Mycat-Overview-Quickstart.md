@@ -1,18 +1,49 @@
+#### 项目情况
+MyCat基于阿里早期开源的分库分表组件Cobar改进而来，以下参考[Cobar的架构与实践](https://blog.csdn.net/jiao_fuyou/article/details/15809999)：
+- [Amoeba](https://sourceforge.net/projects/amoeba)：阿里B2B开发的分库分表中间件，应该开始于2006年左右，2008年开源，2010年已经广泛运用于阿里B2B业务，目前项目停滞；<br />
+  <img src="https://richie-leo.github.io/ydres/img/10/120/amoeba-architecture.jpg" style="max-width:430px;" />
+- [Cobar](https://github.com/alibaba)：Amoeba进化版，后端由JDBC Driver改为原生MySQL通信协议，2011年10月发布，2012年开源在code.alibabatech上，后来迁移到github，目前项目停滞；<br />
+  <img src="https://richie-leo.github.io/ydres/img/10/120/cobar-architecture.jpg" style="max-width:530px;" />
+- Mycat：由leaderus等人基于Cobar改进发展而来，后端由BIO改为NIO，改掉一些重要bug，功能增强（增加对Order By、Group By、limit等聚合功能的支持）。当年社区比较活跃，目前活跃度一般；
+- 2012年阿里云将TDDL和Cobar结合开发DRDS；
+
 #### Mycat架构
-<img src="https://richie-leo.github.io/ydres/img/10/120/mycat-architecture.jpg" style="width:99%;max-width:550px;" />
+<img src="https://richie-leo.github.io/ydres/img/10/120/1016/mycat-architecture.jpg" style="max-width:460px;" />
 
 - Mycat实现了MySQL协议，MySQL命令行客户端、任何开发语言都能像直接连MySQL一样连接Mycat，对客户端透明，支持所有开发语言；
 - Mycat解析SQL语句，根据SQL参数和分片规则进行路由，跨分片查询对结果集进行汇总、重排序、分页、聚合等，将分库分表、读写分离等数据存储伸缩方案与应用隔离；
+
+#### Mycat分布式事务
+只支持MySQL XA分布式事务，但MySQL 5.7之前的版本XA事务有问题（例如PREPARE命令没有写入binlog，发生故障主从切换时造成数据不一致），只能在5.7之后的版本上使用。
+
+Mycat基于MySQL XA实现了TC、TM功能，主要处理方式如下：
+1. 客户端执行`set xa = on`命令开启XA事务：<br />
+   Mycat收到`set xa = on`命令后，在当前session中生成一个全局事务ID `xaTxId`，不做其它处理，参考[SetHandler](https://github.com/MyCATApache/Mycat-Server/blob/1.6/src/main/java/io/mycat/server/handler/SetHandler.java#L83)。<br />
+   这表示当前会话在Mycat-Server上开启了XA事务，但此时Mycat还不会在后端MySQL上开启XA事务。
+2. 客户端执行DML SQL语句：<br />
+   Mycat-Server开启XA后，在每个`dataNode`上执行第1个更新语句（如果`strictTxIsolation`设为true，则是执行第一个查询语句）时，向MySQL发送`XA START xaTxID`语句，在MySQL节点上开启XA事务，事务状态为`TX_STARTED_STATE`，参考[MySQLConnection.synAndDoExecute(...)](https://github.com/MyCATApache/Mycat-Server/blob/1.6/src/main/java/io/mycat/backend/mysql/nio/MySQLConnection.java#L428)；
+   > Mycat有一个特性，尽量延迟在MySQL中开启XA事务。客户端开启XA后，执行查询操作不会触发Mycat向MySQL开启XA，只有在第一次执行更新操作时才开启。这样做的目的是尽量重用后端连接，但无法满足`REPEADABLE READ`，可以通过[server.xml](https://github.com/liuzhibin-cn/my-demo/blob/master/docs/mycat-conf/server.xml#L33)中的`strictTxIsolation`关闭这个特性。<br />
+   > `strictTxIsolation`为`false`时：<br />
+     <img src="https://richie-leo.github.io/ydres/img/10/120/1016/strict-isolation-false.jpg" style="max-width:560px;" /> <br />
+   > `strictTxIsolation`为`true`时（这种情况Mycat按下面图示占用后端连接，并且禁用读写分离强制读主库等，客户端可以用`select ... for update`加锁，实现`REPEADABLE READ`隔离级别）：<br />
+     <img src="https://richie-leo.github.io/ydres/img/10/120/1016/strict-isolation-true.jpg" style="max-width:560px;" />
+3. 客户端执行事务提交：<br />
+   - 如果只操作了单个MySQL节点，则无需TC协调，按顺序执行`XA END xaTxId`、`XA PREPARE xaTxId`、`XA COMMIT xaTxId`，参考[NonBlockingSession.commit()](https://github.com/MyCATApache/Mycat-Server/blob/1.6/src/main/java/io/mycat/server/NonBlockingSession.java#L225)、[CommitNodeHandler](https://github.com/MyCATApache/Mycat-Server/blob/1.6/src/main/java/io/mycat/backend/mysql/nio/handler/CommitNodeHandler.java)。
+   - 如果操作了多个MySQL节点，则在[MultiNodeCoordinator](https://github.com/MyCATApache/Mycat-Server/blob/1.6/src/main/java/io/mycat/backend/mysql/nio/handler/MultiNodeCoordinator.java)中处理（入口方法`executeBatchNodeCmd`）。<br />
+     主要协调过程为：
+     1. 向所有MySQL节点发送`XA END xaTxId`、`XA PREPARE xaTxId`命令。
+     2. PREPARE全部成功，则向所有节点发送`XA COMMIT xaTxId`命令；如果有节点PREPARE失败，则回滚。
+     3. 所有节点COMMIT成功，给客户端返回提交成功；如果有节点COMMIT失败，则重试，包括收到失败消息后立即重试、Mycat启动时根据协调日志记录的事务状态进行重试等。
 
 #### 演示方案说明
 ##### 表结构及拆分方案
 使用[my-demo](https://github.com/liuzhibin-cn/my-demo)项目作为演示，运行项目查看演示效果。
 
 表结构：<br />
-<img src="https://richie-leo.github.io/ydres/img/10/120/mycat-table-schema.png" style="width:99%;max-width:550px;" />
+<img src="https://richie-leo.github.io/ydres/img/10/120/1016/mycat-table-schema.png" style="max-width:560px;" />
 
 拆分情况：<br />
-<img src="https://richie-leo.github.io/ydres/img/10/120/mycat-sharding-tables.png" style="width:99%;max-width:450px;" />
+<img src="https://richie-leo.github.io/ydres/img/10/120/1016/mycat-sharding-tables.png" style="max-width:400px;" />
 
 - 逻辑库`db_user`：
   - `usr_user`: 会员表
