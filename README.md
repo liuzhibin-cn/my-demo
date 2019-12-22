@@ -47,7 +47,7 @@
    java -jar order-service\target\order-service-0.0.1-SNAPSHOT.jar
    java -jar shop-web\target\shop-web-0.0.1-SNAPSHOT.jar
    ```
-6. 通过[http://localhost:8090](http://localhost:8090)访问，执行操作查看效果；
+6. 通过[http://localhost:8090/shop](http://localhost:8090/shop)访问，执行操作查看效果；
 
 -------------------------------------------------------------------
 #### Dubbo基础用法
