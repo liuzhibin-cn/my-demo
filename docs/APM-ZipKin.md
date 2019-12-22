@@ -5,7 +5,7 @@ APM框架系列：
 
 -------------------------
 #### ZipKin架构
-<img src="https://richie-leo.github.io/ydres/img/10/120/1013/zipkin-architecture.png" style="width:99%;max-width:550px;" />
+<img src="https://richie-leo.github.io/ydres/img/10/120/1013/zipkin-architecture.png" style="max-width:550px;" />
 
 相关概念：
 - 架构组件：
@@ -22,7 +22,7 @@ APM框架系列：
   - SpanId：标记一次RPC调用；
   - Annotations：ZipKin跟踪RPC性能的方法，记录4个时间点来反映RPC调用性能细节：Client Start、Server Start、Server Finish、Client Finish，参考功*界面功能 -> 链路跟踪详情*；
   - Propagation：在RPC调用过程中Inject封装、Extract解封跟踪数据，例如[b3-propagation](https://github.com/openzipkin/b3-propagation)：<br />
-    <img src="https://richie-leo.github.io/ydres/img/10/120/1013/propagation.png" style="width:99%;max-width:700px;" />
+    <img src="https://richie-leo.github.io/ydres/img/10/120/1013/propagation.png" style="max-width:700px;" />
 
 -------------------------
 #### 部署ZipKin Server
@@ -234,7 +234,7 @@ java -jar zipkin.jar
 ZipKin的界面功能最简单，只有依赖图、链路跟踪查询。
 
 依赖图：<br />
-<img src="https://richie-leo.github.io/ydres/img/10/120/1013/screen-dependencies.png" style="width:99%;max-width:570px;" />
+<img src="https://richie-leo.github.io/ydres/img/10/120/1013/screen-dependencies.png" style="max-width:570px;" />
 
 链路跟踪 - 列表：<br />
 <img src="https://richie-leo.github.io/ydres/img/10/120/1013/screen-trace-list.png" style="width:99%;max-width:850px;" />

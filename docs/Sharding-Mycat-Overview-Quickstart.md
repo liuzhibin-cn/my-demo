@@ -1,9 +1,9 @@
 #### 项目情况
 MyCat基于阿里早期开源的分库分表组件Cobar改进而来，以下参考[Cobar的架构与实践](https://blog.csdn.net/jiao_fuyou/article/details/15809999)：
 - [Amoeba](https://sourceforge.net/projects/amoeba)：阿里B2B开发的分库分表中间件，应该开始于2006年左右，2008年开源，2010年已经广泛运用于阿里B2B业务，目前项目停滞；<br />
-  <img src="https://richie-leo.github.io/ydres/img/10/120/amoeba-architecture.jpg" style="max-width:430px;" />
+  <img src="https://richie-leo.github.io/ydres/img/10/120/1016/amoeba-architecture.jpg" style="max-width:430px;" />
 - [Cobar](https://github.com/alibaba)：Amoeba进化版，后端由JDBC Driver改为原生MySQL通信协议，2011年10月发布，2012年开源在code.alibabatech上，后来迁移到github，目前项目停滞；<br />
-  <img src="https://richie-leo.github.io/ydres/img/10/120/cobar-architecture.jpg" style="max-width:530px;" />
+  <img src="https://richie-leo.github.io/ydres/img/10/120/1016/cobar-architecture.jpg" style="max-width:530px;" />
 - Mycat：由leaderus等人基于Cobar改进发展而来，后端由BIO改为NIO，改掉一些重要bug，功能增强（增加对Order By、Group By、limit等聚合功能的支持）。当年社区比较活跃，目前活跃度一般；
 - 2012年阿里云将TDDL和Cobar结合开发DRDS；
 
@@ -34,6 +34,12 @@ Mycat基于MySQL XA实现了TC、TM功能，主要处理方式如下：
      1. 向所有MySQL节点发送`XA END xaTxId`、`XA PREPARE xaTxId`命令。
      2. PREPARE全部成功，则向所有节点发送`XA COMMIT xaTxId`命令；如果有节点PREPARE失败，则回滚。
      3. 所有节点COMMIT成功，给客户端返回提交成功；如果有节点COMMIT失败，则重试，包括收到失败消息后立即重试、Mycat启动时根据协调日志记录的事务状态进行重试等。
+
+Mycat实现TC功能时，将XA事务状态保存在内存和本地文件中，其结构外层为XA事务ID，内层为参与者RM信息和事务状态，用于XA过程发生异常时，可以根据TC日志回滚或重试。
+
+Mycat事务管理方案和代码比较简单，不够严谨，例如：
+- 方案方面：TC日志存本地文件，Mycat多实例组建集群会有问题；
+- 代码方面：[MultiNodeCoordinator.okResponse(...) #L259](https://github.com/MyCATApache/Mycat-Server/blob/1.6/src/main/java/io/mycat/backend/mysql/nio/handler/MultiNodeCoordinator.java#L259)，收到节点`PREPARE`成功消息时，只更新内存TC日志，没有写文件，如果异常重启会造成TC日志丢失（这行代码注释掉，估计是写文件没有并发控制会造成问题）；
 
 #### 演示方案说明
 ##### 表结构及拆分方案

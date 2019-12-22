@@ -5,7 +5,7 @@ APM框架系列：
 
 ----------------------------------
 #### SkyWalking架构
-<img src="https://richie-leo.github.io/ydres/img/10/120/1011/architecture.jpeg" style="width:99%;max-width:800px;" />
+<img src="https://richie-leo.github.io/ydres/img/10/120/1011/architecture.jpeg" style="max-width:800px;" />
 
 相关概念：
 - 数据模型：参考[SkyWalking Cross Process Propagation Headers Protocol](https://github.com/apache/skywalking/blob/master/docs/en/protocols/Skywalking-Cross-Process-Propagation-Headers-Protocol-v2.md)、[Trace Data Protocol v2](https://github.com/apache/skywalking/blob/master/docs/en/protocols/Trace-Data-Protocol-v2.md)：

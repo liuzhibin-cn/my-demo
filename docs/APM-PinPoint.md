@@ -5,15 +5,15 @@ APM框架系列：
 
 -------------------------
 #### PinPoint架构
-<img src="https://richie-leo.github.io/ydres/img/10/120/1012/pinpoint-architecture.png" style="width:99%;max-width:600px;" />
+<img src="https://richie-leo.github.io/ydres/img/10/120/1012/pinpoint-architecture.png" style="max-width:600px;" />
 
 相关概念：
 - 数据模型：
   - `TransactionId`：标记一个调用链，全局唯一，对应于[Google Dapper](http://research.google.com/pubs/pub36356.html)的`TraceId`；
   - `SpanId`：标记一次RPC调用。每次RPC调用生成一个Span，Span通过父子关系记录RPC调用层次关系：<br />
-  <img src="https://richie-leo.github.io/ydres/img/10/120/1012/trace-behavior.png" style="width:99%;max-width:540px;" />
+  <img src="https://richie-leo.github.io/ydres/img/10/120/1012/trace-behavior.png" style="max-width:540px;" />
    - `SpanEvent`：Span中的关键事件（函数调用）使用SpanEvent表示：<br />
-  <img src="https://richie-leo.github.io/ydres/img/10/120/1012/trace-data-structure.jpg" style="width:99%;max-width:700px;" />
+  <img src="https://richie-leo.github.io/ydres/img/10/120/1012/trace-data-structure.jpg" style="max-width:700px;" />
 - 统计视图：
   - Application层面：在应用或服务层面提供性能汇总统计分析，通过agent的`applicationName`参数来标记；
   - Agent层面：对应用或服务的单个实例层面提供性能汇总统计分析，通过agent的`agentId`参数来标记；
@@ -137,7 +137,7 @@ Agent Inspector：在主界面选中某个服务或应用，点击`Inspector`按
 
 Application Inspector：Agent Inspector针对单个应用、服务实例，Application Inspector则针对某个服务的全部实例（applicationName相同，agentId不同），参考[How to use Application Inspector](https://naver.github.io/pinpoint/1.7.3/applicationinspector.html)。<br />
 <img src="https://richie-leo.github.io/ydres/img/10/120/1012/pinpoint-screen-application-inspector1.jpg" style="width:99%;max-width:1000px;" /><br />
-<img src="https://richie-leo.github.io/ydres/img/10/120/1012/pinpoint-screen-application-inspector2.jpg" style="width:99%;max-width:700px;" />
+<img src="https://richie-leo.github.io/ydres/img/10/120/1012/pinpoint-screen-application-inspector2.jpg" style="max-width:700px;" />
 
 全链路跟踪、性能分析：
 

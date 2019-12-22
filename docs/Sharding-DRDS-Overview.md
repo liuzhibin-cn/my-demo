@@ -4,11 +4,11 @@ DRDS将TDDL和Cobar整合起来，从2012年开始发展到现在，功能已经
 
 #### DRDS架构
 参考[DRDS产品架构](https://help.aliyun.com/document_detail/117771.html)、[DRDS扩展性原理](DRDS扩展性原理)：<br />
-<img src="https://richie-leo.github.io/ydres/img/10/120/1014/DRDS-architecture.jpg" style="width:99%;max-width:900px;" />
+<img src="https://richie-leo.github.io/ydres/img/10/120/1014/DRDS-architecture.jpg" style="max-width:900px;" />
 
 - 后端使用RDS实例（即MySQL、MariaDB等数据库），中间为DRDS实例。DRDS无状态，多实例负载均衡；
 - 面向应用端，DRDS实现了MySQL协议，对客户端应用透明，支持任何语言；<br />
-  <img src="https://richie-leo.github.io/ydres/img/10/120/1014/DRDS-concept-model.jpg" style="width:99%;max-width:550px;" />
+  <img src="https://richie-leo.github.io/ydres/img/10/120/1014/DRDS-concept-model.jpg" style="max-width:550px;" />
 - DRDS与RDS之间采用TDDL（客户端分库分表组件），避免了应用中直接使用TDDL的复杂性、语言限制等缺点；
 - DRDS内核架构：<br />
   <img src="https://richie-leo.github.io/ydres/img/10/120/1014/DRDS-kernal-architecture.jpg" style="width:99%;max-width:1000px;" />
@@ -43,22 +43,22 @@ DRDS将TDDL和Cobar整合起来，从2012年开始发展到现在，功能已经
 
 ##### 查询执行过程
 DRDS SQL执行过程：<br />
-<img src="https://richie-leo.github.io/ydres/img/10/120/1014/query-execution.png" style="width:99%;max-width:750px;" />
+<img src="https://richie-leo.github.io/ydres/img/10/120/1014/query-execution.png" style="max-width:750px;" />
 
 查询优化器：
 - RBO：子查询去关联化、算子下推等；
 - CBO：维护统计信息，基于统计信息的Cardinality Estimation，实现成本评估模型，选择成本较优的执行计划；
 
 执行计划缓存：<br />
-<img src="https://richie-leo.github.io/ydres/img/10/120/1014/query-plan-cache.png" style="width:99%;max-width:700px;" />
+<img src="https://richie-leo.github.io/ydres/img/10/120/1014/query-plan-cache.png" style="max-width:700px;" />
 
 ##### Volcano执行模型
 所有算子都定义了`open()`、`next()`等接口，算子根据执行计划组合成一棵算子树，上层算子通过调用下层算子的`next()`接口的取出结果，完成该算子的计算。最终顶层算子产生用户需要的结果并返回给客户端。<br />
-<img src="https://richie-leo.github.io/ydres/img/10/120/1014/volcano-model.png" style="width:99%;max-width:750px;" />
+<img src="https://richie-leo.github.io/ydres/img/10/120/1014/volcano-model.png" style="max-width:750px;" />
 
 ##### 算子下推
 查询优化最有效的措施是尽可能将操作下推给后端数据库，避免DRDS内的操作。一些简单、可以落在单库执行的SQL，可以整条语句下推给后端数据库；复杂查询则尽可能多的将子操作-算子下推，不能下推的部分由DRDS执行器处理：<br />
-<img src="https://richie-leo.github.io/ydres/img/10/120/1014/sql-engine-1.png" style="width:99%;max-width:600px;" />
+<img src="https://richie-leo.github.io/ydres/img/10/120/1014/sql-engine-1.png" style="max-width:600px;" />
 
 示例SQL：
 ```sql
@@ -79,7 +79,7 @@ HashAgg(group="l_orderkey", revenue="SUM(*)")
       LogicalView(tables="CUSTOMER_[0-7]", shardCount=8, sql="SELECT `c_custkey` FROM `CUSTOMER` AS `CUSTOMER` WHERE (`c_mktsegment` = ?)")
 ```
 
-<img src="https://richie-leo.github.io/ydres/img/10/120/1014/operation-pushdown.png" style="width:99%;max-width:660px;" />
+<img src="https://richie-leo.github.io/ydres/img/10/120/1014/operation-pushdown.png" style="max-width:660px;" />
 
 - `LogicalView`都是下推给后端数据库的操作；
 - `ORDERS`和`LINEITEM`为父子关系表，因此可以将这2个表的关联查询下推给各个分片；
@@ -88,7 +88,7 @@ HashAgg(group="l_orderkey", revenue="SUM(*)")
 
 #### 全局二级索引 GSI
 概念参考[DRDS全局二级索引](https://help.aliyun.com/document_detail/142733.html)。在[Mycat分库分表概览](https://github.com/liuzhibin-cn/my-demo/blob/master/docs/Sharding-Mycat-Overview-Quickstart.md)中也创建了自定义索引表，在应用代码中维护。DRDS支持全局二级索引GSI，自动维护：<br />
-<img src="https://richie-leo.github.io/ydres/img/10/120/1014/DRDS-GSI.png" style="width:99%;max-width:700px;" />
+<img src="https://richie-leo.github.io/ydres/img/10/120/1014/DRDS-GSI.png" style="max-width:700px;" />
 
 数据写入时通过XA多写维护GSI，并确保数据强一致性。回表：即数据库的RID lookup。
 
@@ -97,7 +97,7 @@ DRDS扩展了MySQL DDL语法来管理GSI，参考[DRDS全局二级索引使用�
 #### 弹性计算
 - DRDS无状态，方便弹性扩容。面向OLTP业务，除分片路由、读写分离路由等基础功能外，还需要处理跨分片查询，包括结果集合并（合并过程需要处理GROUP BY再聚合、ORDER BY重排序等）、分页处理（SQL改写、结果集合并分页）等OLTP的基础必要功能；
 - 面向OLAP、低频的复杂查询等，可能设计跨分片关联数据量过大，则通过架构图中的Fireworks（DAG，多机并行处理）部分进行分布式内存计算，支持弹性扩容；<br />
-  <img src="https://richie-leo.github.io/ydres/img/10/120/1014/DRDS-DAG.jpg" style="width:99%;max-width:600px;" />
+  <img src="https://richie-leo.github.io/ydres/img/10/120/1014/DRDS-DAG.jpg" style="max-width:600px;" />
 
 DRDS支持的平滑扩容实现方式：在同一个后端RDS实例上创建多个MySQL数据库（默认8个），RDS实例负载、存储空间过高时，申请新的RDS实例，将部分MySQL数据库迁移到新的RDS实例上，参考[DRDS 平滑扩容](https://help.aliyun.com/document_detail/52132.html)。
 
