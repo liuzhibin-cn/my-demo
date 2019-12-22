@@ -21,7 +21,8 @@ dubbo:
         name: ${application.name}
         qosEnable: false
     registry: # see com.alibaba.dubbo.config.RegistryConfig
-        id: redis
-        address: redis://${redis.host}:${redis.port}
+        address: ${dubbo.registry}
     consumer:
         filter: ${dubbo.filter}
+
+nacos.config.server-addr: 127.0.0.1:8848

@@ -25,13 +25,13 @@ public class ItemServiceImpl implements ItemService {
 		
 		item = new Item();
 		item.setId(20912);
-		item.setTitle("华为(HUAWEI)MateBook 13 锐龙版 第三方Linux版 全面屏轻薄性能笔记本电脑 (AMD R5 8+512GB 2K 集显)银");
+		item.setTitle("华为(HUAWEI)MateBook 13 锐龙版 全面屏轻薄性能笔记本电脑(AMD R5 8+512GB 2K 集显)银");
 		item.setPrice(4099);
 		items.put(item.getId(), item);
 		
 		item = new Item();
 		item.setId(98143);
-		item.setTitle("ECCO爱步2019秋冬新款休闲女鞋 运动户外女士鞋拼色低帮鞋平底 适动836283 辛芷蕾明星同款 褐色/森绿色/裸粉色/棕色");
+		item.setTitle("ECCO爱步2019秋冬新款休闲女鞋 运动户外女士鞋拼色低帮鞋平底 适动836283");
 		item.setPrice(1999);
 		items.put(item.getId(), item);
 		

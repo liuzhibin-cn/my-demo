@@ -12,8 +12,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.CookieValue;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
@@ -31,7 +32,7 @@ import my.demo.service.StockService;
 import my.demo.service.UserService;
 
 @Controller
-@RequestMapping(value="/")
+@RequestMapping(value="/shop")
 public class ShopController {
 	Logger log = LoggerFactory.getLogger(getClass());
 	
@@ -47,12 +48,12 @@ public class ShopController {
 	@Reference
 	OrderService orderService;
 	
-	@RequestMapping(value = { "/", "" }, method=RequestMethod.GET)
+	@GetMapping(value = { "" })
 	public String home() {
 		return "home";
 	}
 	
-	@RequestMapping(value="/register", method=RequestMethod.POST) //简单起见使用GET请求
+	@PostMapping(value="/register") //简单起见使用GET请求
 	public @ResponseBody Object register(HttpServletResponse response, @RequestParam(name="mobile") String mobile, @RequestParam(name="password") String password) {
 		ServiceResult<User> r = userService.registerByMobile(mobile, password);
 		if(!r.isSuccess()) return "Register failed: " + r.getMessage();
@@ -61,7 +62,7 @@ public class ShopController {
 		response.addCookie(cookie);
 		return r.getResult();
 	}
-	@RequestMapping(value="/login", method=RequestMethod.POST)
+	@PostMapping(value="/login")
 	public @ResponseBody Object login(HttpServletResponse response, @RequestParam(name="mobile") String mobile, @RequestParam(name="password") String password) {
 		ServiceResult<User> r = userService.login(mobile, password);
 		if(!r.isSuccess()) return "Login failed: " + r.getMessage();
@@ -70,7 +71,7 @@ public class ShopController {
 		response.addCookie(cookie);
 		return r.getResult();
 	}
-	@RequestMapping(value="/order/create", method=RequestMethod.POST)
+	@PostMapping(value="/order/create")
 	public @ResponseBody Object createOrder(@CookieValue(name="user-id", required=false, defaultValue="0") long userId) {
 		if(userId<=0) return "Please login first";
 		ServiceResult<User> userResult = userService.getUser(userId);
@@ -79,11 +80,11 @@ public class ShopController {
 		Cart cart = this.addCart(userResult.getResult(), itemService.findItem().getResult());
 		return this.createOrder(cart);
 	}
-	@RequestMapping(value="/full-test", method=RequestMethod.GET)
+	@GetMapping(value="/full-test")
 	public @ResponseBody TestResult fullTestCase(@RequestParam(name="count", required=false, defaultValue="1") int count) {
 		return this.runFullTestCase(count);
 	}
-	@RequestMapping(value="/item/list", method=RequestMethod.GET)
+	@GetMapping(value="/item/list")
 	public @ResponseBody Object findItems() {
 		return itemService.findItem().getResult();
 	}

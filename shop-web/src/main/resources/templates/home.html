@@ -45,7 +45,7 @@
     <script type="text/javascript">
     $(document).ready(function() {
         $('#btnRegister').click(function() {
-            $.post({ url: "/register", data: { mobile: $('#txtMobile').val() , password: $('#txtPassword').val() }, dataType: 'text', success: function(data){
+            $.post({ url: "/shop/register", data: { mobile: $('#txtMobile').val() , password: $('#txtPassword').val() }, dataType: 'text', success: function(data){
                 var json = toJSON(data);
                 if(json==null) {
                 	$('#labelLoginError').text(data==null ? '' : data);
@@ -59,7 +59,7 @@
             }});
         });
         $('#btnLogin').click(function() {
-            $.post({ url: "/login", data: { mobile: $('#txtMobile').val() , password: $('#txtPassword').val() }, dataType: 'text', success: function(data){
+            $.post({ url: "/shop/login", data: { mobile: $('#txtMobile').val() , password: $('#txtPassword').val() }, dataType: 'text', success: function(data){
                 var json = toJSON(data);
                 if(json==null) {
                     $('#labelLoginError').text(data==null ? '' : data);
@@ -73,17 +73,17 @@
             }});
         });
         $('#btnItemList').click(function() {
-            $.get({ url: "/item/list", dataType:'text', success: function(data){
+            $.get({ url: "/shop/item/list", dataType:'text', success: function(data){
             	$('#response').html(stringify(data));
             }});
         });
         $('#btnCreateOrder').click(function() {
-            $.post({ url: "/order/create", dataType:'text', success: function(data){
+            $.post({ url: "/shop/order/create", dataType:'text', success: function(data){
             	$('#response').html(stringify(data));
             }});
         });
         $('#btnFullTest').click(function() {
-            $.get({ url: "/full-test", dataType:'text', success: function(data){
+            $.get({ url: "/shop/full-test", dataType:'text', success: function(data){
             	$('#response').html(stringify(data));
             }});
         });

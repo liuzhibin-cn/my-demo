@@ -17,6 +17,7 @@
 		<springboot.version>2.2.2.RELEASE</springboot.version>
 		<dubbo.version>2.6.7</dubbo.version>
 		<dubbo-springboot-starter.version>0.2.1.RELEASE</dubbo-springboot-starter.version>
+		<dubbo-registry-nacos.version>2.6.7</dubbo-registry-nacos.version>
 		<zipkin-brave.version>5.9.1</zipkin-brave.version>
         <zipkin-reporter.version>2.12.0</zipkin-reporter.version>
         <skywalking.version>6.5.0</skywalking.version>
@@ -41,8 +42,7 @@
 		        <mysql.port>8066</mysql.port>
 		        <mysql.user>mydemo</mysql.user>
 		        <mysql.password>mydemo</mysql.password>
-				<redis.host>127.0.0.1</redis.host>
-				<redis.port>6379</redis.port>
+		        <dubbo.registry>nacos://127.0.0.1:8848</dubbo.registry>
 				<!-- zipkin.base-url：以端口号结束，不要添加反斜杠 -->
 				<zipkin.base-url>http://192.168.31.108:9411</zipkin.base-url>
             </properties>
@@ -114,9 +114,10 @@
 			<artifactId>fst</artifactId>
 			<version>2.57</version>
         </dependency>
-        <dependency> <!-- 使用Redis注册中心, Dubbo使用的jedis -->
-            <groupId>redis.clients</groupId>
-            <artifactId>jedis</artifactId>
+        <dependency> <!-- 使用nacos注册中心 -->
+            <groupId>com.alibaba</groupId>
+            <artifactId>dubbo-registry-nacos</artifactId>
+            <version>${dubbo-registry-nacos.version}</version>
         </dependency>
 		<dependency>
 		    <groupId>io.netty</groupId>

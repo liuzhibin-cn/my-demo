@@ -66,8 +66,7 @@ dubbo:
         queues: 0
         keepAlive: true
     registry: # see com.alibaba.dubbo.config.RegistryConfig
-        id: redis
-        address: redis://${redis.host}:${redis.port}
+        address: ${dubbo.registry}
     provider:
         filter: ${dubbo.filter}
 
