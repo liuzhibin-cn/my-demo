@@ -40,6 +40,8 @@
 				<includes>
 					<include>application.yml</include>
 					<include>application-zipkin.yml</include>
+					<include>registry.conf</include>
+					<include>file.conf</include>
 					<include>logback.xml</include>
 					<include>templates/**</include>
 					<include>static/**</include>

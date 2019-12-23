@@ -21,6 +21,7 @@
 		<zipkin-brave.version>5.9.1</zipkin-brave.version>
         <zipkin-reporter.version>2.12.0</zipkin-reporter.version>
         <skywalking.version>6.5.0</skywalking.version>
+        <seata.version>1.0.0</seata.version>
         
         <!-- 默认排除ZipKin和SkyWalking依赖项 -->
         <excludeGroupIds>org.apache.skywalking,io.zipkin,io.zipkin.zipkin2,io.zipkin.brave,io.zipkin.reporter2,com.squareup.okhttp3,com.squareup.okio</excludeGroupIds>
@@ -123,6 +124,12 @@
 		    <groupId>io.netty</groupId>
 		    <artifactId>netty-all</artifactId>
 		    <version>4.1.43.Final</version>
+		</dependency>
+		
+		<dependency>
+		    <groupId>io.seata</groupId>
+		    <artifactId>seata-all</artifactId>
+		    <version>${seata.version}</version>
 		</dependency>
         
         <!-- SkyWalking依赖项 -->

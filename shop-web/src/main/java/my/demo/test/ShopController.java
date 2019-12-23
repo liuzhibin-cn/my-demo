@@ -20,6 +20,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.alibaba.dubbo.config.annotation.Reference;
 
+import io.seata.spring.annotation.GlobalTransactional;
 import my.demo.domain.Cart;
 import my.demo.domain.CartItem;
 import my.demo.domain.Item;
@@ -106,6 +107,7 @@ public class ShopController {
 		result.stop();
 		return result;
 	}
+	@GlobalTransactional(timeoutMills = 300000, name = "full-test-case")
 	private boolean runFullTestCase() {
 		log.debug("Start a test case");
 		//随机注册一个用户
