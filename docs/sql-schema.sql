@@ -94,8 +94,26 @@ END
 ;;
 DELIMITER ;
 INSERT INTO MYCAT_SEQUENCE(name,current_value,increment) VALUES ('GLOBAL', 100000, 1);
-INSERT INTO MYCAT_SEQUENCE(name,current_value,increment) VALUES ('ORDERDETAIL', 1000000, 20);
-INSERT INTO MYCAT_SEQUENCE(name,current_value,increment) VALUES ('USER', 2906300, 20);
+INSERT INTO MYCAT_SEQUENCE(name,current_value,increment) VALUES ('ORD_ORDER_ITEM', 1000000, 20);
+INSERT INTO MYCAT_SEQUENCE(name,current_value,increment) VALUES ('ORD_USER_ORDER', 9965738, 20);
+INSERT INTO MYCAT_SEQUENCE(name,current_value,increment) VALUES ('USR_USER', 2906300, 20);
+
+-- Seata回滚表
+CREATE TABLE IF NOT EXISTS `undo_log`
+(
+    `id`            BIGINT(20)   NOT NULL AUTO_INCREMENT COMMENT 'increment id',
+    `branch_id`     BIGINT(20)   NOT NULL COMMENT 'branch transaction id',
+    `xid`           VARCHAR(100) NOT NULL COMMENT 'global transaction id',
+    `context`       VARCHAR(128) NOT NULL COMMENT 'undo_log context,such as serialization',
+    `rollback_info` LONGBLOB     NOT NULL COMMENT 'rollback info',
+    `log_status`    INT(11)      NOT NULL COMMENT '0:normal status,1:defense status',
+    `log_created`   DATETIME     NOT NULL COMMENT 'create datetime',
+    `log_modified`  DATETIME     NOT NULL COMMENT 'modify datetime',
+    PRIMARY KEY (`id`),
+    UNIQUE KEY `ux_undo_log` (`xid`, `branch_id`)
+) ENGINE = InnoDB
+  AUTO_INCREMENT = 1
+  DEFAULT CHARSET = utf8 COMMENT ='AT transaction mode undo table';
 
 -- ====================================================================
 -- mydemo-dn1: ord_order, ord_order_item, user, usr_user_account, ord_user_order
@@ -122,7 +140,7 @@ CREATE TABLE `ord_order` (
 ) ENGINE = InnoDB DEFAULT CHARACTER SET = utf8 COLLATE=utf8_general_ci COMMENT = '订单主表';
 DROP TABLE IF EXISTS `ord_order_item`;
 CREATE TABLE `ord_order_item` (
-  `order_item_id` BIGINT NOT NULL DEFAULT 0 COMMENT '订单明细ID',
+  `order_item_id` BIGINT NOT NULL AUTO_INCREMENT COMMENT '订单明细ID',
   `order_id` BIGINT NOT NULL DEFAULT 0 COMMENT '订单ID',
   `item_id` INT NOT NULL DEFAULT 0 COMMENT '产品ID',
   `title` VARCHAR(100) NOT NULL DEFAULT '' COMMENT '产品标题',
@@ -137,13 +155,15 @@ CREATE TABLE `ord_order_item` (
 ) ENGINE = InnoDB DEFAULT CHARACTER SET = utf8 COLLATE=utf8_general_ci COMMENT = '订单明细';
 DROP TABLE IF EXISTS `ord_user_order`;
 CREATE TABLE `ord_user_order` (
+  `id` BIGINT NOT NULL AUTO_INCREMENT COMMENT '无意义主键，目前seata不支持组合主键',
   `user_id` BIGINT NOT NULL DEFAULT 0 COMMENT '会员ID',
   `order_id` BIGINT NOT NULL DEFAULT 0 COMMENT '订单ID',
-  PRIMARY KEY (`user_id`, `order_id`)
-) ENGINE = InnoDB DEFAULT CHARACTER SET = utf8 COLLATE=utf8_general_ci COMMENT = '会员：会员ID与订单ID对应关系';
+  PRIMARY KEY (`id`),
+  UNIQUE INDEX `uk_uid_oid` (`user_id` ASC, `order_id` ASC)
+) ENGINE = InnoDB DEFAULT CHARACTER SET = utf8 COLLATE=utf8_general_ci COMMENT = '会员-订单异构索引表';
 DROP TABLE IF EXISTS `usr_user`;
 CREATE TABLE `usr_user` (
-  `user_id` BIGINT NOT NULL DEFAULT 0 COMMENT '会员ID',
+  `user_id` BIGINT NOT NULL AUTO_INCREMENT COMMENT '会员ID',
   `nickname` VARCHAR(30) NOT NULL DEFAULT '' COMMENT '昵称',
   `mobile` VARCHAR(11) NOT NULL DEFAULT '' COMMENT '邮箱',
   `email` VARCHAR(40) NOT NULL DEFAULT '' COMMENT '手机号',
@@ -187,7 +207,7 @@ CREATE TABLE `ord_order` (
 ) ENGINE = InnoDB DEFAULT CHARACTER SET = utf8 COLLATE=utf8_general_ci COMMENT = '订单主表';
 DROP TABLE IF EXISTS `ord_order_item`;
 CREATE TABLE `ord_order_item` (
-  `order_item_id` BIGINT NOT NULL DEFAULT 0 COMMENT '订单明细ID',
+  `order_item_id` BIGINT NOT NULL AUTO_INCREMENT COMMENT '订单明细ID',
   `order_id` BIGINT NOT NULL DEFAULT 0 COMMENT '订单ID',
   `item_id` INT NOT NULL DEFAULT 0 COMMENT '产品ID',
   `title` VARCHAR(100) NOT NULL DEFAULT '' COMMENT '产品标题',
@@ -202,13 +222,15 @@ CREATE TABLE `ord_order_item` (
 ) ENGINE = InnoDB DEFAULT CHARACTER SET = utf8 COLLATE=utf8_general_ci COMMENT = '订单明细';
 DROP TABLE IF EXISTS `ord_user_order`;
 CREATE TABLE `ord_user_order` (
+  `id` BIGINT NOT NULL AUTO_INCREMENT COMMENT '无意义主键，目前seata不支持组合主键',
   `user_id` BIGINT NOT NULL DEFAULT 0 COMMENT '会员ID',
   `order_id` BIGINT NOT NULL DEFAULT 0 COMMENT '订单ID',
-  PRIMARY KEY (`user_id`, `order_id`)
-) ENGINE = InnoDB DEFAULT CHARACTER SET = utf8 COLLATE=utf8_general_ci COMMENT = '会员：会员ID与订单ID对应关系';
+  PRIMARY KEY (`id`),
+  UNIQUE INDEX `uk_uid_oid` (`user_id` ASC, `order_id` ASC)
+) ENGINE = InnoDB DEFAULT CHARACTER SET = utf8 COLLATE=utf8_general_ci COMMENT = '会员-订单异构索引表';
 DROP TABLE IF EXISTS `usr_user`;
 CREATE TABLE `usr_user` (
-  `user_id` BIGINT NOT NULL DEFAULT 0 COMMENT '会员ID',
+  `user_id` BIGINT NOT NULL AUTO_INCREMENT COMMENT '会员ID',
   `nickname` VARCHAR(30) NOT NULL DEFAULT '' COMMENT '昵称',
   `mobile` VARCHAR(11) NOT NULL DEFAULT '' COMMENT '邮箱',
   `email` VARCHAR(40) NOT NULL DEFAULT '' COMMENT '手机号',
@@ -252,7 +274,7 @@ CREATE TABLE `ord_order` (
 ) ENGINE = InnoDB DEFAULT CHARACTER SET = utf8 COLLATE=utf8_general_ci COMMENT = '订单主表';
 DROP TABLE IF EXISTS `ord_order_item`;
 CREATE TABLE `ord_order_item` (
-  `order_item_id` BIGINT NOT NULL DEFAULT 0 COMMENT '订单明细ID',
+  `order_item_id` BIGINT NOT NULL AUTO_INCREMENT COMMENT '订单明细ID',
   `order_id` BIGINT NOT NULL DEFAULT 0 COMMENT '订单ID',
   `item_id` INT NOT NULL DEFAULT 0 COMMENT '产品ID',
   `title` VARCHAR(100) NOT NULL DEFAULT '' COMMENT '产品标题',
@@ -267,10 +289,12 @@ CREATE TABLE `ord_order_item` (
 ) ENGINE = InnoDB DEFAULT CHARACTER SET = utf8 COLLATE=utf8_general_ci COMMENT = '订单明细';
 DROP TABLE IF EXISTS `ord_user_order`;
 CREATE TABLE `ord_user_order` (
+  `id` BIGINT NOT NULL AUTO_INCREMENT COMMENT '无意义主键，目前seata不支持组合主键',
   `user_id` BIGINT NOT NULL DEFAULT 0 COMMENT '会员ID',
   `order_id` BIGINT NOT NULL DEFAULT 0 COMMENT '订单ID',
-  PRIMARY KEY (`user_id`, `order_id`)
-) ENGINE = InnoDB DEFAULT CHARACTER SET = utf8 COLLATE=utf8_general_ci COMMENT = '会员：会员ID与订单ID对应关系';
+  PRIMARY KEY (`id`),
+  UNIQUE INDEX `uk_uid_oid` (`user_id` ASC, `order_id` ASC)
+) ENGINE = InnoDB DEFAULT CHARACTER SET = utf8 COLLATE=utf8_general_ci COMMENT = '会员-订单异构索引表';
 
 -- ====================================================================
 -- mydemo-dn4: ord_order, ord_order_item, ord_user_order
@@ -297,7 +321,7 @@ CREATE TABLE `ord_order` (
 ) ENGINE = InnoDB DEFAULT CHARACTER SET = utf8 COLLATE=utf8_general_ci COMMENT = '订单主表';
 DROP TABLE IF EXISTS `ord_order_item`;
 CREATE TABLE `ord_order_item` (
-  `order_item_id` BIGINT NOT NULL DEFAULT 0 COMMENT '订单明细ID',
+  `order_item_id` BIGINT NOT NULL AUTO_INCREMENT COMMENT '订单明细ID',
   `order_id` BIGINT NOT NULL DEFAULT 0 COMMENT '订单ID',
   `item_id` INT NOT NULL DEFAULT 0 COMMENT '产品ID',
   `title` VARCHAR(100) NOT NULL DEFAULT '' COMMENT '产品标题',
@@ -312,7 +336,9 @@ CREATE TABLE `ord_order_item` (
 ) ENGINE = InnoDB DEFAULT CHARACTER SET = utf8 COLLATE=utf8_general_ci COMMENT = '订单明细';
 DROP TABLE IF EXISTS `ord_user_order`;
 CREATE TABLE `ord_user_order` (
+  `id` BIGINT NOT NULL AUTO_INCREMENT COMMENT '无意义主键，目前seata不支持组合主键',
   `user_id` BIGINT NOT NULL DEFAULT 0 COMMENT '会员ID',
   `order_id` BIGINT NOT NULL DEFAULT 0 COMMENT '订单ID',
-  PRIMARY KEY (`user_id`, `order_id`)
-) ENGINE = InnoDB DEFAULT CHARACTER SET = utf8 COLLATE=utf8_general_ci COMMENT = '会员：会员ID与订单ID对应关系';
+  PRIMARY KEY (`id`),
+  UNIQUE INDEX `uk_uid_oid` (`user_id` ASC, `order_id` ASC)
+) ENGINE = InnoDB DEFAULT CHARACTER SET = utf8 COLLATE=utf8_general_ci COMMENT = '会员-订单异构索引表';

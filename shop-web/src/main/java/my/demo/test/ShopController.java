@@ -20,6 +20,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.alibaba.dubbo.config.annotation.Reference;
 
+import io.seata.core.context.RootContext;
 import io.seata.spring.annotation.GlobalTransactional;
 import my.demo.domain.Cart;
 import my.demo.domain.CartItem;
@@ -82,6 +83,7 @@ public class ShopController {
 		return this.createOrder(cart);
 	}
 	@GetMapping(value="/full-test")
+	@GlobalTransactional(timeoutMills = 3000, name = "full-test-case")
 	public @ResponseBody TestResult fullTestCase(@RequestParam(name="count", required=false, defaultValue="1") int count) {
 		return this.runFullTestCase(count);
 	}
@@ -107,9 +109,8 @@ public class ShopController {
 		result.stop();
 		return result;
 	}
-	@GlobalTransactional(timeoutMills = 300000, name = "full-test-case")
 	private boolean runFullTestCase() {
-		log.debug("Start a test case");
+		log.debug("Start a test case, XID: " + RootContext.getXID());
 		//随机注册一个用户
 		String prefix = MOBILE_PREFIXS[(int)Math.round(Math.random()*1000) % MOBILE_PREFIXS.length];
 		String mobile = prefix + String.format("%08d", Math.round(Math.random()*100000000));

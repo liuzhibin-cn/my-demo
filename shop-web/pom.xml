@@ -20,9 +20,6 @@
 	<profiles>
 	   <profile>
 	       <id>zipkin</id>
-	       <properties>
-	           <activatedProperties>zipkin</activatedProperties>
-	       </properties>
 	       <dependencies>
 		        <dependency>
 		            <groupId>org.springframework.cloud</groupId>
@@ -40,8 +37,6 @@
 				<includes>
 					<include>application.yml</include>
 					<include>application-zipkin.yml</include>
-					<include>registry.conf</include>
-					<include>file.conf</include>
 					<include>logback.xml</include>
 					<include>templates/**</include>
 					<include>static/**</include>
@@ -51,6 +46,10 @@
 	</build>
 
 	<dependencies>
+		<dependency>
+		  <groupId>io.seata</groupId>
+		  <artifactId>seata-spring-boot-starter</artifactId>
+		</dependency>
        <dependency>
              <groupId>my.demo</groupId>
              <artifactId>service-client</artifactId>

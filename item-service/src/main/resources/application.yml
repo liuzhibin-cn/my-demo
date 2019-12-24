@@ -26,8 +26,3 @@ dubbo:
         address: ${dubbo.registry}
     provider:
         filter: ${dubbo.filter}
-
-zipkin:
-   server: ${zipkin.base-url}/api/v2/spans
-   connectTimeout: 2000
-   readTimeout: 2000

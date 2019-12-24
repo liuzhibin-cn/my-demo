@@ -74,5 +74,4 @@ public class StockServiceImpl implements StockService {
 			return new ServiceResult<>(true);
 		}
 	}
-
 } 

@@ -19,8 +19,6 @@ spring:
       ansi:
          enabled: always
    datasource:  
-      name: ${application.name}-ds
-      type: org.apache.tomcat.jdbc.pool.DataSource 
       # for Mycat
       driver-class-name: com.mysql.cj.jdbc.Driver
       url: jdbc:mysql://${mysql.host}:${mysql.port}/db_order?connectTimeout=3000&socketTimeout=10000&characterEncoding=utf8&useTimezone=true&serverTimezone=Asia/Shanghai&zeroDateTimeBehavior=CONVERT_TO_NULL&useSSL=false${jdbc.interceptors}
@@ -29,24 +27,28 @@ spring:
       #url: jdbc:mysql://${mysql.host}:${mysql.port}/db_order?connectTimeout=3000&socketTimeout=10000&characterEncoding=utf8&useTimezone=true&serverTimezone=Asia/Shanghai&zeroDateTimeBehavior=convertToNull&useSSL=false${jdbc.interceptors}
       username: ${mysql.user}  
       password: ${mysql.password}
-      tomcat:
-         defaultAutoCommit: true
-         defaultTransactionIsolation: 2
-         initialSize: 5
-         minIdle: 5
-         maxIdle: 5
-         maxActive: 5
-         maxWait: 2000
-         timeBetweenEvictionRunsMillis: 60000  
-         minEvictableIdleTimeMillis: 300000 
-         testOnBorrow: true
-         validationQuery: /* ping */ select 1
-         validationInterval: 30000
-         testWhileIdle: true
 
-# Spring Boot应用中mybatis的配置方法
+my:
+   druid:
+      defaultAutoCommit: false
+      defaultTransactionIsolation: 2      
+      initialSize: 5
+      maxActive: 5
+      maxWait: 2000
+      minIdle: 5
+      validationQuery: /* ping */ select 1
+      testOnBorrow: false
+      testOnReturn: false
+      testWhileIdle: true
+      timeBetweenEvictionRunsMillis: 60000
+      minEvictableIdleTimeMillis: 300000
+      removeAbandoned: true
+      removeAbandonedTimeout: 1800
+      logAbandoned: true
+
+# Spring Boot应用中mybatis的配置方法（备注：改为手工创建SessionFactory）
 mybatis: # see MybatisProperties.class in mybatis-spring-boot-autoconfigure
-  mapperLocations: classpath:mappers/*.xml
+   mapperLocations: classpath:mappers/*.xml
 
 dubbo:
     application: # see com.alibaba.dubbo.config.ApplicationConfig
@@ -72,7 +74,18 @@ dubbo:
     consumer:
         filter: ${dubbo.filter}
 
-zipkin:
-   server: ${zipkin.base-url}/api/v2/spans
-   connectTimeout: 2000
-   readTimeout: 2000
+seata:
+  enabled: true
+  application-id: ${application.name}
+  tx-service-group: my_demo_gtx
+  config:
+    type: nacos
+    nacos:
+      namespace:
+      serverAddr: 192.168.31.108:8848
+  registry:
+    type: nacos
+    nacos:
+      cluster: default
+      server-addr: 192.168.31.108:8848
+      namespace:

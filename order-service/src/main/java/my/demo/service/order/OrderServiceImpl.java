@@ -10,10 +10,12 @@ import java.util.Random;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.alibaba.dubbo.config.annotation.Reference;
 import com.alibaba.dubbo.config.annotation.Service;
 
+import io.seata.core.context.RootContext;
 import my.demo.dao.order.OrderDao;
 import my.demo.domain.Cart;
 import my.demo.domain.Item;
@@ -55,6 +57,7 @@ public class OrderServiceImpl implements OrderService {
 
 	@Override
 	public ServiceResult<Order> createOrder(Cart cart) {
+		log.info("[create] XID: " + RootContext.getXID());
 		ServiceResult<Order> result = new ServiceResult<Order>();
 		//1. 数据校验
 		if(cart==null) {
@@ -70,84 +73,90 @@ public class OrderServiceImpl implements OrderService {
 		
 		List<OrderItem> lockList = new ArrayList<>(cart.getItems().size());
 		try {
-			//2. 创建订单、订单明细对象
-			Order order = new Order();
-			order.setOrderId(this.newId());
-			order.setStatus("New");
-			order.setUserId(cart.getUserId());
-			order.setPayStatus("New");
-			order.setPayTime(DEFAULT_TIME);
-			order.setContact(cart.getContact());
-			order.setPhone(cart.getPhone());
-			order.setAddress(cart.getAddress());
-			order.setCreatedAt(new Date());		
-			cart.getItems().forEach( cartItem -> {
-				OrderItem orderItem = new OrderItem();
-				orderItem.setOrderId(order.getOrderId());
-				orderItem.setItemId(cartItem.getItemId());
-				//获取产品名称
-				Item item = itemService.getItem(cartItem.getItemId()).getResult();
-				orderItem.setTitle(item.getTitle());
-				orderItem.setQuantity(cartItem.getQuantity());
-				orderItem.setPrice(cartItem.getPrice());
-				orderItem.setSubtotal(cartItem.getSubtotal());
-				orderItem.setDiscount(cartItem.getDiscount());
-				orderItem.setCreatedAt(new Date());
-				order.setTotal( order.getTotal() + cartItem.getSubtotal() );
-				order.setDiscount( order.getDiscount() + cartItem.getDiscount() );
-				order.addOrderItem(orderItem);
-			} );
-			Tracer.traceTag("orderId", order.getOrderId());
-			
-			//3. 锁定库存（简单起见，不处理锁定失败后释放问题）
-			for(OrderItem orderItem : order.getOrderItems()) {
-				//检查可用库存
-				ServiceResult<Stock> stockResult = stockService.getStock(orderItem.getItemId());
-				if(!stockResult.isSuccess()) {
-					log.info("[create] Get stock error, item-id: " + orderItem.getItemId() + ", msg: " + stockResult.getMessage());
-					break;
-				}
-				if(stockResult.getResult().getAvailableQty()<orderItem.getQuantity()) {
-					log.info("[create] Stock not enough, item-id: " + orderItem.getItemId() 
-						+ ", available-qty: " + stockResult.getResult().getAvailableQty()
-						+ ", request-qty: " + orderItem.getQuantity());
-					break;
-				}
-				//锁定库存
-				ServiceResult<Boolean> lockResult = stockService.lock(orderItem.getItemId(), orderItem.getQuantity());
-				if(lockResult.isSuccess() && lockResult.getResult()) lockList.add(orderItem);
-				else {
-					log.info("[create] Lock stock error, item-id: " + orderItem.getItemId() + ", msg: " + lockResult.getMessage());
-					break;
-				}
-			}
-			if(lockList.size() != order.getOrderItems().size()) {
-				return result.fail("Failed to lock stock");
-			}
-			
-			//4. 插入订单、订单明细数据（简单起见，不处理创建失败后库存释放问题）
-			order.getOrderItems().forEach(orderItem -> {
-				orderDao.createOrderItem(orderItem);
-				log.info("[create] OrderItem created, item-id: " + orderItem.getItemId());
-			});
-			orderDao.createOrder(order);
-			log.debug("[create] Order created, order-id: " + order.getOrderId());
-			
-			//5. 维护用户ID、订单ID索引表
-			orderDao.createUserOrder(order.getUserId(), order.getOrderId());
-			log.info("[create] User Order created: user-id: " + order.getUserId() + ", order-id: " + order.getOrderId());
-			
-			//6. 从数据库读取订单返回
-			Order persisted = orderDao.getOrder(order.getOrderId());
-			persisted.setOrderItems(orderDao.getOrderItems(persisted.getOrderId()));
-						
-			return result.success(persisted);
+			this.createOrder(result, lockList, cart);
+			return result;
 		} catch(Exception ex) {
 			log.error("[create] System error, user-id: " + cart.getUserId() + ", msg: " + ex.getMessage(), ex);
 			return result.fail("System error: " + ex.getMessage());
 		} finally {
 			if(!lockList.isEmpty()) this.unlockStock(lockList);
 		}
+	}
+	@Transactional
+	private void createOrder(ServiceResult<Order> result, List<OrderItem> lockList, Cart cart) {
+		//2. 创建订单、订单明细对象
+		Order order = new Order();
+		order.setOrderId(this.newId());
+		order.setStatus("New");
+		order.setUserId(cart.getUserId());
+		order.setPayStatus("New");
+		order.setPayTime(DEFAULT_TIME);
+		order.setContact(cart.getContact());
+		order.setPhone(cart.getPhone());
+		order.setAddress(cart.getAddress());
+		order.setCreatedAt(new Date());		
+		cart.getItems().forEach( cartItem -> {
+			OrderItem orderItem = new OrderItem();
+			orderItem.setOrderId(order.getOrderId());
+			orderItem.setItemId(cartItem.getItemId());
+			//获取产品名称
+			Item item = itemService.getItem(cartItem.getItemId()).getResult();
+			orderItem.setTitle(item.getTitle());
+			orderItem.setQuantity(cartItem.getQuantity());
+			orderItem.setPrice(cartItem.getPrice());
+			orderItem.setSubtotal(cartItem.getSubtotal());
+			orderItem.setDiscount(cartItem.getDiscount());
+			orderItem.setCreatedAt(new Date());
+			order.setTotal( order.getTotal() + cartItem.getSubtotal() );
+			order.setDiscount( order.getDiscount() + cartItem.getDiscount() );
+			order.addOrderItem(orderItem);
+		} );
+		Tracer.traceTag("orderId", order.getOrderId());
+		
+		//3. 锁定库存（简单起见，不处理锁定失败后释放问题）
+		for(OrderItem orderItem : order.getOrderItems()) {
+			//检查可用库存
+			ServiceResult<Stock> stockResult = stockService.getStock(orderItem.getItemId());
+			if(!stockResult.isSuccess()) {
+				log.info("[create] Get stock error, item-id: " + orderItem.getItemId() + ", msg: " + stockResult.getMessage());
+				break;
+			}
+			if(stockResult.getResult().getAvailableQty()<orderItem.getQuantity()) {
+				log.info("[create] Stock not enough, item-id: " + orderItem.getItemId() 
+					+ ", available-qty: " + stockResult.getResult().getAvailableQty()
+					+ ", request-qty: " + orderItem.getQuantity());
+				break;
+			}
+			//锁定库存
+			ServiceResult<Boolean> lockResult = stockService.lock(orderItem.getItemId(), orderItem.getQuantity());
+			if(lockResult.isSuccess() && lockResult.getResult()) lockList.add(orderItem);
+			else {
+				log.info("[create] Lock stock error, item-id: " + orderItem.getItemId() + ", msg: " + lockResult.getMessage());
+				break;
+			}
+		}
+		if(lockList.size() != order.getOrderItems().size()) {
+			result.fail("Failed to lock stock");
+			return;
+		}
+		
+		//4. 插入订单、订单明细数据（简单起见，不处理创建失败后库存释放问题）
+		order.getOrderItems().forEach(orderItem -> {
+			orderDao.createOrderItem(orderItem);
+			log.info("[create] OrderItem created, item-id: " + orderItem.getItemId());
+		});
+		orderDao.createOrder(order);
+		log.debug("[create] Order created, order-id: " + order.getOrderId());
+		
+		//5. 维护用户ID、订单ID索引表
+		orderDao.createUserOrder(order.getUserId(), order.getOrderId());
+		log.info("[create] User Order created: user-id: " + order.getUserId() + ", order-id: " + order.getOrderId());
+		
+		//6. 从数据库读取订单返回
+		Order persisted = orderDao.getOrder(order.getOrderId());
+		persisted.setOrderItems(orderDao.getOrderItems(persisted.getOrderId()));
+					
+		result.success(persisted);
 	}
 	private void unlockStock(List<OrderItem> list) {
 		//未实现

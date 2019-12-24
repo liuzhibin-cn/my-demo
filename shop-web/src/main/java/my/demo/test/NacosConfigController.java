@@ -10,10 +10,10 @@ import com.alibaba.nacos.api.config.annotation.NacosValue;
 @Controller
 @RequestMapping(value = "/nacos")
 public class NacosConfigController {
-	@NacosValue(value = "${host:127.0.0.1}", autoRefreshed = true)
+	@NacosValue(value = "${store.mode:}", autoRefreshed = true)
 	String host;
-	@NacosValue(value = "${port:9099}", autoRefreshed = true)
-	int port;
+	@NacosValue(value = "${store.db.user:}", autoRefreshed = true)
+	String port;
 	
 	@GetMapping(path = "/get-config")
 	public @ResponseBody String getConfig() {

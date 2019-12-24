@@ -33,6 +33,7 @@
 				<filtering>true</filtering>
 				<includes>
 					<include>application.yml</include>
+					<include>application-zipkin.yml</include>
 					<include>logback.xml</include>
 					<include>mappers/*.xml</include>
 				</includes>
@@ -62,10 +63,11 @@
 			<groupId>mysql</groupId>
 			<artifactId>mysql-connector-java</artifactId>
 		</dependency>
-		<dependency>
-			<groupId>org.apache.tomcat</groupId>
-			<artifactId>tomcat-jdbc</artifactId>
-		</dependency>
+		
+        <dependency>
+          <groupId>io.seata</groupId>
+          <artifactId>seata-spring-boot-starter</artifactId>
+        </dependency>
 		
         <dependency>
             <groupId>io.zipkin.brave</groupId>

@@ -43,7 +43,7 @@
 		        <mysql.port>8066</mysql.port>
 		        <mysql.user>mydemo</mysql.user>
 		        <mysql.password>mydemo</mysql.password>
-		        <dubbo.registry>nacos://127.0.0.1:8848</dubbo.registry>
+		        <dubbo.registry>nacos://192.168.31.108:8848</dubbo.registry>
 				<!-- zipkin.base-url：以端口号结束，不要添加反斜杠 -->
 				<zipkin.base-url>http://192.168.31.108:9411</zipkin.base-url>
             </properties>
@@ -51,6 +51,7 @@
         <profile>
             <id>zipkin</id>
             <properties>
+                <activatedProperties>zipkin</activatedProperties>
                 <!-- 排除SkyWalking依赖项 -->
                 <excludeGroupIds>org.apache.skywalking</excludeGroupIds>
 				<log.traceInfo>%clr([%X{traceId} : %X{spanId}]){yellow}</log.traceInfo>
@@ -126,12 +127,6 @@
 		    <version>4.1.43.Final</version>
 		</dependency>
 		
-		<dependency>
-		    <groupId>io.seata</groupId>
-		    <artifactId>seata-all</artifactId>
-		    <version>${seata.version}</version>
-		</dependency>
-        
         <!-- SkyWalking依赖项 -->
         <dependency>
            <groupId>org.apache.skywalking</groupId>
@@ -179,11 +174,13 @@
 	            <!-- for Sharding-Proxy -->
 	            <!-- version>5.1.47</version-->
 	        </dependency>
-	        <dependency>
-	            <groupId>org.apache.tomcat</groupId>
-	            <artifactId>tomcat-jdbc</artifactId>
-	            <version>9.0.29</version><!--$NO-MVN-MAN-VER$ -->
-	        </dependency>
+	        
+	        <!-- Seata依赖项 -->
+			<dependency>
+				<groupId>io.seata</groupId>
+				<artifactId>seata-spring-boot-starter</artifactId>
+				<version>${seata.version}</version>
+			</dependency>
 	        
 	        <!-- ZipKin依赖项 -->
 			<dependency>

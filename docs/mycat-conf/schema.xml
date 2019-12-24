@@ -2,19 +2,22 @@
 <!DOCTYPE mycat:schema SYSTEM "schema.dtd">
 <mycat:schema xmlns:mycat="http://io.mycat/">
 	<schema name="db_order" checkSQLschema="false" sqlMaxLimit="100">
-		<!--
-			name: 如果多个table的配置完全一样，name可以配置为多个table名，使用逗号分隔（使用场景？全局表可以）
-			primaryKey: 可以不指定主键
-			autoIncrement: true表示使用数据库自增长主键；如果使用全局sequence handler，将autoIncrement设为false（默认false）
-		-->
 		<table name="ord_order" primaryKey="order_id" dataNode="dn$1-4" rule="order-rule">
-			<childTable name="ord_order_item" primaryKey="order_item_id" joinKey="order_id" parentKey="order_id" />
+			<!-- 
+			  主键order_item_id使用Mycat全局序列，设置autoIncrement后可以像MySQL自增字段一样，
+			  insert时不指定这个列，且支持last_insert_id()函数，避免在SQL中使用next value for MYCATSEQ_XXX，导致druid报错
+			-->
+			<childTable name="ord_order_item" primaryKey="order_item_id" autoIncrement="true" joinKey="order_id" parentKey="order_id" />
 		</table>
 		<table name="ord_user_order" dataNode="dn$1-4" rule="user-order-rule" />
+		<!-- Seata的回滚表，Seata要求回滚表在业务库中，因此必须添加到mycat逻辑库中 -->
+		<table name="undo_log" dataNode="dn0" primaryKey="id" />
 	</schema>
 	<schema name="db_user" checkSQLschema="false" sqlMaxLimit="100">
-		<table name="usr_user" primaryKey="user_id" dataNode="dn1, dn2" rule="user-rule" />
+		<table name="usr_user" primaryKey="user_id" autoIncrement="true" dataNode="dn1, dn2" rule="user-rule" />
 		<table name="usr_user_account" primaryKey="account" dataNode="dn1, dn2" rule="user-account-rule" />
+		<!-- Seata的回滚表，Seata要求回滚表在业务库中，因此必须添加到mycat逻辑库中 -->
+		<table name="undo_log" dataNode="dn0" primaryKey="id" />
 	</schema>
 	<dataNode name="dn0" dataHost="db1" database="mydemo-dn0" />
 	<dataNode name="dn1" dataHost="db1" database="mydemo-dn1" />

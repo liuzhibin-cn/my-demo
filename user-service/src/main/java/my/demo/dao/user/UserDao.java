@@ -13,34 +13,18 @@ import my.demo.domain.UserAccount;
 
 @Mapper
 public interface UserDao {
-	// ================================================================
-	// table: usr_user_account:
-	// primary key: account
-	// sharding fied: account_hash Math.abs(account.hashCode())
-	// user_id: The value is auto-generated using Mycat's global sequence or Sharding-Proxy's id-generator when inserting into usr_user_account
-	// ================================================================
 	@Select("select * from usr_user_account where account=#{account} and account_hash=#{accountHash}")
 	@ResultMap("userAccount")
 	UserAccount getUserAccount(@Param("account") String account, @Param("accountHash") int accountHash);
 	
-	//SQL for Mycat
-	@Insert("insert into usr_user_account(account, password, user_id, account_hash) values (#{account}, #{password}, next value for MYCATSEQ_USER, #{accountHash})")
-//	//SQL for Sharding-Proxy
-//	@Insert("insert into usr_user_account(account, password, account_hash) values (#{account}, #{password}, #{accountHash})")
-	@SelectKey(before=false, keyColumn="user_id", keyProperty="userId", resultType=Long.class
-		, statementType=StatementType.PREPARED
-    	, statement="select user_id from usr_user_account where account=#{account} and account_hash=#{accountHash}")
+	@Insert("insert into usr_user_account(account, password, user_id, account_hash) values (#{account}, #{password}, #{userId}, #{accountHash})")
 	int createUserAccount(UserAccount userAccount);
 	
-	// ================================================================
-	// table: usr_user
-	// primary key: user_id
-	// sharding key: user_id
-	// ================================================================
 	@Select("select * from usr_user where user_id=#{userId}")
 	@ResultMap("user")
 	User getUser(long userId);
 	
-	@Insert("insert into usr_user (user_id, nickname, mobile, email, created_at) values (#{userId}, #{nickname}, #{mobile}, #{email}, #{createdAt})")
+	@Insert("insert into usr_user (nickname, mobile, email, created_at) values (#{nickname}, #{mobile}, #{email}, #{createdAt})")
+	@SelectKey(before=false, keyColumn="user_id", keyProperty="userId", resultType=Long.class, statementType=StatementType.STATEMENT, statement="select last_insert_id() as user_id")
 	int createUser(User user);
 }

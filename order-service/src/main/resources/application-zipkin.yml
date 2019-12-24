@@ -1,0 +1,4 @@
+zipkin:
+   server: ${zipkin.base-url}/api/v2/spans
+   connectTimeout: 2000
+   readTimeout: 2000

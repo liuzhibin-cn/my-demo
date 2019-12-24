@@ -7,10 +7,12 @@ import java.util.Date;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.DigestUtils;
 
 import com.alibaba.dubbo.config.annotation.Service;
 
+import io.seata.core.context.RootContext;
 import my.demo.dao.user.UserDao;
 import my.demo.domain.User;
 import my.demo.domain.UserAccount;
@@ -38,6 +40,7 @@ public class UserServiceImpl implements UserService {
 	
 	@Override
 	public ServiceResult<User> registerByMobile(String mobile, String password) {
+		log.info("[register] XID: " + RootContext.getXID());
 		Tracer.traceTag("account", mobile);
 		ServiceResult<User> result = new ServiceResult<User>();
 		//简单校验
@@ -48,45 +51,57 @@ public class UserServiceImpl implements UserService {
 			return result.fail("Invalid password: " + password);
 		}
 		try { //注册
-			//1. 账号是否已经注册过
-			if(this.isRegistered(mobile)) {
-				log.info("[register] Already registered, mobile: " + mobile);
-				return result.fail("Account " + mobile + " already registered");
-			}
-			//2. 创建用户登录账号，分片字段account_hash，主键account，插入过程利用mycat全局序列生成了user_id
-			//   用全局序列生成ID比较简单，能有效确保ID全局唯一，但高并发插入会产生瓶颈；
-			//   另外，只能通过其它唯一字段查询记录，获取当前插入产生的mycat全局序列值；
-			UserAccount userAccount = new UserAccount();
-			userAccount.setAccount(mobile);
-			userAccount.setPassword(DigestUtils.md5DigestAsHex(password.getBytes()));
-			userAccount.setAccountHash(this.getAccountHashcode(mobile));
-			if(dao.createUserAccount(userAccount)<=0) {
-				log.warn("[register] Failed to create user account, account: " + mobile);
-				return result.fail("Failed to create user account");
-			}
-			Tracer.traceTag("userId", userAccount.getUserId());
-			log.info("[register] User account created, account: " + mobile);
-			//3. 创建用户资料，主键和分片字段均为 user_id
-			User user = new User();
-			user.setUserId(userAccount.getUserId());
-			user.setNickname(mobile.substring(0, 3) + "****" + mobile.substring(7, 11));
-			user.setMobile(mobile);
-			user.setEmail("");
-			user.setCreatedAt(new Date());
-			if(dao.createUser(user)<=0) {
-				log.warn("[register] Failed to create user, user-id: " + userAccount.getUserId() + ", account: " + mobile);
-				return result.fail("Failed to create user");
-			}
-			log.info("[register] User created, user-id: " + user.getUserId() + ", account: " + userAccount.getAccount());
-			return result.success(user);
+			this.register(result, mobile, password);
+			return result;
 		} catch (Exception ex) {
 			log.error("[register] System error, msg: " + ex.getMessage(), ex);
 			return result.fail("System error: " + ex.getMessage());
 		}
 	}
+	@Transactional
+	private void register(ServiceResult<User> result, String mobile, String password) {
+		//1. 账号是否已经注册过
+		if(this.isRegistered(mobile)) {
+			log.info("[register] Already registered, mobile: " + mobile);
+			result.fail("Account " + mobile + " already registered");
+			return;
+		}
+		//2. 创建用户资料，主键和分片字段均为 user_id
+		User user = new User();
+		user.setNickname(mobile.substring(0, 3) + "****" + mobile.substring(7, 11));
+		user.setMobile(mobile);
+		user.setEmail("");
+		user.setCreatedAt(new Date());
+		if(dao.createUser(user)<=0) {
+			log.warn("[register] Failed to create user, account: " + mobile);
+			result.fail("Failed to create user");
+			return;
+		}
+		if(user.getUserId()<=0) {
+			log.warn("[register] Failed to create user, invalid user-id, account: " + mobile);
+			result.fail("Failed to create user");
+			return;
+		}
+		log.info("[register] User created, user-id: " + user.getUserId() + ", account: " + mobile);
+		//3. 创建用户登录账号，分片字段account_hash，主键account
+		UserAccount userAccount = new UserAccount();
+		userAccount.setAccount(mobile);
+		userAccount.setPassword(DigestUtils.md5DigestAsHex(password.getBytes()));
+		userAccount.setAccountHash(this.getAccountHashcode(mobile));
+		userAccount.setUserId(user.getUserId());
+		if(dao.createUserAccount(userAccount)<=0) {
+			log.warn("[register] Failed to create user account, user-id: " + user.getUserId() + ", account: " + mobile);
+			result.fail("Failed to create user account");
+			return;
+		}
+		Tracer.traceTag("userId", user.getUserId());
+		log.info("[register] User account created, user-id: " + user.getUserId() + ", account: " + mobile);
+		result.success(user);
+	}
 
 	@Override
 	public ServiceResult<User> login(String account, String password) {
+		log.info("[login] XID: " + RootContext.getXID());
 		Tracer.traceTag("account", account);
 		ServiceResult<User> result = new ServiceResult<User>();
 		if(account==null || account.trim().isEmpty()) {
