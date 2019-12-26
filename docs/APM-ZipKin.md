@@ -56,7 +56,7 @@ java -jar zipkin.jar
 在[my-demo](https://github.com/liuzhibin-cn/my-demo)中运行ZipKin演示：
 1. 使用`zipkin`参数编译打包（或者手工打包，使用maven profile `dev,zipkin`）：
    ```sh
-   sh $PROJECT_HOME/package.sh zipkin
+   sh $PROJECT_HOME/package.sh -zipkin
    ```
 2. 按下面脚本顺序启动服务和应用：
    ```sh
@@ -66,7 +66,7 @@ java -jar zipkin.jar
    java -jar order-service\target\order-service-0.0.1-SNAPSHOT.jar
    java -jar shop-web\target\shop-web-0.0.1-SNAPSHOT.jar
    ```
-3. 访问[http://localhost:8090](http://localhost:8090)执行一些操作，即可在PinPoint界面查看结果；
+3. 访问[http://localhost:8090/shop](http://localhost:8090/shop)执行一些操作，即可在PinPoint界面查看结果；
 
 对不同框架Instrumentation使用的拦截方案不同，具体使用方法参考各Instrumentation实现，下面是[my-demo](https://github.com/liuzhibin-cn/my-demo)中用到的几种。
 

@@ -1,3 +1,4 @@
+----------------------------------------
 #### Seata全局事务与Mycat、Sharding-Proxy分布式事务的区别
 <img src="https://richie-leo.github.io/ydres/img/10/120/1017/seata-gtx-concept.png" style="max-width:500px;" />
 
@@ -6,6 +7,7 @@ Seata全局事务解决跨服务、跨系统的分布式事务问题，例如订
 
 Seata实现了几种柔性事务方案，不是强一致性，只提供最终一致性。
 
+----------------------------------------
 #### Seata事务模式
 ##### AT模式
 参考[Seata AT模式](http://seata.io/zh-cn/docs/dev/mode/at-mode.html)，主要过程：
@@ -77,6 +79,7 @@ Saga模式是SEATA提供的长事务解决方案，在Saga模式中，业务流�
 回滚时取消订单、取消库存预扣、积分账户返还积分等。<br />
 与TCC的区别是：TCC一阶段的Prepare全部成功后，订单并没有创建，或者创建得不完整，而Saga的一阶段成功后，订单已经完全创建好了。
 
+----------------------------------------
 #### Seata部署
 [Seata 1.0.0-GA](https://github.com/seata/seata/releases/tag/v1.0.0)刚发布，本文使用这个版本，nacos和seata以及它们使用的MySQL库都部署在Mac环境（`IP: 192.168.31.108`），使用nacos作为注册中心、配置中心。
 
@@ -133,6 +136,7 @@ Saga模式是SEATA提供的长事务解决方案，在Saga模式中，业务流�
    - `-n`：多个Seata Server组成集群时，通过该参数标识本次启动的节点，避免不同节点生成`transactionId`冲突；
    - `-e`：多环境配置，参考[Multi-configuration Isolation](http://seata.io/en-us/docs/ops/multi-configuration-isolation.html)；
 
+----------------------------------------
 #### Seata使用
 在[my-demo](https://github.com/liuzhibin-cn/my-demo)项目进行功能演示，请先参考项目相关说明。下面演示AT事务模式的使用。
 
@@ -263,6 +267,7 @@ INSERT INTO `undo_log` (branch_id, xid, context, rollback_info, log_status, log_
 DELETE FROM undo_log WHERE  branch_id IN  (?,?,?,?,?)  AND xid IN  (?)
 ```
 
+----------------------------------------
 #### Seata与Mycat集成注意事项
 - **Mycat全局序列不支持`next value for MYCATSEQ_XXX`用法** <br />
   因为Druid和Seata都要解析SQL语句，非标准SQL无法解析导致异常。<br />
@@ -282,9 +287,13 @@ DELETE FROM undo_log WHERE  branch_id IN  (?,?,?,?,?)  AND xid IN  (?)
   目前`Seata 1.0.0`版本不支持组合主键，仅支持单个字段的主键。<br />
   **解决方案**：添加一个无业务语义的ID字段作为主键即可。组合主键在多对多关联关系表中比较常见，另外没有主键的表Seata也不支持，同样需要添加一个无业务含义的主键字段。
 - **分库分表后Seata会导致Mycat产生较多的跨分片查询** <br />
-  回滚日志中的`AfterImage`是通过主键查询数据的；回滚操作通过主键更新数据。<br />
-  `my-demo`项目中的`ord_order_item`（父子表，随父表分片）、`ord_user_order`（多对多关联表，因Seata不支持而增加无业务意义主键）、`usr_user_account`（业务设计要求），分片字段不是主键，所以Seata的部分操作将会路由到全部分片中执行。
+  生成回滚日志中的`AfterImage`是通过主键查询数据的；回滚操作通过主键更新数据。如果主键不是分片字段，这些语句将路由到全部分片中执行。<br />
+  `my-demo`项目中，下面几个表主键不是分片字段：
+  - `ord_order_item`：与`ord_order`为父子表，随父表`order_id`分片；
+  - `ord_user_order`：多对多关联表，专为订单分库分表而设计的索引表，用于改善查询用户订单列表，因Seata不支持组合主键而增加无业务意义主键，不可能使用主键分片；
+  - `usr_user_account`：设计问题，用户登录时根据账号查数据，但账号是字符串不方便直接用于分片，因此额外添加`account_hash`作为分片字段，这种情况可以采用自定义分片函数避免；
 
+----------------------------------------
 #### Seata与Sharding-Proxy集成注意事项
 - **`Sharding-Proxy`必须设置默认数据源`defaultDataSourceName`**。<br />
   `Seata`生成回滚日志时需要获取数据库元数据信息，会使用`SHOW FULL COLUMNS FROM usr_user LIKE '%'`，`Sharding-Proxy`没有设置默认数据源时会报错。<br />

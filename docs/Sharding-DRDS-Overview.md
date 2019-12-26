@@ -1,7 +1,13 @@
+分库分表框架系列：
+- [Mycat分库分表概览](https://github.com/liuzhibin-cn/my-demo/blob/master/docs/Sharding-Mycat-Overview-Quickstart.md)
+- [Sharding-Proxy分库分表概览](https://github.com/liuzhibin-cn/my-demo/blob/master/docs/Sharding-Sharding-Proxy-Overview-Quickstart.md)
+- [DRDS产品概览](https://github.com/liuzhibin-cn/my-demo/blob/master/docs/Sharding-DRDS-Overview.md)
+
 本文主要参考DRDS文档整理而来。
 
 DRDS将TDDL和Cobar整合起来，从2012年开始发展到现在，功能已经非常成熟。除了将后端数据库聚合成一个逻辑库，提供数据垂直拆分、水平拆分、读写分离等功能外，还具备功能比较齐全的分布式SQL查询、优化、执行引擎，提供分布式事务管理方案，等等，DRDS已经不是一个简单的数据库代理、分库分表中间件，已经发展为分布式数据库引擎。将后端数据库看作一个高级版存储引擎，DRDS则可以看作数据库的执行引擎，DRDS集群和后端数据库集群共同组成一个分布式数据库。
 
+-----------------------------------
 #### DRDS架构
 参考[DRDS产品架构](https://help.aliyun.com/document_detail/117771.html)、[DRDS扩展性原理](DRDS扩展性原理)：<br />
 <img src="https://richie-leo.github.io/ydres/img/10/120/1014/DRDS-architecture.jpg" style="max-width:900px;" />
@@ -13,6 +19,7 @@ DRDS将TDDL和Cobar整合起来，从2012年开始发展到现在，功能已经
 - DRDS内核架构：<br />
   <img src="https://richie-leo.github.io/ydres/img/10/120/1014/DRDS-kernal-architecture.jpg" style="width:99%;max-width:1000px;" />
 
+-----------------------------------
 #### 执行引擎
 参考[SQL调优基础概念](https://help.aliyun.com/document_detail/144289.html)、[查询优化器介绍](https://help.aliyun.com/document_detail/144292.html)、[查询执行器介绍](https://help.aliyun.com/document_detail/144294.html)、[执行计划和基本算子](https://help.aliyun.com/document_detail/144296.html)、[Join与子查询的优化和执行](https://help.aliyun.com/document_detail/144297.html)等。
 
@@ -86,6 +93,7 @@ HashAgg(group="l_orderkey", revenue="SUM(*)")
 - `CUSTOMER`与`ORDERS`的关联无法由数据库完成，由DRDS汇总（`Gather`）2个结果集后在内存中执行`HashJoin`；
 - 最后使用`HashAgg`进行聚合计算；
 
+-----------------------------------
 #### 全局二级索引 GSI
 概念参考[DRDS全局二级索引](https://help.aliyun.com/document_detail/142733.html)。在[Mycat分库分表概览](https://github.com/liuzhibin-cn/my-demo/blob/master/docs/Sharding-Mycat-Overview-Quickstart.md)中也创建了自定义索引表，在应用代码中维护。DRDS支持全局二级索引GSI，自动维护：<br />
 <img src="https://richie-leo.github.io/ydres/img/10/120/1014/DRDS-GSI.png" style="max-width:700px;" />
@@ -94,6 +102,7 @@ HashAgg(group="l_orderkey", revenue="SUM(*)")
 
 DRDS扩展了MySQL DDL语法来管理GSI，参考[DRDS全局二级索引使用文档](https://help.aliyun.com/document_detail/142739.html)，支持索引类型BTREE、HASH。
 
+-----------------------------------
 #### 弹性计算
 - DRDS无状态，方便弹性扩容。面向OLTP业务，除分片路由、读写分离路由等基础功能外，还需要处理跨分片查询，包括结果集合并（合并过程需要处理GROUP BY再聚合、ORDER BY重排序等）、分页处理（SQL改写、结果集合并分页）等OLTP的基础必要功能；
 - 面向OLAP、低频的复杂查询等，可能设计跨分片关联数据量过大，则通过架构图中的Fireworks（DAG，多机并行处理）部分进行分布式内存计算，支持弹性扩容；<br />
@@ -101,6 +110,7 @@ DRDS扩展了MySQL DDL语法来管理GSI，参考[DRDS全局二级索引使用�
 
 DRDS支持的平滑扩容实现方式：在同一个后端RDS实例上创建多个MySQL数据库（默认8个），RDS实例负载、存储空间过高时，申请新的RDS实例，将部分MySQL数据库迁移到新的RDS实例上，参考[DRDS 平滑扩容](https://help.aliyun.com/document_detail/52132.html)。
 
+-----------------------------------
 #### 分布式事务
 参考[DRDS分布式事务](https://help.aliyun.com/document_detail/71230.html)：
 - 2PC事务：DRDS实现的弱一致性两阶段事务方案，用于后端数据库不支持XA事务或支持不完善的场景，例如MySQL 5.7以下版本；
@@ -127,6 +137,7 @@ DRDS的分布式事务与[GTS](https://help.aliyun.com/product/48444.html)的关
 - DRDS自己有一套分布式事务管理系统，对集群内后端数据库的分布式事务进行管理，场景上比GTS简单，因为简化来看TM只有DRDS自己的实例；
 - GTS是DRDS外面的一层分布式事务管理方案，如果存储用的DRDS，使用GTS的AT事务模式时，GTS直接使用DRDS的分布式事务管理，对于其它跨库、跨服务的分布式事务，GTS才采用自己的分布式事务管理方案；
 
+-----------------------------------
 #### 全局序列 Sequence
 DRDS全局唯一数字序列，参考[DRDS Sequence介绍](https://help.aliyun.com/document_detail/71261.html)，使用限制参考[Sequence限制及注意事项](https://help.aliyun.com/document_detail/71255.html)。
 

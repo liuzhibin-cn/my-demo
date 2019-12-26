@@ -1,3 +1,9 @@
+分库分表框架系列：
+- [Mycat分库分表概览](https://github.com/liuzhibin-cn/my-demo/blob/master/docs/Sharding-Mycat-Overview-Quickstart.md)
+- [Sharding-Proxy分库分表概览](https://github.com/liuzhibin-cn/my-demo/blob/master/docs/Sharding-Sharding-Proxy-Overview-Quickstart.md)
+- [DRDS产品概览](https://github.com/liuzhibin-cn/my-demo/blob/master/docs/Sharding-DRDS-Overview.md)
+
+-----------------------------------
 #### 项目情况
 [ShardingSphere](https://shardingsphere.apache.org/)前身是当当网开源的Sharding-JDBC，2018年京东选择将它作为云化数据库中间件（对标阿里云的DRDS），加大投入力度，合作成立社区，更名为ShardingSphere，加入Apache孵化项目。目前包括：
 - [Sharding-JDBC](https://shardingsphere.apache.org/document/current/cn/manual/sharding-jdbc/)：客户端分库分表组件；<br />
@@ -8,6 +14,7 @@
   <img src="https://richie-leo.github.io/ydres/img/10/120/1015/sharding-sidecar-brief_v2.jpg" style="max-width:560px;" />
 - [Sharding-UI](https://shardingsphere.apache.org/document/current/cn/manual/sharding-ui/)：提供界面管理功能，通过Zookeeper动态管理`Sharding-Proxy`的配置；
 
+-----------------------------------
 #### Sharding-Proxy相关概念
 - 分片相关，参考[核心概念-SQL](https://shardingsphere.apache.org/document/current/cn/features/sharding/concept/sql/)、[核心概念-分片](https://shardingsphere.apache.org/document/current/cn/features/sharding/concept/sharding/)：
   - *分库*：将数据分片存入不同的数据库schema；
@@ -40,9 +47,11 @@
   - 流式合并：前提是各分片返回的数据是有序的，使用游标，每次next取数即可完成合并操作，避免将全部数据加载到内存后再合并。
 - 分布式事务：参考[分布式事务](https://shardingsphere.apache.org/document/current/cn/features/transaction/)，支持XA事务、Saga柔性事务、[Seata柔性事务](http://seata.io/zh-cn/index.html)（阿里2019开源的分布式事务框架）；
 
+-----------------------------------
 #### 演示方案说明
 使用[my-demo](https://github.com/liuzhibin-cn/my-demo)项目作为演示，演示环境和详细方案参考[MyCat分库分表概览](https://github.com/liuzhibin-cn/my-demo/blob/master/docs/Sharding-Mycat-Overview-Quickstart.md)。
 
+-----------------------------------
 #### 部署Sharding-Proxy
 使用[Sharding-Proxy 4.0.0-RC3](https://www.apache.org/dyn/closer.cgi?path=incubator/shardingsphere/4.0.0-RC3/apache-shardingsphere-incubating-4.0.0-RC3-sharding-proxy-bin.tar.gz)：
 
@@ -163,6 +172,7 @@
 
 启动后即可用mysql客户端连接3307端口，对逻辑库进行操作验证。
 
+-----------------------------------
 #### 使用Sharding-Proxy
 在[my-demo](https://github.com/liuzhibin-cn/my-demo)项目中使用`Sharding-Proxy`，涉及到下面几处调整：
 1. 将`mysql-connector-java`版本改为5.1.47，在[parent pom.xml](https://github.com/liuzhibin-cn/my-demo/blob/master/pom.xml)中。<br />

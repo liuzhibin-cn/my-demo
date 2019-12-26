@@ -78,9 +78,9 @@ profiler.tomcat.conditional.transform=false
 - `-Dpinpoint.applicationName=`：指定服务、应用名称。相同服务部署不同实例，`applicationName`相同，`agentId`不同；
 
 在[my-demo](https://github.com/liuzhibin-cn/my-demo)中运行PinPoint演示：
-1. 使用`pinpoint`参数编译打包（或者手工打包，使用maven profile `dev,pinpoint`）：
+1. 使用`pinpoint`参数编译打包：
    ```sh
-   sh $PROJECT_HOME/package.sh pinpoint
+   sh $PROJECT_HOME/package.sh -pinpoint
    ```
 2. 按下面脚本顺序启动服务和应用：
    ```sh
@@ -90,7 +90,7 @@ profiler.tomcat.conditional.transform=false
    java -javaagent:F:\workspace\pinpoint\agent\pinpoint-bootstrap-1.8.5.jar -Dpinpoint.agentId=order-srv-1 -Dpinpoint.applicationName=order-srv -jar order-service\target\order-service-0.0.1-SNAPSHOT.jar
    java -javaagent:F:\workspace\pinpoint\agent\pinpoint-bootstrap-1.8.5.jar -Dpinpoint.agentId=shop-web-1 -Dpinpoint.applicationName=shop-web -jar shop-web\target\shop-web-0.0.1-SNAPSHOT.jar
    ```
-3. 访问[http://localhost:8090](http://localhost:8090)执行一些操作，即可在PinPoint界面查看结果；
+3. 访问[http://localhost:8090/shop](http://localhost:8090/shop)执行一些操作，即可在PinPoint界面查看结果；
 
 ##### 将方法加入链路跟踪
 代码中未被跟踪的方法，如果需要跟踪，通过`agent/pinpoint.config`配置：
