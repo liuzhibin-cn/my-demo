@@ -39,7 +39,9 @@
 #### 分布式事务管理
 阿里云分布式事务管理GTS的开源版Seata，2019年1月开源出来，1.0.0版已经发布。相关概念、部署和使用方法参考[Seata分布式事务管理框架概览](https://github.com/liuzhibin-cn/my-demo/blob/master/docs/Seata-Distributed-Transaction-Management.md)。
 
-Seata提供AT、TCC、Saga三种柔性事务模式，AT模式对应用几乎透明，使用方便。但目前来看，性能开销还比较高。
+Seata提供AT、TCC、Saga三种柔性事务模式，AT模式对应用几乎透明，使用方便，目前来看：
+1. 性能开销还比较高；
+2. 在使用Mycat、Sharding-Proxy进行分库分表时，Seata会产生不少路由到全分片执行的SQL操作，详细参考[Seata分布式事务管理框架概览](https://github.com/liuzhibin-cn/my-demo/blob/master/docs/Seata-Distributed-Transaction-Management.md)文末；
 
 #### 数据库分库分表
 本项目演示了使用[Mycat](http://www.mycat.io/)和[Sharding-Proxy](https://shardingsphere.apache.org/)进行分库分表，相关概念、部署和使用方法，参考[MyCat分库分表概览](https://github.com/liuzhibin-cn/my-demo/blob/master/docs/Sharding-Mycat-Overview-Quickstart.md)、[Sharding-Proxy分库分表概览](https://github.com/liuzhibin-cn/my-demo/blob/master/docs/Sharding-Sharding-Proxy-Overview-Quickstart.md)，这2个分库分表开源方案与[DRDS](https://help.aliyun.com/document_detail/118010.html)对比，参考[DRDS产品概览](https://github.com/liuzhibin-cn/my-demo/blob/master/docs/Sharding-DRDS-Overview.md)。
@@ -57,4 +59,4 @@ Mycat、Sharding-Proxy和DRDS都实现了MySQL协议，成为独立的中间件�
   - SkyWalking支持在Span中添加自定义tag功能，利用该功能可以将方法参数值等额外信息记录到Span中，有利于问题分析；
 - UI功能：PinPoint和SkyWalking UI功能比较丰富，都提供应用/服务、实例等层级的性能统计，两者各有特色；ZipKin UI功能最弱，只提供依赖关系、具体调用链查看分析；<br />
   额外的UI功能，可以读取APM工具的数据，自定义开发；
-- 社区支持：ZipKin架构灵活、文档完善，社区支持度最高，Spring Cloud和Service Mesh（[istio](https://github.com/istio/)）官方提供ZipKin支持；SkyWalking是华为员工开发，已成为Apache项目，从官方文档的英文水平看，在国外不一定能获得太高支持；PinPoint为韩国公司开源；
+- 社区支持：ZipKin架构灵活、文档完善，社区支持度最高，Spring Cloud和Service Mesh（[istio](https://github.com/istio/)）官方提供ZipKin支持；SkyWalking是华为员工开发，已成为Apache项目；PinPoint为韩国公司开源；
