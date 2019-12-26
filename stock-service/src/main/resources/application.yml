@@ -1,6 +1,6 @@
 spring:
     main:
-      allow-bean-definition-overriding: true
+        allow-bean-definition-overriding: true
     output:
         ansi:
             enabled: always
@@ -23,6 +23,15 @@ dubbo:
         queues: 0
         keepAlive: true
     registry: # see com.alibaba.dubbo.config.RegistryConfig
-        address: ${dubbo.registry}
+        address: nacos://${nacos.address}
     provider:
+        cluster: failfast
+        retries: 0
+        loadbalance: roundrobin
+        timeout: 3000
         filter: ${dubbo.filter}
+
+zipkin:
+   server: ${zipkin.base-url}/api/v2/spans
+   connectTimeout: 2000
+   readTimeout: 2000

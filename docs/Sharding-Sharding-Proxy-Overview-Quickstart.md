@@ -10,14 +10,14 @@
 
 #### Sharding-Proxy相关概念
 - 分片相关，参考[核心概念-SQL](https://shardingsphere.apache.org/document/current/cn/features/sharding/concept/sql/)、[核心概念-分片](https://shardingsphere.apache.org/document/current/cn/features/sharding/concept/sharding/)：
-  - 分库：将数据分片存入不同的数据库schema；
-  - 分表：将数据分片存入同一个数据库schema下不同的表中，例如`t_order_0`、``t_order_1`；
-    > 这与行业常说的分库分表有区别，通常所说的分库指按微服务、业务方式垂直拆分，分表指对某些表进行水平拆分。<br />
-    > Sharding-Proxy的分表是个特有概念。在解决逻辑分片与物理存储对应关系方面，DRDS和Mycat都采用在同一个MySQL实例下创建多个schema，每个schema作为dataNode对应一个逻辑分片。数据量或访问压力增加时，增加MySQL实例（服务器），迁移数据重新平衡。这种方案不涉及分片规则调整，以schema为单位的数据迁移方案很多。整体看，Sharding-Proxy的分表带来的作用有限，不是一个必要功能。
-  - 数据源：指分片规则中的dataSources配置，与数据库schema对应；
-  - 数据节点：数据分片的最小单元，数据源和表组成，例如：`ds_0.t_order_0`, `ds_0.t_order_1`；
-  - 绑定表：父子关系表，分片字段和规则一样，关联数据落在同一个分片上；
-  - 广播表：每个数据源中都存在的表，表结构和数据完全一样；
+  - *分库*：将数据分片存入不同的数据库schema；
+  - *分表*：将数据分片存入同一个数据库schema下不同的表中，例如`t_order_0`、``t_order_1`；
+    > 注意概念区别：Sharding-Proxy中*分库*、*分表*都能用于Sharding水平拆分，*分库*将分片存入不同数据库，*分表*将分片存入同一个库下不同名称的表中。<br />
+    > 在解决逻辑分片与物理存储对应关系方面，DRDS采用在同一个MySQL实例下创建多个schema，每个schema作为dataNode对应一个逻辑分片。数据量或访问压力增加时，增加MySQL实例（服务器），以schema为单位迁移数据重新平衡。这种方案不涉及分片规则调整，以schema为单位的数据迁移方案很多。
+  - *数据源*：指分片规则中的dataSources配置，与数据库schema对应；
+  - *数据节点*：数据分片的最小单元，数据源和表组成，例如：`ds_0.t_order_0`, `ds_0.t_order_1`；
+  - *绑定表*：父子关系表，分片字段和规则一样，关联数据落在同一个分片上；
+  - *广播表*：每个数据源中都存在的表，表结构和数据完全一样；
 - 路由：参考[内核剖析-路由引擎](https://shardingsphere.apache.org/document/current/cn/features/sharding/principle/route/)<br />
   <img src="https://richie-leo.github.io/ydres/img/10/120/1015/route_architecture.jpg" style="max-width:400px;" />
   - 直接路由：客户端通过hint指定分片键值。分片规则必须为Hint方式，且不分表；
@@ -86,18 +86,25 @@
              inline: 
                shardingColumn: user_id
                algorithmExpression: ds_${user_id % 2} # 简单使用inline表达式分片
-         usr_user_account:
-           actualDataNodes: ds_${0..1}.usr_user_account
-           databaseStrategy:
-             inline: 
-               shardingColumn: account_hash
-               algorithmExpression: ds_${account_hash % 2}
            keyGenerator:
              type: SNOWFLAKE
              column: user_id
              props: 
                worker.id: 1
                max.tolerate.time.difference.milliseconds: 600000 # 允许的系统时钟回拨10分钟
+         usr_user_account:
+           actualDataNodes: ds_${0..1}.usr_user_account
+           databaseStrategy:
+             inline: 
+               shardingColumn: account_hash
+               algorithmExpression: ds_${account_hash % 2}
+         undo_log:
+           actualDataNodes: ds_0.undo_log
+     defaultDataSourceName: ds_0 # 必须设置，否则使用Seata时会报错
+     defaultDatabaseStrategy:
+       none:
+     defaultTableStrategy:
+       none:
      ```
    - `config-order.yaml`
      ```yaml
@@ -138,8 +145,15 @@
              inline: 
                shardingColumn: user_id
                algorithmExpression: ds_${user_id % 17 % 4} # SNOWFLAKE生成的user_id按4取模会导致数据分布不平衡，所以先按17取模
+         undo_log:
+           actualDataNodes: ds_0.undo_log
        bindingTables:
          - ord_order,ord_order_item
+     defaultDataSourceName: ds_0 # 必须设置，否则使用Seata时会报错
+     defaultDatabaseStrategy:
+       none:
+     defaultTableStrategy:
+       none:
      ```
 4. 启动`Sharding-Proxy`：<br />
    ```sh
@@ -150,48 +164,16 @@
 启动后即可用mysql客户端连接3307端口，对逻辑库进行操作验证。
 
 #### 使用Sharding-Proxy
-对[my-demo](https://github.com/liuzhibin-cn/my-demo)项目稍作修改即可使用`Sharding-Proxy`：
-1. `parent pom.xml`中MySQL端口号修改为`3307`（`Sharding-Proxy`端口号）；
-2. `parent pom.xml`中将`mysql-connector-java`版本改为5.1.47；
-   > `Sharding-Proxy`使用的`MySQL Connect/J`版本较低，使用`8.0`以上版本否则会报错。
-3. `user-service`和`order-service`修改（主要是降低`mysql-connector-java`版本的修改，及`Mycat`和`Sharding-Proxy`全局序列使用方式不同）：
-   - `application.yml`
-     ```yml
-     datasource:
-       name: ${application.name}-ds
-       type: org.apache.tomcat.jdbc.pool.DataSource 
-       # for Mycat
-       # driver-class-name: com.mysql.cj.jdbc.Driver
-       #url: jdbc:mysql://${mysql.host}:${mysql.port}/db_user?connectTimeout=3000&socketTimeout=10000&characterEncoding=utf8&useTimezone=true&serverTimezone=Asia/Shanghai&zeroDateTimeBehavior=CONVERT_TO_NULL&useSSL=false${jdbc.interceptors}
-       # for Sharding-Proxy
-       driver-class-name: com.mysql.jdbc.Driver  
-       url: jdbc:mysql://${mysql.host}:${mysql.port}/db_user?connectTimeout=3000&socketTimeout=10000&characterEncoding=utf8&useTimezone=true&serverTimezone=Asia/Shanghai&zeroDateTimeBehavior=convertToNull&useSSL=false${jdbc.interceptors}
-     ```
-   - `UserDao`
-     ```java
- 	 //SQL for Mycat
-	 //@Insert("insert into usr_user_account(account, password, user_id, account_hash) values (#{account}, #{password}, next value for MYCATSEQ_USER, #{accountHash})")
-	 //SQL for Sharding-Proxy
-	 @Insert("insert into usr_user_account(account, password, account_hash) values (#{account}, #{password}, #{accountHash})")
-	 @SelectKey(before=false, keyColumn="user_id", keyProperty="userId", resultType=Long.class
-		, statementType=StatementType.PREPARED
-    	, statement="select user_id from usr_user_account where account=#{account} and account_hash=#{accountHash}")
-	 int createUserAccount(UserAccount userAccount);
-     ```
-   - `OrderDao`
-     ```java
-	 //SQL for Mycat
-	 //@Insert("insert into ord_order_item (order_item_id, order_id, item_id, title, quantity, price, subtotal, discount, created_at) " 
-	 //		+ "values(next value for MYCATSEQ_ORDERDETAIL, #{orderId}, #{itemId}, #{title}, #{quantity}, #{price}, #{subtotal}, #{discount}, #{createdAt})")
-	 //SQL for Sharding-Proxy
-	 @Insert("insert into ord_order_item (order_id, item_id, title, quantity, price, subtotal, discount, created_at) " 
-			+ "values(#{orderId}, #{itemId}, #{title}, #{quantity}, #{price}, #{subtotal}, #{discount}, #{createdAt})")
-	 int createOrderItem(OrderItem orderItem);
-     ```
+在[my-demo](https://github.com/liuzhibin-cn/my-demo)项目中使用`Sharding-Proxy`，涉及到下面几处调整：
+1. 将`mysql-connector-java`版本改为5.1.47，在[parent pom.xml](https://github.com/liuzhibin-cn/my-demo/blob/master/pom.xml)中。<br />
+   降低版本后，JDBC Driver类不同了，老版本使用`com.mysql.jdbc.Driver`，在`parent pom`中定义了maaven属性。
+   > 目前`Sharding-Proxy`客户端和服务端都不能使用`MySQL Connect/J 8.0`以上版本，否则会报错。
+2. 使用`Sharding-Proxy`的JDBC连接参数，包括端口号、账号密码、数据库名称等，相关属性都定义在`parent pom`中了。
 
-修改后即可重新打包运行项目，查看测试效果。
+`my-demo`项目配置了maven profile来启用`Sharding-Proxy`，为[package.sh](https://github.com/liuzhibin-cn/my-demo/blob/master/package.sh)指定`-sharding-proxy`选项打包即可：`package.sh -sharding-proxy`
 
-使用限制参考：[JDBC不支持项](https://shardingsphere.apache.org/document/current/cn/manual/sharding-jdbc/unsupported-items/)、[SQL支持情况](https://shardingsphere.apache.org/document/current/cn/features/sharding/use-norms/sql/)、[分页性能](https://shardingsphere.apache.org/document/current/cn/features/sharding/use-norms/pagination/)。代码中使用的SQL，最基本的CRUD应该没问题，涉及到子查询、表达式等，必须先进行测试，例如：
+##### 使用限制
+参考：[JDBC不支持项](https://shardingsphere.apache.org/document/current/cn/manual/sharding-jdbc/unsupported-items/)、[SQL支持情况](https://shardingsphere.apache.org/document/current/cn/features/sharding/use-norms/sql/)、[分页性能](https://shardingsphere.apache.org/document/current/cn/features/sharding/use-norms/pagination/)。代码中使用的SQL，最基本的CRUD应该没问题，涉及到子查询、表达式等，必须先进行测试，例如：
 ```sql
 select m, count(m) as cnt from (select (user_id % 3) as m from usr_user) t group by m;
 ```
@@ -210,7 +192,20 @@ Sharding-Proxy         MyCat
 +------+------+
 ```
 
-#### 发现的问题
-- Sharding-Proxy支持的`MySQL Connector/J`版本较低，MySQL官方建议针对MySQL Server 5.5, 5.6, 5.7, 8.0都使用`MySQL Connector/J 8.0`版本；
-- Mycat的SQL解析能力比Sharding-Proxy好些；
-- 从演示效果看，Mycat性能比Sharding-Proxy快1倍以上；
+##### 发现的问题
+- 与Seata集成时，`Sharding-Proxy`必须设置默认数据源`defaultDataSourceName`。<br />
+  `Seata`生成回滚日志时需要获取数据库元数据信息，会使用`SHOW FULL COLUMNS FROM usr_user LIKE '%'`，`Sharding-Proxy`没有设置默认数据源时会报错。<br />
+  ```yml
+  defaultDataSourceName: ds_0
+  ```
+- 与Seata集成，只能通过MySQL的`GENERATED_KEY`获取`keyGenerator`生成的值，不能使用`last_insert_id()`函数。 <br />
+  MyBatis中的使用方法：
+  ```java
+  @Insert("insert into usr_user (nickname, mobile, email, created_at) values (#{nickname}, #{mobile}, #{email}, #{createdAt})")
+  //用 Options 代替 SelectKey
+  @Options(useGeneratedKeys=true, keyProperty="userId", keyColumn="user_id")
+  int createUser(User user);
+  ```
+- 支持的`MySQL Connector/J`版本较低，MySQL官方建议针对MySQL Server 5.5, 5.6, 5.7, 8.0都使用`MySQL Connector/J 8.0`版本；
+- 从演示效果看，`Mycat`性能比`Sharding-Proxy`快1倍以上；
+- 初步映像`Mycat`在功能细节上比目前的`Sharding-Proxy`要好些；

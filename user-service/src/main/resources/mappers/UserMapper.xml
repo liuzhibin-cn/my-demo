@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="my.demo.dao.user.UserDao">
-    <resultMap id="user" type="my.demo.domain.User">
+    <resultMap id="user" type="my.demo.entity.User">
         <result property="userId" column="user_id" />
         <result property="nickname" column="nickname" />
         <result property="mobile" column="mobile" />
@@ -10,7 +10,7 @@
         <result property="lastUpdate" column="last_update" />
     </resultMap>
     
-    <resultMap id="userAccount" type="my.demo.domain.UserAccount">
+    <resultMap id="userAccount" type="my.demo.entity.UserAccount">
         <result property="account" column="account" />
         <result property="password" column="password" />
         <result property="userId" column="user_id" />

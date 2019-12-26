@@ -110,10 +110,7 @@ DRDS支持的平滑扩容实现方式：在同一个后端RDS实例上创建多�
   > 柔性事务记录数据变更前的IMAGE，分布式事务失败时可以根据SQL语义和IMAGE自动生成回滚补偿SQL，撤销已经执行成功的业务操作，即将TCC中的Cancel由分布式事务管理器自动实现，无需业务代码参与。
 
 阿里分布式事务发展情况：
-- 淘宝、天猫早期大量使用事务消息（RocketMQ）实现分布式事务，而支付宝早期采用XTS（TCC事务模型）实现分布式事务；
-  > 事务消息、XTS都要求业务代码实现大量事务控制逻辑（事务状态回查、事务补偿，以及TCC中的Try-Confirm等），对一线开发人员要求高，容易造成数据不一致问题。
-- 基于阿里大量使用TDDL、DRDS场景下分布式事务要求，开发了TXC系统（柔性事务），通过TC记录Undo Log实现自动回滚，无需业务代码实现，将分布式事务管理从应用中隔离出来。
-- 2017年阿里云上线全局事务服务[GTS](https://help.aliyun.com/product/48444.html)产品，发展越来越成熟，提供跨数据库/MQ、跨服务的分布式事务处理能力，参考[GTS产品概述](https://help.aliyun.com/document_detail/48726.html)：
+- 淘宝天猫早期使用事务消息（RocketMQ），2014年中间件团队开发TXC，2017年基于TXC的阿里云分布式事务管理系统[GTS](https://help.aliyun.com/product/48444.html)上线，参考[GTS产品概述](https://help.aliyun.com/document_detail/48726.html)：
   - 多数据源支持：DRDDS、RDS、MySQL、Oracle、PostgreSQL、OceanBase等；
   - 跨服务的分布式事务管理，支持Dubbo、SpringBoot事务控制、SpringCloud；
   - 事务消息支持；
@@ -121,7 +118,10 @@ DRDS支持的平滑扩容实现方式：在同一个后端RDS实例上创建多�
 ](https://help.aliyun.com/document_detail/53296.html)
     - AT模式对应用几乎零侵入；
     - MT模式对应TCC事务模型，满足特殊要求，例如与未使用GTS的其它应用和服务对接等；
+- 支付宝早期采用XTS（TCC事务模型），2013年在蚂蚁金服金融云上发布，名字为DTX；
 - 2019年GTS的开源版[Seata](http://seata.io/zh-cn/)发布，不仅在阿里云，企业内部也可以用上GTS了；
+
+> 事务消息、XTS都要求业务代码实现大量事务控制逻辑（事务状态回查、事务补偿，以及TCC中的Try-Confirm等），对一线开发人员要求高，容易造成数据不一致问题。
 
 DRDS的分布式事务与[GTS](https://help.aliyun.com/product/48444.html)的关系和区别：
 - DRDS自己有一套分布式事务管理系统，对集群内后端数据库的分布式事务进行管理，场景上比GTS简单，因为简化来看TM只有DRDS自己的实例；

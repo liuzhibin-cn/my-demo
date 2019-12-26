@@ -1,23 +1,53 @@
 -------------------------------------------------------------------
-#### 架构
+#### 演示项目架构
 ![](docs/images/architecture.png) <br />
 
-##### 数据库水平拆分
-本项目演示了使用[Mycat](https://github.com/MyCATApache/Mycat-Server)和[Sharding-Proxy](https://shardingsphere.apache.org/)进行分库分表，参考[MyCat分库分表概览](https://github.com/liuzhibin-cn/my-demo/blob/master/docs/Sharding-Mycat-Overview-Quickstart.md)、[Sharding-Proxy分库分表概览](https://github.com/liuzhibin-cn/my-demo/blob/master/docs/Sharding-Sharding-Proxy-Overview-Quickstart.md)，这2个分库分表开源方案与[DRDS](https://help.aliyun.com/document_detail/118010.html)对比，参考[DRDS产品架构概览](https://github.com/liuzhibin-cn/my-demo/blob/master/docs/Sharding-DRDS-Overview.md)。
+-------------------------------------------------------------------
+#### 运行演示项目
+[package.sh](https://github.com/liuzhibin-cn/my-demo/blob/master/package.sh)为打包脚本：
+- `sh package.sh`：最简单运行方式，使用单个MySQL数据库、[nacos](https://nacos.io/)注册中心，运行4个[Dubbo](http://dubbo.apache.org/zh-cn/)服务和1个Web应用；
+- `sh package.sh -mycat`：使用[Mycat](http://www.mycat.io/)分库分表；
+- `sh package.sh -sharding-proxy`：使用[Sharding-Proxy](https://shardingsphere.apache.org/)分库分表；
+- `sh package.sh -seata`：使用[Seata](http://seata.io/zh-cn/)分布式事务管理；
+- `sh package.sh -zipkin`：使用[ZipKin](https://github.com/openzipkin/zipkin)进行链路跟踪、性能分析；
+- `sh package.sh -pinpoint`：使用[PinPoint](https://github.com/naver/pinpoint)进行链路跟踪、性能分析；
+- `sh package.sh -skywalking`：使用[SkyWalking](http://skywalking.apache.org/)进行链路跟踪、性能分析；
 
-项目默认采用Mycat，如果不想部署Mycat，直接使用一个本地MySQL库运行演示项目，需要做如下修改：
-1. [pom.xml](https://github.com/liuzhibin-cn/my-demo/blob/master/pom.xml)中修改`maven profile: dev`属性，改为本地MySQL端口号；
-2. [OrderDao.java](https://github.com/liuzhibin-cn/my-demo/blob/master/order-service/src/main/java/my/demo/dao/order/OrderDao.java)修改`createOrderItem`的SQL语句，由Mycat全局序列改为MySQL自增字段；
-3. [UserDao.java](https://github.com/liuzhibin-cn/my-demo/blob/master/user-service/src/main/java/my/demo/dao/user/UserDao.java)修改`createUserAccount`的SQL语句，由Mycat全局序列改为MySQL自增字段；
+参数可以组合，例如`sh package.sh -mycat -seata -zipkin`，分库分表参数只能二选一，APM工具只能三选一。
 
-由Mycat改为Sharding-Proxy，参考[Sharding-Proxy分库分表概览](https://github.com/liuzhibin-cn/my-demo/blob/master/docs/Sharding-Sharding-Proxy-Overview-Quickstart.md)。
+最简单运行方式操作步骤：
+1. JDK 8+；
+2. 部署nacos，用于Dubbo注册中心；<br />
+   比较简单，参考[Nacos快速开始](https://nacos.io/zh-cn/docs/quick-start.html)即可。
+3. MySQL数据库；<br />
+   建库脚本[sql-schema.sql](https://github.com/liuzhibin-cn/my-demo/blob/master/docs/sql-schema.sql)，是演示分库分表用的建库脚本，简单方式运行只需要其中`mydemo-dn1`单库即可。
+2. 修改项目配置信息；<br />
+   配置信息都在[parent pom.xml](https://github.com/liuzhibin-cn/my-demo/blob/master/pom.xml)中，包括数据库连接信息、nacos地址等。
+3. 编译打包；<br />
+   执行`sh package.sh`，Windows环境装了git bash就可以运行。
+4. 运行演示项目：<br />
+   依次启动服务和Web应用:
+   ```sh
+   java -jar item-service\target\item-service-0.0.1-SNAPSHOT.jar
+   java -jar stock-service\target\stock-service-0.0.1-SNAPSHOT.jar
+   java -jar user-service\target\user-service-0.0.1-SNAPSHOT.jar
+   java -jar order-service\target\order-service-0.0.1-SNAPSHOT.jar
+   java -jar shop-web\target\shop-web-0.0.1-SNAPSHOT.jar
+   ```
+6. 通过[http://localhost:8090/shop](http://localhost:8090/shop)访问，执行操作查看效果；
 
-整体上Mycat、Sharding-Proxy、DRDS：
-- 通过实现MySQL协议成为独立的中间件，将分库分表、读写分离等数据存储层的弹性伸缩方案与应用隔离，并且实现语言无关；
-- 都支持分库、读写分离，一定程度上支持跨分片的查询、分页、排序、聚合等功能，对应用透明；
+#### 分布式事务管理
+阿里云分布式事务管理GTS的开源版Seata，2019年1月开源出来，1.0.0版已经发布。相关概念、部署和使用方法参考[Seata分布式事务管理框架概览](https://github.com/liuzhibin-cn/my-demo/blob/master/docs/Seata-Distributed-Transaction-Management.md)。
 
-##### APM全链路监控
-演示项目支持[PinPoint](https://github.com/naver/pinpoint)、[SkyWalking](http://skywalking.apache.org/)、[ZipKin](https://zipkin.io/)三种APM工具进行全链路跟踪和性能分析，通过不同maven profile打包即可，具体参考项目代码和：[PinPoint部署和使用](https://github.com/liuzhibin-cn/my-demo/blob/master/docs/APM-PinPoint.md)、[SkyWalking部署和使用](https://github.com/liuzhibin-cn/my-demo/blob/master/docs/APM-SkyWalking.md)、[ZipKin部署和使用](https://github.com/liuzhibin-cn/my-demo/blob/master/docs/APM-ZipKin.md)。
+Seata提供AT、TCC、Saga三种柔性事务模式，AT模式对应用几乎透明，使用方便。但目前来看，性能开销还比较高。
+
+#### 数据库分库分表
+本项目演示了使用[Mycat](http://www.mycat.io/)和[Sharding-Proxy](https://shardingsphere.apache.org/)进行分库分表，相关概念、部署和使用方法，参考[MyCat分库分表概览](https://github.com/liuzhibin-cn/my-demo/blob/master/docs/Sharding-Mycat-Overview-Quickstart.md)、[Sharding-Proxy分库分表概览](https://github.com/liuzhibin-cn/my-demo/blob/master/docs/Sharding-Sharding-Proxy-Overview-Quickstart.md)，这2个分库分表开源方案与[DRDS](https://help.aliyun.com/document_detail/118010.html)对比，参考[DRDS产品概览](https://github.com/liuzhibin-cn/my-demo/blob/master/docs/Sharding-DRDS-Overview.md)。
+
+Mycat、Sharding-Proxy和DRDS都实现了MySQL协议，成为独立的中间件，将分库分表、读写分离等数据存储的弹性伸缩方案与应用隔离，并且实现语言无关。
+
+#### APM全链路监控
+演示项目支持[PinPoint](https://github.com/naver/pinpoint)、[SkyWalking](http://skywalking.apache.org/)、[ZipKin](https://zipkin.io/)三种APM工具进行全链路跟踪和性能分析，相关概念、部署和使用方法，参考[PinPoint部署和使用](https://github.com/liuzhibin-cn/my-demo/blob/master/docs/APM-PinPoint.md)、[SkyWalking部署和使用](https://github.com/liuzhibin-cn/my-demo/blob/master/docs/APM-SkyWalking.md)、[ZipKin部署和使用](https://github.com/liuzhibin-cn/my-demo/blob/master/docs/APM-ZipKin.md)。
 
 三种APM工具对比：
 - 使用方式：PinPoint和SkyWalking都采用javaagent方式，对应用代码几乎没有侵入性；ZipKin需要和应用打包到一起，并在应用中完成各种配置，属于强依赖关系；
@@ -28,88 +58,3 @@
 - UI功能：PinPoint和SkyWalking UI功能比较丰富，都提供应用/服务、实例等层级的性能统计，两者各有特色；ZipKin UI功能最弱，只提供依赖关系、具体调用链查看分析；<br />
   额外的UI功能，可以读取APM工具的数据，自定义开发；
 - 社区支持：ZipKin架构灵活、文档完善，社区支持度最高，Spring Cloud和Service Mesh（[istio](https://github.com/istio/)）官方提供ZipKin支持；SkyWalking是华为员工开发，已成为Apache项目，从官方文档的英文水平看，在国外不一定能获得太高支持；PinPoint为韩国公司开源；
-
--------------------------------------------------------------------
-#### 运行演示项目
-1. JDK8+，部署好Redis（用于Dubbo注册中心）、MySQL、Mycat；<br />
-   创建数据库、表，部署配置Mycat参考[MyCat分库分表概览](https://github.com/liuzhibin-cn/my-demo/blob/master/docs/Sharding-Mycat-Overview-Quickstart.md)。
-   > 如果不想部署Mycat，可以在直接使用一个本地MySQL库代替，将项目中的JDBC连接指向这个MySQL库即可。
-2. 修改项目配置：<br />
-   方便起见配置信息全放在[parent pom](https://github.com/liuzhibin-cn/my-demo/blob/master/pom.xml)的`dev` profile中，修改这里即可。
-3. 编译打包：<br />
-   运行[package.sh](https://github.com/liuzhibin-cn/my-demo/blob/master/package.sh)，脚本会install parent pom和`service-client`，然后编译打包其它服务和应用。
-4. 运行演示项目：<br />
-   依次启动`item-service`、`stock-service`、`user-service`、`order-service`，最后启动`shop-web`:
-   ```sh
-   java -jar item-service\target\item-service-0.0.1-SNAPSHOT.jar
-   java -jar stock-service\target\stock-service-0.0.1-SNAPSHOT.jar
-   java -jar user-service\target\user-service-0.0.1-SNAPSHOT.jar
-   java -jar order-service\target\order-service-0.0.1-SNAPSHOT.jar
-   java -jar shop-web\target\shop-web-0.0.1-SNAPSHOT.jar
-   ```
-6. 通过[http://localhost:8090/shop](http://localhost:8090/shop)访问，执行操作查看效果；
-
--------------------------------------------------------------------
-#### Dubbo基础用法
-使用[apache/dubbo-spring-boot-project](https://github.com/apache/dubbo-spring-boot-project)与SpringBoot集成，注册中心使用Redis。
-
-1. `pom.xml`添加依赖项：
-   ```xml
-   <dependency>
-        <groupId>org.apache.dubbo</groupId>
-        <artifactId>dubbo-spring-boot-starter</artifactId>
-        <version>2.7.4.1</version>
-   </dependency>
-   <dependency>
-     <groupId>org.apache.dubbo</groupId>
-     <artifactId>dubbo</artifactId>
-     <version>2.7.4.1</version>
-   </dependency>
-   <dependency> <!-- dubbo: serialization -->
-     <groupId>de.ruedigermoeller</groupId>
-     <artifactId>fst</artifactId>
-     <version>2.57</version>
-   </dependency>
-   <dependency> <!-- dubbo: use redis registry, dubbo uses jedis client -->
-       <groupId>redis.clients</groupId>
-       <artifactId>jedis</artifactId>
-   </dependency>
-   ```
-2. 在`application.yml`中配置protocol、registry等：
-   ```yaml
-   dubbo:
-       application:
-           id: srv-item
-           name: srv-item
-           qosEnable: false
-        protocol:
-            id: dubbo
-            name: dubbo
-            port: 20880
-            threads: 3
-            iothreads: 1
-            server: netty
-            client: netty
-            status: server
-            serialization: fst
-            queues: 0
-            keepAlive: true
-        registry: 
-            id: redis
-            address: redis://127.0.0.1:6379
-   ```
-   最新配置项参考[ApplicationConfig](https://github.com/apache/dubbo/blob/master/dubbo-common/src/main/java/org/apache/dubbo/config/ApplicationConfig.java)、[ProtocolConfig](https://github.com/apache/dubbo/blob/master/dubbo-common/src/main/java/org/apache/dubbo/config/ProtocolConfig.java)、[RegistryConfig](https://github.com/apache/dubbo/blob/master/dubbo-common/src/main/java/org/apache/dubbo/config/RegistryConfig.java)、[MonitorConfig](https://github.com/apache/dubbo/blob/master/dubbo-common/src/main/java/org/apache/dubbo/config/MonitorConfig.java)、[ServiceConfig](https://github.com/apache/dubbo/blob/master/dubbo-config/dubbo-config-api/src/main/java/org/apache/dubbo/config/ServiceConfig.java)、[ReferenceConfig](https://github.com/apache/dubbo/blob/master/dubbo-config/dubbo-config-api/src/main/java/org/apache/dubbo/config/ReferenceConfig.java)
-3. SpringBoot启动类上指定Dubbo组件扫描范围：
-   ```java
-   @Configuration
-   @EnableAutoConfiguration
-   @ComponentScan(basePackages={"my.demo.service.item"})
-   @DubboComponentScan(basePackages = { "my.demo.service.item" })
-   public class Application {
-	   public static void main(String[] args) {
-		   new SpringApplicationBuilder(Application.class)
-			   .web(WebApplicationType.NONE).run(args);
-	   }
-   }
-   ```
-4. 暴露Dubbo服务的类上使用`@Service`注解（不再需要Spring的`@Component`），引用Dubbo服务使用`@Reference`（不再需要Spring的`@Autowired`）；

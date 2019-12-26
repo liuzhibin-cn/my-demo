@@ -33,7 +33,7 @@ Mycat基于MySQL XA实现了TC、TM功能，主要处理方式如下：
      主要协调过程为：
      1. 向所有MySQL节点发送`XA END xaTxId`、`XA PREPARE xaTxId`命令。
      2. PREPARE全部成功，则向所有节点发送`XA COMMIT xaTxId`命令；如果有节点PREPARE失败，则回滚。
-     3. 所有节点COMMIT成功，给客户端返回提交成功；如果有节点COMMIT失败，则重试，包括收到失败消息后立即重试、Mycat启动时根据协调日志记录的事务状态进行重试等。
+     3. 所有节点COMMIT成功，给客户端返回提交成功；如果有节点COMMIT失败，则重试，包括收到失败消息后立即重试、Mycat启动时根据协调日志的事务状态进行重试等。
 
 Mycat实现TC功能时，将XA事务状态保存在内存和本地文件中，其结构外层为XA事务ID，内层为参与者RM信息和事务状态，用于XA过程发生异常时，可以根据TC日志回滚或重试。
 
@@ -71,24 +71,6 @@ Mycat事务管理方案和代码比较简单，不够严谨，例如：
     - _分片规则_：`(user_id % 32) => { 0-7: dn1, 8-15: dn2, 16-23: dn3, 24-31: dn4 }` 
     - _数据节点_：`dn1`, `dn2`, `dn3`, `dn4`
 
-##### 关键流程说明
-- 会员注册
-  1. 使用`account`, `account_hash`, ... 插入`usr_user_account`表，`account_hash`确定分片。利用Mycat全局序列生成`user_id`；
-  2. 使用`user_id`, ...插入`usr_user`表，`user_id`确定分片；
-- 会员登录
-  1. 使用`account`, `account_hash`查`usr_user_account`表，`account_hash`确定分片。得到`user_id`；
-  2. 使用`user_id`查`usr_user`表，得到会员数据，`user_id`确定分片；
-  3. 将`user_id`保存到session，后续用户请求通过session获得`user_id`，用来读取会员数据；
-- 下单
-  1. 由订单服务在应用中生成`order_id`，`user_id`登录时已保存到session，整个会话期间可获得；
-  2. 插入`ord_order`表，`order_id`确定分片；
-  3. 插入`ord_order_item`表，`order_id`确定分片；
-  4. 插入`ord_user_order`表，`user_id`确定分片；<br />
-     > 自定义索引表的数据维护，可以采用MQ方式异步写，由订单服务 -> MQ -> `ord_user_order`；也可以用Canal订阅方式，由MySQL -> Canal -> MQ -> `ord_user_order`。
-- 查询会员订单列表
-  1. 查`ord_user_order`表，`user_id`确定分片，得到`order_id`列表；
-  2. 用`order_id`列表查`ord_order`，获得订单数据，`order_id`确定分片；
-
 ##### 物理部署
 `dn0~4`可以分别部署在不同机器的MySQL实例上，演示项目方便起见只使用了一个MySQL实例，多实例部署只需修改配置文件中`dataNode`与`dataHost`映射关系即可。
 
@@ -109,29 +91,35 @@ Mycat事务管理方案和代码比较简单，不够严谨，例如：
 - [schema.xml](https://github.com/liuzhibin-cn/my-demo/blob/master/docs/mycat-conf/schema.xml)：配置dataHost、dataNode、逻辑schema：
   ```xml
   <mycat:schema xmlns:mycat="http://io.mycat/">
-	  <schema name="db_order" checkSQLschema="false" sqlMaxLimit="100">
-		<table name="ord_order" primaryKey="order_id" dataNode="dn$1-4" rule="order-rule">
-			<childTable name="ord_order_item" primaryKey="order_item_id" joinKey="order_id" parentKey="order_id" />
-		</table>
-		<table name="ord_user_order" dataNode="dn$1-4" rule="user-order-rule" />
-	  </schema>
-	  <schema name="db_user" checkSQLschema="false" sqlMaxLimit="100">
-		<table name="usr_user" primaryKey="user_id" dataNode="dn1, dn2" rule="user-rule" />
+    <schema name="db_order" checkSQLschema="false" sqlMaxLimit="100">
+	    <table name="ord_order" primaryKey="order_id" dataNode="dn$1-4" rule="order-rule">
+		    <!-- 主键order_item_id使用Mycat全局序列，设置autoIncrement后可以像MySQL自增字段一样，
+			     insert时不指定这个列，且支持last_insert_id()函数，避免在SQL中使用next value for MYCATSEQ_XXX，导致druid报错 -->
+		    <childTable name="ord_order_item" primaryKey="order_item_id" autoIncrement="true" joinKey="order_id" parentKey="order_id" />
+	    </table>
+	    <table name="ord_user_order" primaryKey="id" autoIncrement="true" dataNode="dn$1-4" rule="user-order-rule" />
+	    <!-- Seata的回滚表，Seata要求回滚表在业务库中，因此必须添加到mycat逻辑库中 -->
+	    <table name="undo_log" dataNode="dn1" primaryKey="id" />
+    </schema>
+    <schema name="db_user" checkSQLschema="false" sqlMaxLimit="100">
+		<table name="usr_user" primaryKey="user_id" autoIncrement="true" dataNode="dn1, dn2" rule="user-rule" />
 		<table name="usr_user_account" primaryKey="account" dataNode="dn1, dn2" rule="user-account-rule" />
-	  </schema>
-	  <dataNode name="dn0" dataHost="db1" database="mydemo-dn0" />
-	  <dataNode name="dn1" dataHost="db1" database="mydemo-dn1" />
-	  <dataNode name="dn2" dataHost="db1" database="mydemo-dn2" />
-	  <dataNode name="dn3" dataHost="db2" database="mydemo-dn3" />
-	  <dataNode name="dn4" dataHost="db2" database="mydemo-dn4" />
-	  <dataHost name="db1" maxCon="5" minCon="5" balance="0" writeType="0" dbType="mysql" dbDriver="native">
+		<!-- Seata的回滚表，Seata要求回滚表在业务库中，因此必须添加到mycat逻辑库中 -->
+		<table name="undo_log" dataNode="dn1" primaryKey="id" />
+    </schema>
+    <dataNode name="dn0" dataHost="db1" database="mydemo-dn0" />
+    <dataNode name="dn1" dataHost="db1" database="mydemo-dn1" />
+    <dataNode name="dn2" dataHost="db1" database="mydemo-dn2" />
+    <dataNode name="dn3" dataHost="db2" database="mydemo-dn3" />
+    <dataNode name="dn4" dataHost="db2" database="mydemo-dn4" />
+    <dataHost name="db1" maxCon="5" minCon="5" balance="0" writeType="0" dbType="mysql" dbDriver="native">
 		<heartbeat>select user()</heartbeat>
 		<writeHost host="localhost" url="localhost:3306" user="root" password="1234" />
-	  </dataHost>
-	  <dataHost name="db2" maxCon="5" minCon="5" balance="0" writeType="0" dbType="mysql" dbDriver="native">
+    </dataHost>
+    <dataHost name="db2" maxCon="5" minCon="5" balance="0" writeType="0" dbType="mysql" dbDriver="native">
         <heartbeat>select user()</heartbeat>
         <writeHost host="127.0.0.1" url="127.0.0.1:3306" user="root" password="1234" />
-	  </dataHost>
+    </dataHost>
   </mycat:schema>
   ```
 - [rule.xml](https://github.com/liuzhibin-cn/my-demo/blob/master/docs/mycat-conf/rule.xml)：配置分片规则：
@@ -189,8 +177,9 @@ Mycat事务管理方案和代码比较简单，不够严谨，例如：
 - [sequence_db_conf.properties](https://github.com/liuzhibin-cn/my-demo/blob/master/docs/mycat-conf/sequence_db_conf.properties)，配置Mycat全局序列位于哪个dataNode：
   ```
   GLOBAL=dn0
-  ORDERDETAIL=dn0
-  USER=dn0
+  ORD_ORDER_ITEM=dn0
+  ORD_USER_ORDER=dn0
+  USR_USER=dn0
   ```
 
 ##### Windows环境部署
@@ -213,28 +202,21 @@ bin/mycat status     # 查看启动状态
 ```
 
 #### Mycat管理
-Mycat启动之后，`8066`为数据端口，`9066`为管理端口，不能操作数据，只能执行Mycat管理命令。连接Mycat使用`server.xml`文件中定义的用户名和密码。
+Mycat启动之后，`8066`为数据端口；`9066`为管理端口，不能操作数据，只能执行Mycat管理命令。连接Mycat使用`server.xml`文件中定义的用户名和密码。
 > Mac环境连接Mycat必须指定TCP协议，否则会直接连接mysql的3306端口而不是Mycat，没有任何错误信息：
 > ```sh
 > mysql -h localhost -P 8066 -uroot -p --protocol=TCP
 > mysql -h localhost -P 9066 -uroot -p --protocol=TCP
 > ```
 
-管理端口登录，通过`show @@help;`查看Mycat提供的管理命令，例如`show @@datasource;`：
-```
-+----------+-----------+-------+-----------+------+------+--------+------+------+---------+-----------+------------+
-| DATANODE | NAME      | TYPE  | HOST      | PORT | W/R  | ACTIVE | IDLE | SIZE | EXECUTE | READ_LOAD | WRITE_LOAD |
-+----------+-----------+-------+-----------+------+------+--------+------+------+---------+-----------+------------+
-| dn1      | localhost | mysql | localhost | 3306 | W    |      0 |    5 |    5 |     623 |         0 |          0 |
-| dn0      | localhost | mysql | localhost | 3306 | W    |      0 |    5 |    5 |     623 |         0 |          0 |
-| dn3      | 127.0.0.1 | mysql | 127.0.0.1 | 3306 | W    |      0 |    5 |    5 |     623 |         0 |          0 |
-| dn2      | localhost | mysql | localhost | 3306 | W    |      0 |    5 |    5 |     623 |         0 |          0 |
-| dn4      | 127.0.0.1 | mysql | 127.0.0.1 | 3306 | W    |      0 |    5 |    5 |     623 |         0 |          0 |
-+----------+-----------+-------+-----------+------+------+--------+------+------+---------+-----------+------------+
-```
+管理端口登录，通过`show @@help;`查看Mycat提供的管理命令。
+
+#### Mycat使用
+在[my-demo](https://github.com/liuzhibin-cn/my-demo)项目中使用`Mycat`，只需要改为Mycat的JDBC连接参数，包括端口号、账号密码、数据库名称等，相关属性都定义在`parent pom`中了。
+
+`my-demo`项目配置了`maven profile`来启用Mycat，为`package.sh`指定`-mycat`选项打包即可：`package.sh -mycat`
 
 #### 备注
-- Mycat的全局序列不太方便的地方：插入数据后未找到有效获取本次生成的sequence值的方法；
 - Mycat 2.0在开发中，参考[Mycat2](https://github.com/MyCATApache/Mycat2) <br />
   从新特性来看，结果集缓存、自动集群管理、支持负载均衡等主要特性没有必要由Mycat管理，使用第三方即可。
 - 简单性能对比测试 <br />
@@ -244,4 +226,3 @@ Mycat启动之后，`8066`为数据端口，`9066`为管理端口，不能操作
   - 纯JDBC，不分片: TPS在3400上下波动；<br />
   单机测试，Mycat server的CPU占用对测试结果有一定影响。<br />
   从结果看中间加一层mycat后性能有一定下降，但幅度不大，不及MyBatis与原生JDBC之间的差异。
-- 分片方案：算法选择充分考虑扩容时简化数据迁移、避免高并发插入时的热点、避免XA事物；

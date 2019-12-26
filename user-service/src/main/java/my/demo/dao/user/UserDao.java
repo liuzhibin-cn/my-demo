@@ -2,14 +2,13 @@ package my.demo.dao.user;
 
 import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Options;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.ResultMap;
 import org.apache.ibatis.annotations.Select;
-import org.apache.ibatis.annotations.SelectKey;
-import org.apache.ibatis.mapping.StatementType;
 
-import my.demo.domain.User;
-import my.demo.domain.UserAccount;
+import my.demo.entity.User;
+import my.demo.entity.UserAccount;
 
 @Mapper
 public interface UserDao {
@@ -24,7 +23,17 @@ public interface UserDao {
 	@ResultMap("user")
 	User getUser(long userId);
 	
+	/**
+	 * 注意：
+	 * <ol>
+	 * <li>user_id值由底层数据库自动生成，不使用MyCat、Sharding-Proxy时，将user_id设为MySQL的自增字段；</li>
+	 * <li>使用MyCat全局序列时，可以通过MySQL的last_insert_id()、GENERATED_KEY返回user_id值，参考docs/Sharding-Mycat-Overview-Quickstart.md；</li>
+	 * <li>使用Sharding-Proxy时，只能通过MySQL的GENERATED_KEY返回user_id值，参考Sharding-Sharding-Proxy-Overview-Quickstart.md；</li>
+	 * </ol> 
+	 * @param user
+	 * @return
+	 */
 	@Insert("insert into usr_user (nickname, mobile, email, created_at) values (#{nickname}, #{mobile}, #{email}, #{createdAt})")
-	@SelectKey(before=false, keyColumn="user_id", keyProperty="userId", resultType=Long.class, statementType=StatementType.STATEMENT, statement="select last_insert_id() as user_id")
+	@Options(useGeneratedKeys=true, keyProperty="userId", keyColumn="user_id")
 	int createUser(User user);
 }

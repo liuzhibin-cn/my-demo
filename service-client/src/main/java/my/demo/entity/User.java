@@ -1,4 +1,4 @@
-package my.demo.domain;
+package my.demo.entity;
 
 import java.io.Serializable;
 import java.util.Date;

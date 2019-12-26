@@ -1,59 +1,57 @@
 #!/usr/bin/env sh
+PROJECT_HOME=`dirname "$0"`
 
-echo "> Run mvn clean package spring-boot:repackage for all services and shop-app application:"
-echo ">    ./package.sh"
-echo "> To enable ZipKin, SkyWalking or PinPoint APM tools, use one of the following parameters:"
-echo ">    ./package.sh [ zipkin | skywalking | pinpoint ]"
+show_usage() {
+	echo " Run \"mvn clean package spring-boot:repackage -P profiles\" for all services and shop-app application."
+	echo " Usage:"
+	echo " 1. Options to enable database sharding:"
+	echo "    -mycat"
+	echo "    -sharding-proxy"
+	echo " 2. Options to enable global transaction management:"
+	echo "   -seata"
+	echo " 3. Options to enable APM tools:"
+	echo "   -skywalking"
+	echo "   -pinpoint"
+	echo "   -zipkin"
+}
+package_project() {
+	cd $1
+	mvn clean package spring-boot:repackage "$PROFILES"
+	cd ..
+}
 
-if [[ ! -z "$1" ]] && [[ "$1" != "zipkin" ]] && [[ "$1" != "skywalking" ]] && [[ "$1" != "pinpoint" ]]; then
-	echo "> Invalid parameter: $1, expected values: zipkin, skywalking, pinpoint"
-	exit 1
+if [ $# -eq 0 ]; then
+	show_usage
+	sleep 1
 fi;
 
-PROJECT_HOME=`dirname "$0"`
+PROFILES="-P dev"
+
+while [ -n "$1" ] 
+do
+	case "$1" in 
+		-mycat|--mycat) PROFILES="$PROFILES,mycat"; shift 1;;
+		-sharding-proxy|--sharding-proxy) PROFILES="$PROFILES,sharding-proxy"; shift 1;;
+		-seata|--seata) PROFILES="$PROFILES,seata"; shift 1;;
+		-zipkin|--zipkin) PROFILES="$PROFILES,zipkin"; shift 1;;
+		-skywaling|--skywaling) PROFILES="$PROFILES,skywaling"; shift 1;;
+		-pinpoint|--pinpoint) PROFILES="$PROFILES,pinpoint"; shift 1;;
+		?|-?|-help|--help) show_usage; exit 0;;
+		--) break;;
+		*) echo " Invalid parameter: $1"; exit 1;;
+	esac
+done
+
 cd $PROJECT_HOME
 mvn install
 cd service-client
 mvn clean install
 cd ..
 
-cd item-service
-if [ -z "$1" ]; then
-	mvn clean package spring-boot:repackage
-else
-	mvn clean package spring-boot:repackage -Pdev,"$1"
-fi;
-cd ..
+package_project "item-service"
+package_project "stock-service"
+package_project "user-service"
+package_project "order-service"
+package_project "shop-web"
 
-cd stock-service
-if [ -z "$1" ]; then
-	mvn clean package spring-boot:repackage
-else
-	mvn clean package spring-boot:repackage -Pdev,"$1"
-fi;
-cd ..
-
-cd user-service
-if [ -z "$1" ]; then
-	mvn clean package spring-boot:repackage
-else
-	mvn clean package spring-boot:repackage -Pdev,"$1"
-fi;
-cd ..
-
-cd order-service
-if [ -z "$1" ]; then
-	mvn clean package spring-boot:repackage
-else
-	mvn clean package spring-boot:repackage -Pdev,"$1"
-fi;
-cd ..
-
-cd shop-web
-if [ -z "$1" ]; then
-	mvn clean package spring-boot:repackage
-else
-	mvn clean package spring-boot:repackage -Pdev,"$1"
-fi;
-
-echo "> Finished"
+echo " Finished"

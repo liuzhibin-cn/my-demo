@@ -9,15 +9,15 @@
 			-->
 			<childTable name="ord_order_item" primaryKey="order_item_id" autoIncrement="true" joinKey="order_id" parentKey="order_id" />
 		</table>
-		<table name="ord_user_order" dataNode="dn$1-4" rule="user-order-rule" />
+		<table name="ord_user_order" primaryKey="id" autoIncrement="true" dataNode="dn$1-4" rule="user-order-rule" />
 		<!-- Seata的回滚表，Seata要求回滚表在业务库中，因此必须添加到mycat逻辑库中 -->
-		<table name="undo_log" dataNode="dn0" primaryKey="id" />
+		<table name="undo_log" dataNode="dn1" primaryKey="id" />
 	</schema>
 	<schema name="db_user" checkSQLschema="false" sqlMaxLimit="100">
 		<table name="usr_user" primaryKey="user_id" autoIncrement="true" dataNode="dn1, dn2" rule="user-rule" />
 		<table name="usr_user_account" primaryKey="account" dataNode="dn1, dn2" rule="user-account-rule" />
 		<!-- Seata的回滚表，Seata要求回滚表在业务库中，因此必须添加到mycat逻辑库中 -->
-		<table name="undo_log" dataNode="dn0" primaryKey="id" />
+		<table name="undo_log" dataNode="dn1" primaryKey="id" />
 	</schema>
 	<dataNode name="dn0" dataHost="db1" database="mydemo-dn0" />
 	<dataNode name="dn1" dataHost="db1" database="mydemo-dn1" />

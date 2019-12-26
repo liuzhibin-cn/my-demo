@@ -14,12 +14,15 @@
 	
 	<properties>
 	   <application.name>shop-web</application.name>
-	   <activatedProperties></activatedProperties>
+	   <zipkin-profile></zipkin-profile>
 	</properties>
 	
 	<profiles>
 	   <profile>
 	       <id>zipkin</id>
+	       <properties>
+	           <zipkin-profile>zipkin</zipkin-profile>
+	       </properties>
 	       <dependencies>
 		        <dependency>
 		            <groupId>org.springframework.cloud</groupId>
@@ -27,6 +30,15 @@
 		        </dependency>
 	       </dependencies>
 	   </profile>
+       <profile>
+           <id>seata</id>
+           <dependencies>
+		        <dependency>
+		          <groupId>io.seata</groupId>
+		          <artifactId>seata-spring-boot-starter</artifactId>
+		        </dependency>
+           </dependencies>
+       </profile>
 	</profiles>
 
 	<build>
@@ -46,10 +58,6 @@
 	</build>
 
 	<dependencies>
-		<dependency>
-		  <groupId>io.seata</groupId>
-		  <artifactId>seata-spring-boot-starter</artifactId>
-		</dependency>
        <dependency>
              <groupId>my.demo</groupId>
              <artifactId>service-client</artifactId>
@@ -70,9 +78,10 @@
             <artifactId>spring-boot-starter-thymeleaf</artifactId>
         </dependency>
 		<dependency>
-			<groupId>com.alibaba.boot</groupId>
-			<artifactId>nacos-config-spring-boot-starter</artifactId>
-			<version>0.2.4</version>
+			<groupId>io.seata</groupId>
+			<artifactId>seata-spring-boot-starter</artifactId>
+			<scope>provided</scope>
+			<optional>true</optional>
 		</dependency>
 	</dependencies>
 	<dependencyManagement>

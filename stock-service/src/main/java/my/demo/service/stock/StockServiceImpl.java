@@ -9,12 +9,12 @@ import org.slf4j.LoggerFactory;
 
 import com.alibaba.dubbo.config.annotation.Service;
 
-import my.demo.domain.Stock;
+import my.demo.entity.Stock;
 import my.demo.service.ServiceResult;
 import my.demo.service.StockService;
-import my.demo.utils.Tracer;
+import my.demo.utils.MyDemoUtils;
 
-@Service(cluster="failfast", retries=0, loadbalance="roundrobin", timeout=2000)
+@Service
 public class StockServiceImpl implements StockService {
 	Logger log = LoggerFactory.getLogger(this.getClass());
 	
@@ -22,7 +22,7 @@ public class StockServiceImpl implements StockService {
 
 	@Override
 	public ServiceResult<Stock> getStock(int itemId) {
-		Tracer.traceTag("itemId", itemId);
+		MyDemoUtils.tag("itemId", itemId);
 		if(!stocks.containsKey(itemId)) {
 			synchronized (stocks) {
 				if(!stocks.containsKey(itemId)) {
@@ -46,8 +46,8 @@ public class StockServiceImpl implements StockService {
 
 	@Override
 	public ServiceResult<Boolean> lock(int itemId, int lockQty) {
-		Tracer.traceTag("itemId", itemId);
-		Tracer.traceTag("lockQty", lockQty);
+		MyDemoUtils.tag("itemId", itemId);
+		MyDemoUtils.tag("lockQty", lockQty);
 		if(!stocks.containsKey(itemId)) {
 			log.info("[lock] Stock not found, item-id: " + itemId);
 			return new ServiceResult<Boolean>().fail("Item " + itemId + " not found"); 

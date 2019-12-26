@@ -19,36 +19,10 @@ spring:
       ansi:
          enabled: always
    datasource:  
-      # for Mycat
-      driver-class-name: com.mysql.cj.jdbc.Driver
-      url: jdbc:mysql://${mysql.host}:${mysql.port}/db_user?connectTimeout=3000&socketTimeout=10000&characterEncoding=utf8&useTimezone=true&serverTimezone=Asia/Shanghai&zeroDateTimeBehavior=CONVERT_TO_NULL&useSSL=false${jdbc.interceptors}
-      # for Sharding-Proxy
-      #driver-class-name: com.mysql.jdbc.Driver  
-      #url: jdbc:mysql://${mysql.host}:${mysql.port}/db_user?connectTimeout=3000&socketTimeout=10000&characterEncoding=utf8&useTimezone=true&serverTimezone=Asia/Shanghai&zeroDateTimeBehavior=convertToNull&useSSL=false${jdbc.interceptors}
+      driver-class-name: ${mysql.driver-class}
+      url: jdbc:mysql://${mysql.host}:${mysql.port}/${db.user}?connectTimeout=3000&socketTimeout=10000&characterEncoding=utf8&useTimezone=true&serverTimezone=Asia/Shanghai&useSSL=false${jdbc.interceptors}
       username: ${mysql.user}  
       password: ${mysql.password}
-
-my:
-   druid:
-      defaultAutoCommit: false
-      defaultTransactionIsolation: 2      
-      initialSize: 5
-      maxActive: 5
-      maxWait: 2000
-      minIdle: 5
-      validationQuery: /* ping */ select 1
-      testOnBorrow: false
-      testOnReturn: false
-      testWhileIdle: true
-      timeBetweenEvictionRunsMillis: 60000
-      minEvictableIdleTimeMillis: 300000
-      removeAbandoned: true
-      removeAbandonedTimeout: 1800
-      logAbandoned: true
-
-# Spring Boot应用中mybatis的配置方法（备注：改为手工创建SessionFactory）
-mybatis: # see MybatisProperties.class in mybatis-spring-boot-autoconfigure
-   mapperLocations: classpath:mappers/*.xml
 
 dubbo:
     application: # see com.alibaba.dubbo.config.ApplicationConfig
@@ -68,9 +42,34 @@ dubbo:
         queues: 0
         keepAlive: true
     registry: # see com.alibaba.dubbo.config.RegistryConfig
-        address: ${dubbo.registry}
+        address: nacos://${nacos.address}
     provider:
+        cluster: failfast
+        retries: 0
+        loadbalance: roundrobin
+        timeout: 5000
         filter: ${dubbo.filter}
+
+druid:
+   defaultAutoCommit: true
+   defaultTransactionIsolation: 2
+   initialSize: 1
+   maxActive: 3
+   maxWait: 2000
+   minIdle: 1
+   validationQuery: /* ping */ select 1
+   testOnBorrow: false
+   testOnReturn: false
+   testWhileIdle: true
+   timeBetweenEvictionRunsMillis: 60000 # 每分钟心跳测试
+   minEvictableIdleTimeMillis: 1800000  # 空闲30分钟回收 
+   removeAbandoned: true
+   removeAbandonedTimeout: 1800
+   logAbandoned: true
+
+# Spring Boot应用中mybatis的配置方法（备注：改为手工创建SessionFactory）
+mybatis: # see MybatisProperties.class in mybatis-spring-boot-autoconfigure
+   mapperLocations: classpath:mappers/*.xml
 
 seata:
   enabled: true
@@ -80,10 +79,15 @@ seata:
     type: nacos
     nacos:
       namespace:
-      serverAddr: 192.168.31.108:8848
+      serverAddr: ${nacos.address}
   registry:
     type: nacos
     nacos:
       cluster: default
-      server-addr: 192.168.31.108:8848
+      server-addr: ${nacos.address}
       namespace:
+
+zipkin:
+   server: ${zipkin.base-url}/api/v2/spans
+   connectTimeout: 2000
+   readTimeout: 2000

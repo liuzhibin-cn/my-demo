@@ -15,20 +15,19 @@ import org.springframework.transaction.annotation.Transactional;
 import com.alibaba.dubbo.config.annotation.Reference;
 import com.alibaba.dubbo.config.annotation.Service;
 
-import io.seata.core.context.RootContext;
 import my.demo.dao.order.OrderDao;
-import my.demo.domain.Cart;
-import my.demo.domain.Item;
-import my.demo.domain.Order;
-import my.demo.domain.OrderItem;
-import my.demo.domain.Stock;
+import my.demo.entity.Cart;
+import my.demo.entity.Item;
+import my.demo.entity.Order;
+import my.demo.entity.OrderItem;
+import my.demo.entity.Stock;
 import my.demo.service.ItemService;
 import my.demo.service.OrderService;
 import my.demo.service.ServiceResult;
 import my.demo.service.StockService;
-import my.demo.utils.Tracer;
+import my.demo.utils.MyDemoUtils;
 
-@Service(cluster="failfast", retries=0, loadbalance="roundrobin", timeout=2000)
+@Service
 public class OrderServiceImpl implements OrderService {
 	Logger log = LoggerFactory.getLogger(this.getClass());
 	
@@ -57,7 +56,9 @@ public class OrderServiceImpl implements OrderService {
 
 	@Override
 	public ServiceResult<Order> createOrder(Cart cart) {
-		log.info("[create] XID: " + RootContext.getXID());
+		if(MyDemoUtils.isSeataPresent()) {
+			log.info("[create] XID: " + MyDemoUtils.getXID());
+		}
 		ServiceResult<Order> result = new ServiceResult<Order>();
 		//1. 数据校验
 		if(cart==null) {
@@ -69,7 +70,7 @@ public class OrderServiceImpl implements OrderService {
 		if(cart.getUserId()<=0) {
 			return result.fail("Invalid cart, empty member id");
 		}
-		Tracer.traceTag("userId", cart.getUserId());
+		MyDemoUtils.tag("userId", cart.getUserId());
 		
 		List<OrderItem> lockList = new ArrayList<>(cart.getItems().size());
 		try {
@@ -111,7 +112,7 @@ public class OrderServiceImpl implements OrderService {
 			order.setDiscount( order.getDiscount() + cartItem.getDiscount() );
 			order.addOrderItem(orderItem);
 		} );
-		Tracer.traceTag("orderId", order.getOrderId());
+		MyDemoUtils.tag("orderId", order.getOrderId());
 		
 		//3. 锁定库存（简单起见，不处理锁定失败后释放问题）
 		for(OrderItem orderItem : order.getOrderItems()) {
@@ -152,6 +153,8 @@ public class OrderServiceImpl implements OrderService {
 		orderDao.createUserOrder(order.getUserId(), order.getOrderId());
 		log.info("[create] User Order created: user-id: " + order.getUserId() + ", order-id: " + order.getOrderId());
 		
+		orderDao.testUpdateOrderItem(order.getOrderId());
+		
 		//6. 从数据库读取订单返回
 		Order persisted = orderDao.getOrder(order.getOrderId());
 		persisted.setOrderItems(orderDao.getOrderItems(persisted.getOrderId()));
@@ -169,9 +172,9 @@ public class OrderServiceImpl implements OrderService {
 	@Override
 	public ServiceResult<List<Order>> findUserOrders(long userId, int offset, int count) {
 		try {
-			Tracer.traceTag("userId", userId);
-			Tracer.traceTag("offset", offset);
-			Tracer.traceTag("count", count);
+			MyDemoUtils.tag("userId", userId);
+			MyDemoUtils.tag("offset", offset);
+			MyDemoUtils.tag("count", count);
 			List<Long> orderIds = orderDao.findUserOrderIds(userId, offset, count);
 			if(orderIds==null || orderIds.isEmpty()) {
 				if(log.isDebugEnabled()) {
@@ -192,7 +195,7 @@ public class OrderServiceImpl implements OrderService {
 
 	@Override
 	public ServiceResult<List<OrderItem>> getOrderItems(long orderId) {
-		Tracer.traceTag("orderId", orderId);
+		MyDemoUtils.tag("orderId", orderId);
 		try {
 			List<OrderItem> orderItems = orderDao.getOrderItems(orderId);
 			if(log.isDebugEnabled()) {

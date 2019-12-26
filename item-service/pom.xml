@@ -23,7 +23,6 @@
 				<filtering>true</filtering>
 				<includes>
 					<include>application.yml</include>
-					<include>application-zipkin.yml</include>
 					<include>logback.xml</include>
 				</includes>
 			</resource>

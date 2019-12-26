@@ -12,15 +12,14 @@ import org.springframework.util.DigestUtils;
 
 import com.alibaba.dubbo.config.annotation.Service;
 
-import io.seata.core.context.RootContext;
 import my.demo.dao.user.UserDao;
-import my.demo.domain.User;
-import my.demo.domain.UserAccount;
+import my.demo.entity.User;
+import my.demo.entity.UserAccount;
 import my.demo.service.ServiceResult;
 import my.demo.service.UserService;
-import my.demo.utils.Tracer;
+import my.demo.utils.MyDemoUtils;
 
-@Service(cluster="failfast", retries=0, loadbalance="roundrobin", timeout=2000)
+@Service
 public class UserServiceImpl implements UserService {
 	Logger log = LoggerFactory.getLogger(this.getClass());
 	
@@ -40,8 +39,10 @@ public class UserServiceImpl implements UserService {
 	
 	@Override
 	public ServiceResult<User> registerByMobile(String mobile, String password) {
-		log.info("[register] XID: " + RootContext.getXID());
-		Tracer.traceTag("account", mobile);
+		if(MyDemoUtils.isSeataPresent()) {
+			log.info("[register] XID: " + MyDemoUtils.getXID());
+		}
+		MyDemoUtils.tag("account", mobile);
 		ServiceResult<User> result = new ServiceResult<User>();
 		//简单校验
 		if(mobile==null || mobile.isEmpty() || mobile.trim().length()!=11) {
@@ -94,15 +95,14 @@ public class UserServiceImpl implements UserService {
 			result.fail("Failed to create user account");
 			return;
 		}
-		Tracer.traceTag("userId", user.getUserId());
+		MyDemoUtils.tag("userId", user.getUserId());
 		log.info("[register] User account created, user-id: " + user.getUserId() + ", account: " + mobile);
 		result.success(user);
 	}
 
 	@Override
 	public ServiceResult<User> login(String account, String password) {
-		log.info("[login] XID: " + RootContext.getXID());
-		Tracer.traceTag("account", account);
+		MyDemoUtils.tag("account", account);
 		ServiceResult<User> result = new ServiceResult<User>();
 		if(account==null || account.trim().isEmpty()) {
 			return result.fail("Empty account");
@@ -129,7 +129,7 @@ public class UserServiceImpl implements UserService {
 				return result.fail("Account error");
 			}
 			log.info("[login] Success, user-id: " + user.getUserId() + ", account: " + account);
-			Tracer.traceTag("userId", user.getUserId());
+			MyDemoUtils.tag("userId", user.getUserId());
 			return result.success(user);
 		} catch(Exception ex) {
 			log.error("[login] System error, msg: " + ex.getMessage(), ex);

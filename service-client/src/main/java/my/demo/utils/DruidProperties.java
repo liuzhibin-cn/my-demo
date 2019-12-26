@@ -2,7 +2,7 @@ package my.demo.utils;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
-@ConfigurationProperties(prefix="my.druid")
+@ConfigurationProperties(prefix="druid")
 public class DruidProperties {
 	private boolean defaultAutoCommit;
 	private int defaultTransactionIsolation;

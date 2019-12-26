@@ -98,23 +98,6 @@ INSERT INTO MYCAT_SEQUENCE(name,current_value,increment) VALUES ('ORD_ORDER_ITEM
 INSERT INTO MYCAT_SEQUENCE(name,current_value,increment) VALUES ('ORD_USER_ORDER', 9965738, 20);
 INSERT INTO MYCAT_SEQUENCE(name,current_value,increment) VALUES ('USR_USER', 2906300, 20);
 
--- Seata回滚表
-CREATE TABLE IF NOT EXISTS `undo_log`
-(
-    `id`            BIGINT(20)   NOT NULL AUTO_INCREMENT COMMENT 'increment id',
-    `branch_id`     BIGINT(20)   NOT NULL COMMENT 'branch transaction id',
-    `xid`           VARCHAR(100) NOT NULL COMMENT 'global transaction id',
-    `context`       VARCHAR(128) NOT NULL COMMENT 'undo_log context,such as serialization',
-    `rollback_info` LONGBLOB     NOT NULL COMMENT 'rollback info',
-    `log_status`    INT(11)      NOT NULL COMMENT '0:normal status,1:defense status',
-    `log_created`   DATETIME     NOT NULL COMMENT 'create datetime',
-    `log_modified`  DATETIME     NOT NULL COMMENT 'modify datetime',
-    PRIMARY KEY (`id`),
-    UNIQUE KEY `ux_undo_log` (`xid`, `branch_id`)
-) ENGINE = InnoDB
-  AUTO_INCREMENT = 1
-  DEFAULT CHARSET = utf8 COMMENT ='AT transaction mode undo table';
-
 -- ====================================================================
 -- mydemo-dn1: ord_order, ord_order_item, user, usr_user_account, ord_user_order
 -- ====================================================================
@@ -152,7 +135,7 @@ CREATE TABLE `ord_order_item` (
   `last_update` DATETIME NOT NULL DEFAULT current_timestamp on update current_timestamp COMMENT '最后更新时间',
   PRIMARY KEY (`order_item_id`),
   INDEX `ix_order_id` (`order_id` ASC)
-) ENGINE = InnoDB DEFAULT CHARACTER SET = utf8 COLLATE=utf8_general_ci COMMENT = '订单明细';
+) ENGINE = InnoDB AUTO_INCREMENT = 3692471 DEFAULT CHARACTER SET = utf8 COLLATE=utf8_general_ci COMMENT = '订单明细';
 DROP TABLE IF EXISTS `ord_user_order`;
 CREATE TABLE `ord_user_order` (
   `id` BIGINT NOT NULL AUTO_INCREMENT COMMENT '无意义主键，目前seata不支持组合主键',
@@ -160,7 +143,7 @@ CREATE TABLE `ord_user_order` (
   `order_id` BIGINT NOT NULL DEFAULT 0 COMMENT '订单ID',
   PRIMARY KEY (`id`),
   UNIQUE INDEX `uk_uid_oid` (`user_id` ASC, `order_id` ASC)
-) ENGINE = InnoDB DEFAULT CHARACTER SET = utf8 COLLATE=utf8_general_ci COMMENT = '会员-订单异构索引表';
+) ENGINE = InnoDB AUTO_INCREMENT = 9965738 DEFAULT CHARACTER SET = utf8 COLLATE=utf8_general_ci COMMENT = '会员-订单异构索引表';
 DROP TABLE IF EXISTS `usr_user`;
 CREATE TABLE `usr_user` (
   `user_id` BIGINT NOT NULL AUTO_INCREMENT COMMENT '会员ID',
@@ -170,7 +153,7 @@ CREATE TABLE `usr_user` (
   `created_at` DATETIME NOT NULL DEFAULT current_timestamp COMMENT '注册时间',
   `last_update` DATETIME NOT NULL DEFAULT current_timestamp on update current_timestamp COMMENT '最后更新时间',
   PRIMARY KEY (`user_id`)
-) ENGINE = InnoDB DEFAULT CHARACTER SET = utf8 COLLATE=utf8_general_ci COMMENT = '会员主表';
+) ENGINE = InnoDB AUTO_INCREMENT = 2906300 DEFAULT CHARACTER SET = utf8 COLLATE=utf8_general_ci COMMENT = '会员主表';
 DROP TABLE IF EXISTS `usr_user_account`;
 CREATE TABLE `usr_user_account` (
   `account` VARCHAR(30) NOT NULL DEFAULT '' COMMENT '登录账号',
@@ -181,6 +164,21 @@ CREATE TABLE `usr_user_account` (
   INDEX ix_account_hash (account_hash asc),
   INDEX ix_user_id (user_id asc)
 ) ENGINE = InnoDB DEFAULT CHARACTER SET = utf8 COLLATE=utf8_general_ci COMMENT = '会员登录账号';
+-- Seata回滚表
+DROP TABLE IF EXISTS `undo_log`;
+CREATE TABLE IF NOT EXISTS `undo_log`
+(
+    `id`            BIGINT(20)   NOT NULL AUTO_INCREMENT COMMENT 'increment id',
+    `branch_id`     BIGINT(20)   NOT NULL COMMENT 'branch transaction id',
+    `xid`           VARCHAR(100) NOT NULL COMMENT 'global transaction id',
+    `context`       VARCHAR(128) NOT NULL COMMENT 'undo_log context,such as serialization',
+    `rollback_info` LONGBLOB     NOT NULL COMMENT 'rollback info',
+    `log_status`    INT(11)      NOT NULL COMMENT '0:normal status,1:defense status',
+    `log_created`   DATETIME     NOT NULL COMMENT 'create datetime',
+    `log_modified`  DATETIME     NOT NULL COMMENT 'modify datetime',
+    PRIMARY KEY (`id`),
+    UNIQUE KEY `ux_undo_log` (`xid`, `branch_id`)
+) ENGINE = InnoDB AUTO_INCREMENT = 1 DEFAULT CHARSET = utf8 COMMENT ='AT transaction mode undo table';
 
 -- ====================================================================
 -- mydemo-dn2: ord_order, ord_order_item, user, usr_user_account, ord_user_order

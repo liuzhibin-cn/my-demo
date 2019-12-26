@@ -1,6 +1,6 @@
 package my.demo.service;
 
-import my.demo.domain.User;
+import my.demo.entity.User;
 
 public interface UserService {
 	/**

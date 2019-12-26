@@ -8,9 +8,10 @@ import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.ResultMap;
 import org.apache.ibatis.annotations.ResultType;
 import org.apache.ibatis.annotations.Select;
+import org.apache.ibatis.annotations.Update;
 
-import my.demo.domain.Order;
-import my.demo.domain.OrderItem;
+import my.demo.entity.Order;
+import my.demo.entity.OrderItem;
 
 @Mapper
 public interface OrderDao {
@@ -21,6 +22,9 @@ public interface OrderDao {
 	@Insert("insert into ord_order_item (order_id, item_id, title, quantity, price, subtotal, discount, created_at) " 
 			+ "values(#{orderId}, #{itemId}, #{title}, #{quantity}, #{price}, #{subtotal}, #{discount}, #{createdAt})")
 	int createOrderItem(OrderItem orderItem);
+	
+	@Update("update ord_order_item set subtotal=subtotal-2, discount=discount+2 where order_id=#{orderId}")
+	int testUpdateOrderItem(@Param("orderId") long orderId);
 	
 	List<Order> findOrders(@Param("orderIds") List<Long> orderIds);
 	

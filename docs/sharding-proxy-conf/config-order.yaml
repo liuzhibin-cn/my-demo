@@ -1,7 +1,7 @@
 schemaName: db_order
 dataSources: #数据源配置，可配置多个
   ds_0:
-    url: jdbc:mysql://127.0.0.1:3306/mydemo-dn1?serverTimezone=Asia/Shanghai&useSSL=false
+    url: jdbc:mysql://127.0.0.1:3306/mydemo-dn1?serverTimezone=Asia/Shanghai&characterEncoding=utf8&useSSL=false
     username: root
     password: 1234
     connectionTimeoutMilliseconds: 3000 #连接超时毫秒数
@@ -9,7 +9,7 @@ dataSources: #数据源配置，可配置多个
     maxLifetimeMilliseconds: 1800000 #连接最大存活时间毫秒数
     maxPoolSize: 3
   ds_1:
-    url: jdbc:mysql://127.0.0.1:3306/mydemo-dn2?serverTimezone=Asia/Shanghai&useSSL=false
+    url: jdbc:mysql://127.0.0.1:3306/mydemo-dn2?serverTimezone=Asia/Shanghai&characterEncoding=utf8&useSSL=false
     username: root
     password: 1234
     connectionTimeoutMilliseconds: 3000
@@ -17,7 +17,7 @@ dataSources: #数据源配置，可配置多个
     maxLifetimeMilliseconds: 1800000
     maxPoolSize: 3
   ds_2:
-    url: jdbc:mysql://127.0.0.1:3306/mydemo-dn3?serverTimezone=Asia/Shanghai&useSSL=false
+    url: jdbc:mysql://127.0.0.1:3306/mydemo-dn3?serverTimezone=Asia/Shanghai&characterEncoding=utf8&useSSL=false
     username: root
     password: 1234
     connectionTimeoutMilliseconds: 3000
@@ -25,7 +25,7 @@ dataSources: #数据源配置，可配置多个
     maxLifetimeMilliseconds: 1800000
     maxPoolSize: 3
   ds_3:
-    url: jdbc:mysql://127.0.0.1:3306/mydemo-dn4?serverTimezone=Asia/Shanghai&useSSL=false
+    url: jdbc:mysql://127.0.0.1:3306/mydemo-dn4?serverTimezone=Asia/Shanghai&characterEncoding=utf8&useSSL=false
     username: root
     password: 1234
     connectionTimeoutMilliseconds: 3000
@@ -34,34 +34,35 @@ dataSources: #数据源配置，可配置多个
     maxPoolSize: 3
 shardingRule:
   tables:
-    ord_order: # 逻辑表
-      actualDataNodes: ds_${0..3}.ord_order # 映射到物理表
-      databaseStrategy: # 分库的分片规则，还支持分表的分片规则，配置上类似，不再演示
-        inline: # 分片规则简单使用inline表达式
-          shardingColumn: order_id # 分片字段
-          algorithmExpression: ds_${order_id % 4} # 分片算法
+    ord_order:
+      actualDataNodes: ds_${0..3}.ord_order
+      databaseStrategy:
+        inline: 
+          shardingColumn: order_id
+          algorithmExpression: ds_${order_id % 4}
     ord_order_item:
       actualDataNodes: ds_${0..3}.ord_order_item
       databaseStrategy:
         inline: 
           shardingColumn: order_id
           algorithmExpression: ds_${order_id % 4}
-      keyGenerator: # 自动生成order_item_id主键值
-        type: SNOWFLAKE # 算法
-        column: order_item_id # 字段
+      keyGenerator:
+        type: SNOWFLAKE
+        column: order_item_id
         props: 
-          worker.id: 1 # 逐渐生成器属性，不同实例设置不同值，避免冲突
+          worker.id: 1
           max.tolerate.time.difference.milliseconds: 600000 # 允许的系统时钟回拨10分钟
     ord_user_order:
       actualDataNodes: ds_${0..3}.ord_user_order
       databaseStrategy:
         inline: 
           shardingColumn: user_id
-          # 先对17求模是因为测试过程中发现，Sharding-Proxy生成的user_id直接对4求模分片，
-          # 数据分布不平衡，ds_2和ds3上面根本没有分配数据
-          algorithmExpression: ds_${user_id % 17 % 4} 
-  bindingTables: # 配置该逻辑库上的父子关系表
+          algorithmExpression: ds_${user_id % 17 % 4}
+    undo_log:
+        actualDataNodes: ds_0.undo_log
+  bindingTables:
     - ord_order,ord_order_item
+  defaultDataSourceName: ds_0
   defaultDatabaseStrategy:
     none:
   defaultTableStrategy:

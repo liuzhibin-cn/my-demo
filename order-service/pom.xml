@@ -24,6 +24,15 @@
                 <jdbc.interceptors>&amp;queryInterceptors=brave.mysql8.TracingQueryInterceptor&amp;exceptionInterceptors=brave.mysql8.TracingExceptionInterceptor&amp;zipkinServiceName=db-${application.name}</jdbc.interceptors>
             </properties>
         </profile>
+       <profile>
+           <id>seata</id>
+           <dependencies>
+                <dependency>
+                  <groupId>io.seata</groupId>
+                  <artifactId>seata-spring-boot-starter</artifactId>
+                </dependency>
+           </dependencies>
+       </profile>
 	</profiles>
 
 	<build>
@@ -33,7 +42,6 @@
 				<filtering>true</filtering>
 				<includes>
 					<include>application.yml</include>
-					<include>application-zipkin.yml</include>
 					<include>logback.xml</include>
 					<include>mappers/*.xml</include>
 				</includes>
@@ -51,6 +59,10 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter</artifactId>
         </dependency>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-tx</artifactId>
+        </dependency>
 		<dependency>
 			<groupId>org.mybatis.spring.boot</groupId>
 			<artifactId>mybatis-spring-boot-starter</artifactId>
@@ -63,11 +75,10 @@
 			<groupId>mysql</groupId>
 			<artifactId>mysql-connector-java</artifactId>
 		</dependency>
-		
-        <dependency>
-          <groupId>io.seata</groupId>
-          <artifactId>seata-spring-boot-starter</artifactId>
-        </dependency>
+		<dependency>
+			<groupId>com.alibaba</groupId>
+			<artifactId>druid</artifactId>
+		</dependency>
 
 		<dependency>
 		    <groupId>io.zipkin.brave</groupId>

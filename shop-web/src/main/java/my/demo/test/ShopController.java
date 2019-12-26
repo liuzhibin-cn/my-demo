@@ -20,7 +20,6 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.alibaba.dubbo.config.annotation.Reference;
 
-import io.seata.core.context.RootContext;
 import io.seata.spring.annotation.GlobalTransactional;
 import my.demo.domain.Cart;
 import my.demo.domain.CartItem;
@@ -32,6 +31,7 @@ import my.demo.service.OrderService;
 import my.demo.service.ServiceResult;
 import my.demo.service.StockService;
 import my.demo.service.UserService;
+import my.demo.utils.MyDemoUtils;
 
 @Controller
 @RequestMapping(value="/shop")
@@ -110,7 +110,9 @@ public class ShopController {
 		return result;
 	}
 	private boolean runFullTestCase() {
-		log.debug("Start a test case, XID: " + RootContext.getXID());
+		if(MyDemoUtils.isSeataPresent()) {
+			log.debug("Start a test case, XID: " + MyDemoUtils.getXID());
+		}
 		//随机注册一个用户
 		String prefix = MOBILE_PREFIXS[(int)Math.round(Math.random()*1000) % MOBILE_PREFIXS.length];
 		String mobile = prefix + String.format("%08d", Math.round(Math.random()*100000000));

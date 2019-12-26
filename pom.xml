@@ -22,6 +22,7 @@
         <zipkin-reporter.version>2.12.0</zipkin-reporter.version>
         <skywalking.version>6.5.0</skywalking.version>
         <seata.version>1.0.0</seata.version>
+        <druid.version>1.1.21</druid.version>
         
         <!-- 默认排除ZipKin和SkyWalking依赖项 -->
         <excludeGroupIds>org.apache.skywalking,io.zipkin,io.zipkin.zipkin2,io.zipkin.brave,io.zipkin.reporter2,com.squareup.okhttp3,com.squareup.okio</excludeGroupIds>
@@ -29,29 +30,55 @@
         <log.layout>ch.qos.logback.classic.PatternLayout</log.layout>
         <log.traceInfo></log.traceInfo>
         <dubbo.filter></dubbo.filter>
+        
+		<mysql-connector.version>8.0.18</mysql-connector.version>
+		<mysql.driver-class>com.mysql.cj.jdbc.Driver</mysql.driver-class>
+
+        <mysql.host>localhost</mysql.host>
+        <mysql.port>3306</mysql.port>
+        <mysql.user>root</mysql.user>
+        <mysql.password>1234</mysql.password>
+        <db.order>mydemo-dn1</db.order>
+        <db.user>mydemo-dn1</db.user>
+        <nacos.address>192.168.31.108:8848</nacos.address>
+        <!-- zipkin.base-url：以端口号结束，不要添加反斜杠 -->
+        <zipkin.base-url>http://192.168.31.108:9411</zipkin.base-url>
 	</properties>
 
     <profiles>
         <profile>
             <id>dev</id>
-            <activation>
-                <activeByDefault>true</activeByDefault>
-            </activation>
+        </profile>
+        <profile>
+            <id>sharding-proxy</id>
             <properties>
-		        <!-- 为了演示项目便于修改，在parent pom定义了这个profile -->
-		        <mysql.host>localhost</mysql.host>
-		        <mysql.port>8066</mysql.port>
-		        <mysql.user>mydemo</mysql.user>
-		        <mysql.password>mydemo</mysql.password>
-		        <dubbo.registry>nacos://192.168.31.108:8848</dubbo.registry>
-				<!-- zipkin.base-url：以端口号结束，不要添加反斜杠 -->
-				<zipkin.base-url>http://192.168.31.108:9411</zipkin.base-url>
+		        <!-- 使用Sharding-Proxy时，服务端和客户端都不能使用较高版本的MySQL Connector/J，否则报错，这里使用官方文档指定的版本 -->
+		        <mysql-connector.version>5.1.47</mysql-connector.version>
+				<!-- 低版本的driver class不一样 -->
+				<mysql.driver-class>com.mysql.jdbc.Driver</mysql.driver-class>
+                <mysql.port>3307</mysql.port> <!-- Sharding-Proxy默认端口号3307 -->
+                <mysql.user>mydemo</mysql.user>
+                <mysql.password>mydemo</mysql.password>
+		        <db.order>db_order</db.order>
+		        <db.user>db_user</db.user>
             </properties>
+        </profile>
+        <profile>
+            <id>mycat</id>
+            <properties>
+                <mysql.port>8066</mysql.port> <!-- Sharding-Proxy默认端口号8066 -->
+                <mysql.user>mydemo</mysql.user>
+                <mysql.password>mydemo</mysql.password>
+                <db.order>db_order</db.order>
+                <db.user>db_user</db.user>
+            </properties>
+        </profile>
+        <profile>
+            <id>seata</id>
         </profile>
         <profile>
             <id>zipkin</id>
             <properties>
-                <activatedProperties>zipkin</activatedProperties>
                 <!-- 排除SkyWalking依赖项 -->
                 <excludeGroupIds>org.apache.skywalking</excludeGroupIds>
 				<log.traceInfo>%clr([%X{traceId} : %X{spanId}]){yellow}</log.traceInfo>
@@ -169,11 +196,13 @@
 	        <dependency>
 	            <groupId>mysql</groupId>
 	            <artifactId>mysql-connector-java</artifactId>
-	            <!-- for Mycat -->
-	            <version>8.0.18</version><!--$NO-MVN-MAN-VER$ -->
-	            <!-- for Sharding-Proxy -->
-	            <!-- version>5.1.47</version-->
+	            <version>${mysql-connector.version}</version>
 	        </dependency>
+			<dependency>
+				<groupId>com.alibaba</groupId>
+				<artifactId>druid</artifactId>
+				<version>${druid.version}</version>
+			</dependency>
 	        
 	        <!-- Seata依赖项 -->
 			<dependency>
