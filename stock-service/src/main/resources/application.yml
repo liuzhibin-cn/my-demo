@@ -13,7 +13,7 @@ dubbo:
     protocol: # see com.alibaba.dubbo.config.ProtocolConfig
         id: dubbo
         name: dubbo
-        port: 20881
+        port: ${STOCK_SRV_PORT:20881}
         threads: 3
         iothreads: 1
         server: netty

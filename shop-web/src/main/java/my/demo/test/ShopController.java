@@ -20,12 +20,11 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.alibaba.dubbo.config.annotation.Reference;
 
-import io.seata.spring.annotation.GlobalTransactional;
-import my.demo.domain.Cart;
-import my.demo.domain.CartItem;
-import my.demo.domain.Item;
-import my.demo.domain.Order;
-import my.demo.domain.User;
+import my.demo.entity.Cart;
+import my.demo.entity.CartItem;
+import my.demo.entity.Item;
+import my.demo.entity.Order;
+import my.demo.entity.User;
 import my.demo.service.ItemService;
 import my.demo.service.OrderService;
 import my.demo.service.ServiceResult;
@@ -61,7 +60,7 @@ public class ShopController {
 		if(!r.isSuccess()) return "Register failed: " + r.getMessage();
 		Cookie cookie = new Cookie(COOKIE_NAME, String.valueOf(r.getResult().getUserId()));
 		cookie.setPath("/");
-		response.addCookie(cookie);
+		response.addCookie(cookie); 
 		return r.getResult();
 	}
 	@PostMapping(value="/login")
@@ -83,7 +82,7 @@ public class ShopController {
 		return this.createOrder(cart);
 	}
 	@GetMapping(value="/full-test")
-	@GlobalTransactional(timeoutMills = 3000, name = "full-test-case")
+//	@GlobalTransactional(timeoutMills = 3000, name = "full-test-case")
 	public @ResponseBody TestResult fullTestCase(@RequestParam(name="count", required=false, defaultValue="1") int count) {
 		return this.runFullTestCase(count);
 	}

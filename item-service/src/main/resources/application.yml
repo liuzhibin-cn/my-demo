@@ -13,7 +13,7 @@ dubbo:
     protocol: # see com.alibaba.dubbo.config.ProtocolConfig
         id: dubbo
         name: dubbo
-        port: 20880
+        port: ${ITEM_SRV_PORT:20880}
         threads: 3
         iothreads: 1
         server: netty

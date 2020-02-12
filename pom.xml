@@ -34,13 +34,13 @@
 		<mysql-connector.version>8.0.18</mysql-connector.version>
 		<mysql.driver-class>com.mysql.cj.jdbc.Driver</mysql.driver-class>
 
-        <mysql.host>localhost</mysql.host>
+        <mysql.host>${MYSQL_HOST:localhost}</mysql.host>
         <mysql.port>3306</mysql.port>
-        <mysql.user>root</mysql.user>
-        <mysql.password>1234</mysql.password>
+        <mysql.user>mydemo</mysql.user>
+        <mysql.password>mydemo</mysql.password>
         <db.order>mydemo-dn1</db.order>
         <db.user>mydemo-dn1</db.user>
-        <nacos.address>192.168.31.108:8848</nacos.address>
+        <nacos.address>${NACOS_HOST:127.0.0.1}:8848</nacos.address>
         <!-- zipkin.base-url：以端口号结束，不要添加反斜杠 -->
         <zipkin.base-url>http://192.168.31.108:9411</zipkin.base-url>
 	</properties>
@@ -57,8 +57,6 @@
 				<!-- 低版本的driver class不一样 -->
 				<mysql.driver-class>com.mysql.jdbc.Driver</mysql.driver-class>
                 <mysql.port>3307</mysql.port> <!-- Sharding-Proxy默认端口号3307 -->
-                <mysql.user>mydemo</mysql.user>
-                <mysql.password>mydemo</mysql.password>
 		        <db.order>db_order</db.order>
 		        <db.user>db_user</db.user>
             </properties>
@@ -67,8 +65,6 @@
             <id>mycat</id>
             <properties>
                 <mysql.port>8066</mysql.port> <!-- Sharding-Proxy默认端口号8066 -->
-                <mysql.user>mydemo</mysql.user>
-                <mysql.password>mydemo</mysql.password>
                 <db.order>db_order</db.order>
                 <db.user>db_user</db.user>
             </properties>
