@@ -28,10 +28,10 @@ dubbo:
         cluster: failfast
         retries: 0
         loadbalance: roundrobin
-        timeout: 3000
+        timeout: 10000
         filter: ${dubbo.filter}
 
 zipkin:
    server: ${zipkin.base-url}/api/v2/spans
-   connectTimeout: 2000
-   readTimeout: 2000
+   connectTimeout: 5000
+   readTimeout: 5000

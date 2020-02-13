@@ -7,5 +7,5 @@ spring:
 
 zipkin:
    server: ${zipkin.base-url}/api/v2/spans
-   connectTimeout: 2000
-   readTimeout: 2000
+   connectTimeout: 5000
+   readTimeout: 5000

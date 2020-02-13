@@ -47,7 +47,7 @@ dubbo:
         cluster: failfast
         retries: 0
         loadbalance: roundrobin
-        timeout: 5000
+        timeout: 10000
         filter: ${dubbo.filter}
 
 druid:
@@ -55,7 +55,7 @@ druid:
    defaultTransactionIsolation: 2
    initialSize: 1
    maxActive: 3
-   maxWait: 2000
+   maxWait: 5000
    minIdle: 1
    validationQuery: /* ping */ select 1
    testOnBorrow: false
@@ -89,5 +89,5 @@ seata:
 
 zipkin:
    server: ${zipkin.base-url}/api/v2/spans
-   connectTimeout: 2000
-   readTimeout: 2000
+   connectTimeout: 5000
+   readTimeout: 5000

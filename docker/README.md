@@ -2,7 +2,7 @@
 docker network create mydemo
 
 docker run -d --net=mydemo --name mysql -p13306:3306 -e MYSQL_ROOT_PASSWORD=123 mydemo/mysql
-
+docker run -d --net=mydemo --name mycat -p 18066:8066 -p 19066:9066 -e MYSQL_HOST=mysql mydemo/mycat
 docker run -d --net=mydemo --name nacos -p18848:8848 -e MYSQL_HOST=mysql mydemo/nacos
 
 docker run -d --net=mydemo --name item -e NACOS_HOST=nacos mydemo/item

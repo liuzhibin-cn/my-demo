@@ -1,9 +1,10 @@
-FROM java:8
+FROM openjdk:8
 
-# java:8镜像：
-# OS: Debian 8.7 [cat /etc/issue.net, cat /etc/debian_version]
-# java: openjdk version "1.8.0_111"
-# git: 2.1.4
+# Debian 10.2 [cat /etc/issue.net, cat /etc/debian_version]
+# openjdk version "1.8.0_242"
+# OpenJDK Runtime Environment (build 1.8.0_242-b08)
+# OpenJDK 64-Bit Server VM (build 25.242-b08, mixed mode)
+# git: 2.20.1
 
 WORKDIR /home
 ENV MYSQL_HOST=mysql NACOS_HOST=nacos ORDER_SRV_PORT=20880

@@ -26,7 +26,7 @@ dubbo:
         filter: ${dubbo.filter}
 
 seata:
-  enabled: true
+  enabled: ${seata-enabled}
   application-id: ${application.name}
   tx-service-group: my_demo_gtx
   config:

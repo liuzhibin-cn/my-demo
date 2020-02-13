@@ -5,8 +5,8 @@ DROP DATABASE IF EXISTS `mydemo-dn0`;
 CREATE SCHEMA `mydemo-dn0` DEFAULT CHARACTER SET utf8 ;
 USE `mydemo-dn0`;
 
-DROP TABLE IF EXISTS MYCAT_SEQUENCE;
-CREATE TABLE MYCAT_SEQUENCE (name VARCHAR(64) NOT NULL,  current_value BIGINT(20) NOT NULL,  increment INT NOT NULL DEFAULT 1, PRIMARY KEY (name) ) ENGINE=InnoDB;
+DROP TABLE IF EXISTS mycat_sequence;
+CREATE TABLE mycat_sequence (name VARCHAR(64) NOT NULL,  current_value BIGINT(20) NOT NULL,  increment INT NOT NULL DEFAULT 1, PRIMARY KEY (name) ) ENGINE=InnoDB;
 -- ----------------------------
 -- Function structure for `mycat_seq_currval`
 -- ----------------------------
@@ -94,10 +94,10 @@ BEGIN
 END
 ;;
 DELIMITER ;
-INSERT INTO MYCAT_SEQUENCE(name,current_value,increment) VALUES ('GLOBAL', 100000, 1);
-INSERT INTO MYCAT_SEQUENCE(name,current_value,increment) VALUES ('ORD_ORDER_ITEM', 1000000, 20);
-INSERT INTO MYCAT_SEQUENCE(name,current_value,increment) VALUES ('ORD_USER_ORDER', 9965738, 20);
-INSERT INTO MYCAT_SEQUENCE(name,current_value,increment) VALUES ('USR_USER', 2906300, 20);
+INSERT INTO mycat_sequence(name,current_value,increment) VALUES ('GLOBAL', 100000, 1);
+INSERT INTO mycat_sequence(name,current_value,increment) VALUES ('ORD_ORDER_ITEM', 1000000, 20);
+INSERT INTO mycat_sequence(name,current_value,increment) VALUES ('ORD_USER_ORDER', 9965738, 20);
+INSERT INTO mycat_sequence(name,current_value,increment) VALUES ('USR_USER', 2906300, 20);
 
 -- ====================================================================
 -- mydemo-dn1: ord_order, ord_order_item, user, usr_user_account, ord_user_order

@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- - - Licensed under the Apache License, Version 2.0 (the "License"); 
+	- you may not use this file except in compliance with the License. - You 
+	may obtain a copy of the License at - - http://www.apache.org/licenses/LICENSE-2.0 
+	- - Unless required by applicable law or agreed to in writing, software - 
+	distributed under the License is distributed on an "AS IS" BASIS, - WITHOUT 
+	WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. - See the 
+	License for the specific language governing permissions and - limitations 
+	under the License. -->
+<!DOCTYPE mycat:rule SYSTEM "rule.dtd">
+<mycat:rule xmlns:mycat="http://io.mycat/">
+	<tableRule name="order-rule">
+		<rule>
+			<columns>order_id</columns>
+			<algorithm>order-func</algorithm>
+		</rule>
+	</tableRule>
+	<tableRule name="user-order-rule">
+		<rule>
+			<columns>user_id</columns>
+			<algorithm>user-order-func</algorithm>
+		</rule>
+	</tableRule>
+	<tableRule name="user-rule">
+		<rule>
+			<columns>user_id</columns>
+			<algorithm>user-func</algorithm>
+		</rule>
+	</tableRule>
+	<tableRule name="user-account-rule">
+		<rule>
+			<columns>account_hash</columns>
+			<algorithm>user-account-func</algorithm>
+		</rule>
+	</tableRule>
+
+	<function name="order-func" class="io.mycat.route.function.PartitionByPattern">
+		<property name="patternValue">32</property> <!-- 对32求模 -->
+		<property name="mapFile">order-partition.txt</property> <!-- 求模结果按照文件配置的规则映射到分片 -->
+	</function>
+	<function name="user-order-func" class="io.mycat.route.function.PartitionByPattern">
+		<property name="patternValue">32</property> <!-- 对32求模 -->
+		<property name="mapFile">order-partition.txt</property> <!-- 公用订单的分片规则 -->
+	</function>
+	<function name="user-func" class="io.mycat.route.function.PartitionByPattern">
+			<property name="patternValue">32</property> <!-- 对32求模 -->
+			<property name="mapFile">user-partition.txt</property> <!-- 求模结果按照文件配置的规则映射到分片 -->
+	</function>
+	<function name="user-account-func" class="io.mycat.route.function.PartitionByMod">
+			<property name="count">2</property> <!-- 数据分为2片 -->
+	</function>
+</mycat:rule>

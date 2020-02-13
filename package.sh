@@ -1,4 +1,5 @@
 #!/usr/bin/env sh
+
 PROJECT_HOME=`dirname "$0"`
 
 show_usage() {
@@ -16,7 +17,7 @@ show_usage() {
 }
 package_project() {
 	cd $1
-	mvn clean package spring-boot:repackage "$PROFILES"
+	mvn $CLEAN package spring-boot:repackage "$PROFILES"
 	cd ..
 }
 
@@ -26,16 +27,25 @@ if [ $# -eq 0 ]; then
 fi;
 
 PROFILES="-P dev"
+DB_HOST="mysql"
+CLEAN=""
 
 while [ -n "$1" ] 
 do
 	case "$1" in 
-		-mycat|--mycat) PROFILES="$PROFILES,mycat"; shift 1;;
-		-sharding-proxy|--sharding-proxy) PROFILES="$PROFILES,sharding-proxy"; shift 1;;
+		-mycat|--mycat) 
+		    PROFILES="$PROFILES,mycat";
+		    DB_HOST="mycat"
+		    shift 1;;
+		-sharding-proxy|--sharding-proxy) 
+		    PROFILES="$PROFILES,sharding-proxy"; 
+		    DB_HOST="shardingproxy"
+		    shift 1;;
 		-seata|--seata) PROFILES="$PROFILES,seata"; shift 1;;
 		-zipkin|--zipkin) PROFILES="$PROFILES,zipkin"; shift 1;;
 		-skywaling|--skywaling) PROFILES="$PROFILES,skywaling"; shift 1;;
 		-pinpoint|--pinpoint) PROFILES="$PROFILES,pinpoint"; shift 1;;
+		-clean|--clean) CLEAN="clean"; shift 1;;
 		?|-?|-help|--help) show_usage; exit 0;;
 		--) break;;
 		*) echo " Invalid parameter: $1"; exit 1;;
@@ -53,5 +63,11 @@ package_project "stock-service"
 package_project "user-service"
 package_project "order-service"
 package_project "shop-web"
+
+# order和user服务需要连接数据库：
+# 1. 本地运行模式：通过maven的profile完成数据库HOST、PORT配置；
+# 2. Docker容器运行：通过docker run传递环境变量值，将数据库HOST、PORT传递到容器；
+sed -i "s/^MYSQL_HOST=.*$/MYSQL_HOST=$DB_HOST/g" order-service/run.sh
+sed -i "s/^MYSQL_HOST=.*$/MYSQL_HOST=$DB_HOST/g" user-service/run.sh
 
 echo " Finished"

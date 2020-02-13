@@ -81,11 +81,12 @@ Saga模式是SEATA提供的长事务解决方案，在Saga模式中，业务流�
 
 ----------------------------------------
 #### Seata部署
-[Seata 1.0.0-GA](https://github.com/seata/seata/releases/tag/v1.0.0)刚发布，本文使用这个版本，nacos和seata以及它们使用的MySQL库都部署在Mac环境（`IP: 192.168.31.108`），使用nacos作为注册中心、配置中心。
+[Seata 1.0.0-GA](https://github.com/seata/seata/releases/tag/v1.0.0)刚发布，本文使用该版本。使用nacos作为注册中心、配置中心，nacos和seata以及MySQL库都部署在Mac环境（`IP: 192.168.31.108`）。
 
 1. 下载解压[seata-server-1.0.0.tar.gz](https://github.com/seata/seata/releases/download/v1.0.0/seata-server-1.0.0.tar.gz)；
 2. 部署配置nacos：<br />
-   下载[config.txt](https://github.com/seata/seata/blob/develop/script/config-center/config.txt)、[nacos-config.sh](https://github.com/seata/seata/blob/develop/script/config-center/nacos/nacos-config.sh)，修改`config.txt`内容，使用`./nacos-config.sh nacos-host:nacos-port`将配置项导入到nacos中。本示例对`config.txt`修改项如下：
+   下载[config.txt](https://github.com/seata/seata/blob/develop/script/config-center/config.txt)、[nacos-config.sh](https://github.com/seata/seata/blob/develop/script/config-center/nacos/nacos-config.sh)，修改`config.txt`内容，使用`./nacos-config.sh -h nacos-host -p nacos-port`将配置项导入到nacos中。注意：`config.txt`必须为unix文件格式，换行不能包含`\r`符号；`nacos-config.sh`有些bug，例如`port="SEATA_GROUP"`、找`config.txt`文件位置等。本示例修改过的文件参考[config.txt](https://github.com/liuzhibin-cn/my-demo/blob/master/docker/seata/config.txt)、[nacos-config.sh](https://github.com/liuzhibin-cn/my-demo/blob/master/docker/seata/nacos-config.sh)<br />
+   本示例对`config.txt`修改项如下：
    ```sh
    service.vgroup_mapping.my_demo_gtx=default    # 将服务分组名称修改为my_demo_gtx
    service.default.grouplist=192.168.31.108:8091 # Seata服务地址

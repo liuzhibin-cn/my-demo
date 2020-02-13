@@ -6,3 +6,9 @@ ENV LANG=C.UTF-8
 # 2-nacos-mysql.sql: nacos表结构
 # 9-users.sql：默认mysql镜像的root@'%'权限设置不足，无法远程连接，这里为其添加权限
 ADD *.sql /docker-entrypoint-initdb.d/
+# 添加mysql server配置
+# 默认配置文件位于:
+#   /etc/my.cnf
+#   /etc/mysql/conf.d/*.cnf
+#   /etc/mysql/mysql.conf.d/*.cnf
+COPY ./my.cnf /etc/mysql/mysql.conf.d/

@@ -20,6 +20,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.alibaba.dubbo.config.annotation.Reference;
 
+import io.seata.spring.annotation.GlobalTransactional;
 import my.demo.entity.Cart;
 import my.demo.entity.CartItem;
 import my.demo.entity.Item;
@@ -82,7 +83,7 @@ public class ShopController {
 		return this.createOrder(cart);
 	}
 	@GetMapping(value="/full-test")
-//	@GlobalTransactional(timeoutMills = 3000, name = "full-test-case")
+	@GlobalTransactional(timeoutMills = 3000, name = "full-test-case")
 	public @ResponseBody TestResult fullTestCase(@RequestParam(name="count", required=false, defaultValue="1") int count) {
 		return this.runFullTestCase(count);
 	}
