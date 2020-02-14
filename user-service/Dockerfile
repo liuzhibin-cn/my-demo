@@ -7,7 +7,7 @@ FROM openjdk:8
 # git: 2.20.1
 
 WORKDIR /home
-ENV MYSQL_HOST=mysql NACOS_HOST=nacos USER_SRV_PORT=20880
+ENV MYSQL_HOST=mysql NACOS_HOST=nacos ZIPKIN_HOST=zipkin SKYWALKING_HOST=skywalking USER_SRV_PORT=20880
 ADD ./target/user-service-0.0.1-SNAPSHOT.jar /home/
 EXPOSE $USER_SRV_PORT
 ENTRYPOINT ["java", "-jar", "/home/user-service-0.0.1-SNAPSHOT.jar"]

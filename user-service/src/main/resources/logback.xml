@@ -34,6 +34,9 @@
     <logger name="druid.sql" level="DEBUG" additivity="false">
        <appender-ref ref="APP" />
     </logger>
+    <logger name="io.seata" level="INFO" additivity="false">
+       <appender-ref ref="APP" />
+    </logger>
     
     <root level="INFO">
 		<appender-ref ref="SYS" />

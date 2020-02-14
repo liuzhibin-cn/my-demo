@@ -7,7 +7,7 @@ FROM openjdk:8
 # git: 2.20.1
 
 WORKDIR /home
-ENV MYSQL_HOST=mysql NACOS_HOST=nacos ORDER_SRV_PORT=20880
+ENV MYSQL_HOST=mysql NACOS_HOST=nacos ZIPKIN_HOST=zipkin SKYWALKING_HOST=skywalking ORDER_SRV_PORT=20880
 ADD ./target/order-service-0.0.1-SNAPSHOT.jar /home/
 EXPOSE $ORDER_SRV_PORT
 ENTRYPOINT ["java", "-jar", "/home/order-service-0.0.1-SNAPSHOT.jar"]

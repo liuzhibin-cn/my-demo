@@ -37,5 +37,5 @@ sed -i '/db.url.1/'d dist/conf/application.properties
 sed -i 's/db.user=nacos_devtest/db.user=${MYSQL_USER:nacos}/g' dist/conf/application.properties
 sed -i 's/db.password=nacos/db.password=${MYSQL_PSW:nacos}/g' dist/conf/application.properties
 
-docker build -t mydemo/nacos .
+docker build -t mydemo/nacos:1.1.4 .
 # rm -rf dist

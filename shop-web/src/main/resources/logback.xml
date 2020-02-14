@@ -28,6 +28,9 @@
 	<logger name="com.alibaba.dubbo.registry.redis.RedisRegistry" level="ERROR" />
     <logger name="org.mybatis.spring" level="WARN"/> <!-- Disable mybatis SQL logs -->
     <logger name="my.demo.dao" level="WARN"/>
+    <logger name="io.seata" level="INFO" additivity="false">
+       <appender-ref ref="APP" />
+    </logger>
 	<logger name="my.demo" level="DEBUG" additivity="false">
 	   <appender-ref ref="APP" />
 	</logger>

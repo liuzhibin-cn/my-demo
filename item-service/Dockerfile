@@ -7,7 +7,7 @@ FROM openjdk:8
 # git: 2.20.1
 
 WORKDIR /home
-ENV NACOS_HOST=nacos ITEM_SRV_PORT=20880
+ENV NACOS_HOST=nacos ZIPKIN_HOST=zipkin SKYWALKING_HOST=skywalking ITEM_SRV_PORT=20880
 ADD ./target/item-service-0.0.1-SNAPSHOT.jar /home/
 EXPOSE $ITEM_SRV_PORT
 ENTRYPOINT ["java", "-jar", "/home/item-service-0.0.1-SNAPSHOT.jar"]

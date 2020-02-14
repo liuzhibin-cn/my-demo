@@ -4,29 +4,30 @@
 
 -------------------------------------------------------------------
 #### 运行演示项目
-[package.sh](https://github.com/liuzhibin-cn/my-demo/blob/master/package.sh)为打包脚本：
-- `sh package.sh`：最简单运行方式，使用单个MySQL数据库、[nacos](https://nacos.io/)注册中心，运行4个[Dubbo](http://dubbo.apache.org/zh-cn/)服务和1个Web应用；
-- `sh package.sh -mycat`：使用[Mycat](http://www.mycat.io/)分库分表；
-- `sh package.sh -sharding-proxy`：使用[Sharding-Proxy](https://shardingsphere.apache.org/)分库分表；
-- `sh package.sh -seata`：使用[Seata](http://seata.io/zh-cn/)分布式事务管理；
-- `sh package.sh -zipkin`：使用[ZipKin](https://github.com/openzipkin/zipkin)进行链路跟踪、性能分析；
-- `sh package.sh -pinpoint`：使用[PinPoint](https://github.com/naver/pinpoint)进行链路跟踪、性能分析；
-- `sh package.sh -skywalking`：使用[SkyWalking](http://skywalking.apache.org/)进行链路跟踪、性能分析；
+[package.sh](https://github.com/liuzhibin-cn/my-demo/blob/master/package.sh)为项目编译打包脚本，参数说明：
+- **简单运行**：不带任何参数执行`package.sh`，仅运行Dubbo微服务和演示应用，使用单个MySQL数据库、[nacos](https://nacos.io/)注册中心，运行4个Dubbo服务和1个Web应用；
+- **分库分表**：`-mycat`、`-sharding-proxy`二选一。
+  - `-mycat`：使用[Mycat](https://github.com/liuzhibin-cn/my-demo/blob/master/docs/Sharding-Mycat-Overview-Quickstart.md)分库分表；
+  - `-sharding-proxy`：使用[Sharding-Proxy](https://github.com/liuzhibin-cn/my-demo/blob/master/docs/Sharding-Sharding-Proxy-Overview-Quickstart.md)分库分表；
+- **分布式事务**：
+  - `-seata`：使用[Seata](https://github.com/liuzhibin-cn/my-demo/blob/master/docs/Seata-Distributed-Transaction-Management.md)分布式事务管理；
+- **APM全链路跟踪**：`-zipkin`、`-pinpoint`、`-skywalking`三选一。
+  - `-zipkin`：使用[ZipKin](https://github.com/liuzhibin-cn/my-demo/blob/master/docs/APM-ZipKin.md)进行链路跟踪、性能分析；
+  - `-pinpoint`：使用[PinPoint](https://github.com/liuzhibin-cn/my-demo/blob/master/docs/APM-PinPoint.md)进行链路跟踪、性能分析；
+  - `-skywalking`：使用[SkyWalking](https://github.com/liuzhibin-cn/my-demo/blob/master/docs/APM-SkyWalking.md)进行链路跟踪、性能分析；
 
-参数可以组合，例如`sh package.sh -mycat -seata -zipkin`，分库分表参数只能二选一，APM工具只能三选一。
+例如`./package.sh -mycat -seata -zipkin`
 
-最简单运行方式操作步骤：
-1. JDK 8+；
-2. 部署nacos，用于Dubbo注册中心；<br />
-   比较简单，参考[Nacos快速开始](https://nacos.io/zh-cn/docs/quick-start.html)即可。
-3. MySQL数据库；<br />
+##### 本地运行
+1. 要求JDK 8+。
+2. 部署nacos，用于Dubbo注册中心。参考[Nacos快速开始](https://nacos.io/zh-cn/docs/quick-start.html)即可。
+3. 部署MySQL数据库。<br />
    建库脚本[sql-schema.sql](https://github.com/liuzhibin-cn/my-demo/blob/master/docs/sql-schema.sql)，是演示分库分表用的建库脚本，简单方式运行只需要其中`mydemo-dn1`单库即可。
-2. 修改项目配置信息；<br />
-   配置信息都在[parent pom.xml](https://github.com/liuzhibin-cn/my-demo/blob/master/pom.xml)中，包括数据库连接信息、nacos地址等。
-3. 编译打包；<br />
-   执行`sh package.sh`，Windows环境装了git bash就可以运行。
-4. 运行演示项目：<br />
-   依次启动服务和Web应用:
+4. 确认项目配置。<br />
+   项目配置都在[parent pom.xml](https://github.com/liuzhibin-cn/my-demo/blob/master/pom.xml)中，包括数据库连接信息、nacos地址等。
+5. 编译打包。使用`package.sh`，Windows环境装了git bash就可以运行。
+6. 运行演示项目。<br />
+   按依赖关系依次启动Dubbo服务和Web应用:
    ```sh
    java -jar item-service\target\item-service-0.0.1-SNAPSHOT.jar
    java -jar stock-service\target\stock-service-0.0.1-SNAPSHOT.jar
@@ -34,7 +35,59 @@
    java -jar order-service\target\order-service-0.0.1-SNAPSHOT.jar
    java -jar shop-web\target\shop-web-0.0.1-SNAPSHOT.jar
    ```
-6. 通过[http://localhost:8090/shop](http://localhost:8090/shop)访问，执行操作查看效果；
+7. 运行演示应用，查看相关结果。
+   - 演示应用：[localhost:8090/shop](http://localhost:8090/shop)
+   - Nacos：[localhost:8848/nacos](http://localhost:8848/nacos)，登录用户/密码：nacos/nacos
+   - ZipKin：[localhost:9411/zipkin](http://localhost:9411/zipkin/)
+   - Mycat：数据端口`8066`、管理端口`9066`，都可以用MySQL客户端登录访问
+
+##### Docker容器运行
+使用Docker容器运行演示项目非常简单，基础组件无需在自行部署、配置了，直接运行容器即可。<br />
+本项目支持Docker容器运行的组件：所有Dubbo服务和shop-web应用、MySQL、Nacos、Seata Server、Mycat Server、ZipKin Server、SkyWalking Server，其它组件没有制作Docker镜像。
+1. 创建Docker NetWork：`docker network create mydemo`
+2. 基础组件构建Docker镜像，运行Docker容器。<br />
+   相关脚本和Dockerfile在[docker](docker/)目录中，每个基础组件一个子目录，其中`build.sh`构建Docker镜像，`run.sh`启动运行Docker容器，都不需要任何参数。<br />
+   注意按基础组件的依赖关系依次启动Docker容器：`mysql -> mycat/nacos/zipkin/skywalking -> seata`。
+3. 演示用Dubbo服务和Web应用构建Docker镜像、运行Docker容器。<br />
+   1. 先参考`package.sh`，编译打包；
+   2. 使用[docker/mydemo.sh](docker/mydemo.sh)管理Docker镜像和容器，其操作对象为所有Dubbo服务和shop-web应用，参数说明：
+      - `-build`：构建Docker镜像；
+      - `-run`：运行Docker容器；
+      - `-stop`：停止Docker容器；
+      - `-rm`：删除Docker容器（需要先停止Docker容器）；
+      - `-rmi`：删除Docker镜像（需要先停止Docker容器）；
+4. 运行演示应用，查看相关结果。
+   - 演示应用：[localhost:18090/shop](http://localhost:18090/shop)
+   - Nacos：[localhost:18848/nacos](http://localhost:18848/nacos)，登录用户/密码：nacos/nacos
+   - ZipKin：[localhost:19411/zipkin](http://localhost:19411/zipkin/)
+   - Mycat：数据端口`18066`、管理端口`19066`，都可以用MySQL客户端登录访问
+
+例如：
+```sh
+./package.sh -mycat -seata -zipkin # 编译打包
+./docker/mydemo.sh -build -run     # 构建Docker镜像、运行Docker容器
+./package.sh -mycat -seata -zipkin # 编译打包：不使用Seata
+./docker/mydemo.sh -stop -rm -rmi -build -run # 重新构建Docker镜像、运行Docker容器
+```
+
+Docker容器：<br />
+![](docs/images/docker-containers.png)
+
+容器资源使用情况：<br />
+![](docs/images/docker-stats.png)
+
+##### 运行效果
+shop-web日志输出：<br />
+![](docs/images/shopweb-out.png)
+
+order-service日志输出：<br />
+![](docs/images/order-service-out.png)
+
+ZipKin：<br />
+![](https://richie-leo.github.io/ydres/img/10/120/1013/screen-trace-detail-sql.png)
+
+PinPoint：<br />
+![](https://richie-leo.github.io/ydres/img/10/120/1012/pinpoint-screen-trace-mixed-view.png)
 
 #### 分布式事务管理
 阿里云分布式事务管理GTS的开源版Seata，2019年1月开源出来，1.0.0版已经发布。相关概念、部署和使用方法参考[Seata分布式事务管理框架概览](https://github.com/liuzhibin-cn/my-demo/blob/master/docs/Seata-Distributed-Transaction-Management.md)。

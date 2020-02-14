@@ -41,9 +41,9 @@
         <db.order>mydemo-dn1</db.order>
         <db.user>mydemo-dn1</db.user>
         <seata-enabled>false</seata-enabled>
-        <nacos.address>${NACOS_HOST:127.0.0.1}:8848</nacos.address>
+        <nacos.address>${NACOS_HOST:localhost}:8848</nacos.address>
         <!-- zipkin.base-url：以端口号结束，不要添加反斜杠 -->
-        <zipkin.base-url>http://192.168.31.108:9411</zipkin.base-url>
+        <zipkin.base-url>http://${ZIPKIN_HOST:localhost}:9411</zipkin.base-url>
 	</properties>
 
     <profiles>

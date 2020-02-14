@@ -7,7 +7,7 @@ FROM openjdk:8
 # git: 2.20.1
 
 WORKDIR /home
-ENV NACOS_HOST=nacos STOCK_SRV_PORT=20880
+ENV NACOS_HOST=nacos ZIPKIN_HOST=zipkin SKYWALKING_HOST=skywalking STOCK_SRV_PORT=20880
 ADD ./target/stock-service-0.0.1-SNAPSHOT.jar /home/
 EXPOSE $STOCK_SRV_PORT
 ENTRYPOINT ["java", "-jar", "/home/stock-service-0.0.1-SNAPSHOT.jar"]

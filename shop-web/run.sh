@@ -1,3 +1,3 @@
 #!/bin/sh
 
-docker run -d --net=mydemo --name shopweb -p18090:8090 -e NACOS_HOST=nacos mydemo/shopweb
+docker run -d --net=mydemo --name shopweb -p18090:8090 -e NACOS_HOST=nacos -e ZIPKIN_HOST=zipkin -e SKYWALKING_HOST=skywalking mydemo/shopweb

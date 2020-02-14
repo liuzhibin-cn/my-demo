@@ -7,7 +7,8 @@ FROM openjdk:8
 # git: 2.20.1
 
 WORKDIR /home
-ENV NACOS_HOST=nacos ZIPKIN_HOST=zipkin SKYWALKING_HOST=skywalking WEB_PORT=8090
-ADD ./target/shop-web-0.0.1-SNAPSHOT.jar /home/
-EXPOSE $WEB_PORT
-ENTRYPOINT ["java", "-jar", "/home/shop-web-0.0.1-SNAPSHOT.jar"]
+ADD ./zipkin.jar /home/
+
+ENV STORAGE_TYPE=mysql MYSQL_HOST=mysql MYSQL_TCP_PORT=3306 MYSQL_DB=zipkin MYSQL_USER=zipkin MYSQL_PASS=zipkin 
+EXPOSE 9411
+ENTRYPOINT ["java", "-jar", "/home/zipkin.jar"]
