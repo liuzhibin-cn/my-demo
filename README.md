@@ -42,7 +42,7 @@
    - Mycat：数据端口`8066`、管理端口`9066`，都可以用MySQL客户端登录访问
 
 ##### Docker容器运行
-使用Docker容器运行演示项目非常简单，基础组件无需在自行部署、配置了，直接运行容器即可。<br />
+使用Docker容器运行演示项目非常简单，基础组件无需自行部署、配置，直接运行容器即可。<br />
 本项目支持Docker容器运行的组件：所有Dubbo服务和shop-web应用、MySQL、Nacos、Seata Server、Mycat Server、ZipKin Server、SkyWalking Server，其它组件没有制作Docker镜像。
 1. 创建Docker NetWork：`docker network create mydemo`
 2. 基础组件构建Docker镜像，运行Docker容器。<br />
