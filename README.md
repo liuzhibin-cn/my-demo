@@ -1,25 +1,25 @@
 -------------------------------------------------------------------
-#### 演示项目架构
+### 演示项目架构
 ![](docs/images/architecture.png) <br />
 
 本项目基础演示部分包括基于SpringBoot的Dubbo微服务和Web演示应用，另外还包含以下几个方面：
 
-##### 1、Docker容器化
+#### 1、Docker容器化
 除个别基础组件外，整个演示项目（包括MySQL、Seata、Nacos、ZipKin、SkyWalking、Dubbo服务、Web应用等）都支持容器化运行，包含Dockerfile和相关管理脚本，可以方便快速运行演示应用。
 
-##### 2、分布式事务管理
+#### 2、分布式事务管理
 Seata是阿里云分布式事务管理GTS的开源版，2019年1月开源，1.0.0版已经发布。相关概念、部署和使用方法参考[Seata分布式事务管理框架概览](https://github.com/liuzhibin-cn/my-demo/blob/master/docs/Seata-Distributed-Transaction-Management.md)。
 
 Seata提供AT、TCC、Saga三种柔性事务模式，可以跨微服务和应用实现分布式事务管理，AT模式对应用几乎透明，使用方便，但目前还存在一些比较严重的问题：
 1. 性能开销还比较高；
 2. 在使用Mycat、Sharding-Proxy进行分库分表时，Seata会产生不少路由到全分片执行的SQL操作，详细参考[Seata分布式事务管理框架概览](https://github.com/liuzhibin-cn/my-demo/blob/master/docs/Seata-Distributed-Transaction-Management.md)文末；
 
-##### 3、数据库分库分表
+#### 3、数据库分库分表
 本项目演示了使用Mycat和Sharding-Proxy进行分库分表，相关概念、部署和使用方法，参考[MyCat分库分表概览](https://github.com/liuzhibin-cn/my-demo/blob/master/docs/Sharding-Mycat-Overview-Quickstart.md)、[Sharding-Proxy分库分表概览](https://github.com/liuzhibin-cn/my-demo/blob/master/docs/Sharding-Sharding-Proxy-Overview-Quickstart.md)，这2个分库分表开源方案与阿里云DRDS对比，参考[DRDS产品概览](https://github.com/liuzhibin-cn/my-demo/blob/master/docs/Sharding-DRDS-Overview.md)。
 
 Mycat、Sharding-Proxy和DRDS都实现了MySQL协议，成为独立的中间件，将分库分表、读写分离等数据存储的弹性伸缩方案与应用隔离，对应用透明，并且实现语言无关。
 
-##### 4、APM全链路监控
+#### 4、APM全链路监控
 演示项目支持PinPoint、SkyWalking、ZipKin三种APM工具进行全链路跟踪和性能分析，相关概念、部署和使用方法，参考[PinPoint部署和使用](https://github.com/liuzhibin-cn/my-demo/blob/master/docs/APM-PinPoint.md)、[SkyWalking部署和使用](https://github.com/liuzhibin-cn/my-demo/blob/master/docs/APM-SkyWalking.md)、[ZipKin部署和使用](https://github.com/liuzhibin-cn/my-demo/blob/master/docs/APM-ZipKin.md)。
 
 三种APM工具对比：
@@ -33,22 +33,22 @@ Mycat、Sharding-Proxy和DRDS都实现了MySQL协议，成为独立的中间件�
 - 社区支持：ZipKin架构灵活、文档完善，社区支持度最高，Spring Cloud和Service Mesh（[istio](https://github.com/istio/)）官方提供ZipKin支持；SkyWalking是华为员工开发，已成为Apache项目；PinPoint为韩国公司开源；
 
 -------------------------------------------------------------------
-#### 运行演示项目
+### 运行演示项目
 [package.sh](https://github.com/liuzhibin-cn/my-demo/blob/master/package.sh)为项目编译打包脚本，参数说明：
-- **简单运行**：不带任何参数执行`package.sh`，仅运行Dubbo微服务和演示应用，使用单个MySQL数据库、[nacos](https://nacos.io/)注册中心，运行4个Dubbo服务和1个Web应用；
-- **分库分表**：`-mycat`、`-sharding-proxy`二选一。
+- 简单运行：不带任何参数执行`package.sh`，仅运行Dubbo微服务和演示应用，使用单个MySQL数据库、[nacos](https://nacos.io/)注册中心，运行4个Dubbo服务和1个Web应用；
+- 分库分表：`-mycat`、`-sharding-proxy`二选一。
   - `-mycat`：使用[Mycat](https://github.com/liuzhibin-cn/my-demo/blob/master/docs/Sharding-Mycat-Overview-Quickstart.md)分库分表；
   - `-sharding-proxy`：使用[Sharding-Proxy](https://github.com/liuzhibin-cn/my-demo/blob/master/docs/Sharding-Sharding-Proxy-Overview-Quickstart.md)分库分表；
-- **分布式事务**：
+- 分布式事务：
   - `-seata`：使用[Seata](https://github.com/liuzhibin-cn/my-demo/blob/master/docs/Seata-Distributed-Transaction-Management.md)分布式事务管理；
-- **APM全链路跟踪**：`-zipkin`、`-pinpoint`、`-skywalking`三选一。
+- APM全链路跟踪：`-zipkin`、`-pinpoint`、`-skywalking`三选一。
   - `-zipkin`：使用[ZipKin](https://github.com/liuzhibin-cn/my-demo/blob/master/docs/APM-ZipKin.md)进行链路跟踪、性能分析；
   - `-pinpoint`：使用[PinPoint](https://github.com/liuzhibin-cn/my-demo/blob/master/docs/APM-PinPoint.md)进行链路跟踪、性能分析；
   - `-skywalking`：使用[SkyWalking](https://github.com/liuzhibin-cn/my-demo/blob/master/docs/APM-SkyWalking.md)进行链路跟踪、性能分析；
 
 例如`./package.sh -mycat -seata -zipkin`
 
-##### 本地运行
+#### 本地运行
 1. 要求JDK 8+。
 2. 部署nacos，用于Dubbo注册中心。参考[Nacos快速开始](https://nacos.io/zh-cn/docs/quick-start.html)即可。
 3. 部署MySQL数据库。<br />
@@ -71,7 +71,7 @@ Mycat、Sharding-Proxy和DRDS都实现了MySQL协议，成为独立的中间件�
    - ZipKin：[localhost:9411/zipkin](http://localhost:9411/zipkin/)
    - Mycat：数据端口`8066`、管理端口`9066`，都可以用MySQL客户端登录访问
 
-##### Docker容器运行
+#### Docker容器运行
 使用Docker容器运行演示项目非常简单，基础组件无需自行部署、配置，直接运行容器即可。<br />
 本项目支持Docker容器运行的组件：所有Dubbo服务和shop-web应用、MySQL、Nacos、Seata Server、Mycat Server、ZipKin Server、SkyWalking Server，其它组件没有制作Docker镜像。
 1. 创建Docker NetWork：`docker network create mydemo`
@@ -106,7 +106,8 @@ Docker容器：<br />
 容器资源使用情况：<br />
 ![](docs/images/docker-stats.png)
 
-##### 运行效果
+-------------------------------------------------------------------
+### 运行效果
 shop-web日志输出：<br />
 ![](docs/images/shopweb-out.png)
 
