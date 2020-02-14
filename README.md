@@ -20,9 +20,7 @@ Seata提供AT、TCC、Saga三种柔性事务模式，可以跨微服务和应用
 Mycat、Sharding-Proxy和DRDS都实现了MySQL协议，成为独立的中间件，将分库分表、读写分离等数据存储的弹性伸缩方案与应用隔离，对应用透明，并且实现语言无关。
 
 #### 4、APM全链路监控
-演示项目支持PinPoint、SkyWalking、ZipKin三种APM工具进行全链路跟踪和性能分析，相关概念、部署和使用方法，参考[PinPoint部署和使用](https://github.com/liuzhibin-cn/my-demo/blob/master/docs/APM-PinPoint.md)、[SkyWalking部署和使用](https://github.com/liuzhibin-cn/my-demo/blob/master/docs/APM-SkyWalking.md)、[ZipKin部署和使用](https://github.com/liuzhibin-cn/my-demo/blob/master/docs/APM-ZipKin.md)。
-
-三种APM工具对比：
+演示项目支持PinPoint、SkyWalking、ZipKin三种APM工具进行全链路跟踪和性能分析，相关概念、部署和使用方法，参考[PinPoint部署和使用](https://github.com/liuzhibin-cn/my-demo/blob/master/docs/APM-PinPoint.md)、[SkyWalking部署和使用](https://github.com/liuzhibin-cn/my-demo/blob/master/docs/APM-SkyWalking.md)、[ZipKin部署和使用](https://github.com/liuzhibin-cn/my-demo/blob/master/docs/APM-ZipKin.md)。三种APM工具对比：
 - 使用方式：PinPoint和SkyWalking都采用javaagent方式，对应用代码几乎没有侵入性；ZipKin需要和应用打包到一起，并在应用中完成各种配置，属于强依赖关系；
 - 链路跟踪能力：整体上看相差不大，基本都参照[Google Dapper](http://research.google.com/pubs/pub36356.html)，也都支持对大量主流框架的跟踪，细节上有些差异：
   - 对单次RPC调用分析，ZipKin定义的Annotations更精细，参考[ZipKin部署和使用](https://github.com/liuzhibin-cn/my-demo/blob/master/docs/APM-ZipKin.md)；
@@ -51,13 +49,10 @@ Mycat、Sharding-Proxy和DRDS都实现了MySQL协议，成为独立的中间件�
 #### 本地运行
 1. 要求JDK 8+。
 2. 部署nacos，用于Dubbo注册中心。参考[Nacos快速开始](https://nacos.io/zh-cn/docs/quick-start.html)即可。
-3. 部署MySQL数据库。<br />
-   建库脚本[sql-schema.sql](https://github.com/liuzhibin-cn/my-demo/blob/master/docs/sql-schema.sql)，是演示分库分表用的建库脚本，简单方式运行只需要其中`mydemo-dn1`单库即可。
-4. 确认项目配置。<br />
-   项目配置都在[parent pom.xml](https://github.com/liuzhibin-cn/my-demo/blob/master/pom.xml)中，包括数据库连接信息、nacos地址等。
+3. 部署MySQL数据库。建库脚本[sql-schema.sql](https://github.com/liuzhibin-cn/my-demo/blob/master/docs/sql-schema.sql)，是演示分库分表用的建库脚本，简单方式运行只需要其中`mydemo-dn1`单库即可。
+4. 确认项目配置。项目配置都在[parent pom.xml](https://github.com/liuzhibin-cn/my-demo/blob/master/pom.xml)中，包括数据库连接信息、nacos地址等。
 5. 编译打包。使用`package.sh`，Windows环境装了git bash就可以运行。
-6. 运行演示项目。<br />
-   按依赖关系依次启动Dubbo服务和Web应用:
+6. 运行演示项目。按依赖关系依次启动Dubbo服务和Web应用:
    ```sh
    java -jar item-service\target\item-service-0.0.1-SNAPSHOT.jar
    java -jar stock-service\target\stock-service-0.0.1-SNAPSHOT.jar
@@ -78,7 +73,7 @@ Mycat、Sharding-Proxy和DRDS都实现了MySQL协议，成为独立的中间件�
 2. 基础组件构建Docker镜像，运行Docker容器。<br />
    相关脚本和Dockerfile在[docker](docker/)目录中，每个基础组件一个子目录，其中`build.sh`构建Docker镜像，`run.sh`启动运行Docker容器，都不需要任何参数。<br />
    注意按基础组件的依赖关系依次启动Docker容器：`mysql -> mycat/nacos/zipkin/skywalking -> seata`。
-3. 演示用Dubbo服务和Web应用构建Docker镜像、运行Docker容器。<br />
+3. 演示用Dubbo服务和Web应用构建Docker镜像、运行Docker容器。
    1. 先参考`package.sh`，编译打包；
    2. 使用[docker/mydemo.sh](docker/mydemo.sh)管理Docker镜像和容器，其操作对象为所有Dubbo服务和shop-web应用，参数说明：
       - `-build`：构建Docker镜像；
