@@ -5,7 +5,7 @@
 本项目基础演示部分包括基于SpringBoot的Dubbo微服务和Web演示应用，另外还包含以下几个方面：
 
 #### 1、Docker容器化
-除个别基础组件外，整个演示项目（包括MySQL、Seata、Nacos、ZipKin、SkyWalking、Dubbo服务、Web应用等）都支持容器化运行，包含Dockerfile和相关管理脚本，可以方便快速运行演示应用。
+除个别基础组件外，整个演示项目（包括MySQL、Seata、Nacos、ZipKin、SkyWalking、Dubbo服务、Web应用等）都支持容器化运行，包含Dockerfile和相关管理脚本，可以方便快速运行演示应用，参考后文*Docker容器运行*部分。
 
 #### 2、分布式事务管理
 Seata是阿里云分布式事务管理GTS的开源版，2019年1月开源，1.0.0版已经发布。相关概念、部署和使用方法参考[Seata分布式事务管理框架概览](https://github.com/liuzhibin-cn/my-demo/blob/master/docs/Seata-Distributed-Transaction-Management.md)。
@@ -72,7 +72,7 @@ Mycat、Sharding-Proxy和DRDS都实现了MySQL协议，成为独立的中间件�
 1. 创建Docker NetWork：`docker network create mydemo`
 2. 基础组件构建Docker镜像，运行Docker容器。<br />
    相关脚本和Dockerfile在[docker](docker/)目录中，每个基础组件一个子目录，其中`build.sh`构建Docker镜像，`run.sh`启动运行Docker容器，都不需要任何参数。<br />
-   注意按基础组件的依赖关系依次启动Docker容器：`mysql -> mycat/nacos/zipkin/skywalking -> seata`。
+   注意按基础组件的依赖关系依次启动Docker容器：`mysql -> mycat/nacos/zipkin -> seata`。
 3. 演示用Dubbo服务和Web应用构建Docker镜像、运行Docker容器。
    1. 先参考`package.sh`，编译打包；
    2. 使用[docker/mydemo.sh](docker/mydemo.sh)管理Docker镜像和容器，其操作对象为所有Dubbo服务和shop-web应用，参数说明：
@@ -91,7 +91,7 @@ Mycat、Sharding-Proxy和DRDS都实现了MySQL协议，成为独立的中间件�
 ```sh
 ./package.sh -mycat -seata -zipkin # 编译打包
 ./docker/mydemo.sh -build -run     # 构建Docker镜像、运行Docker容器
-./package.sh -mycat -seata -zipkin # 编译打包：不使用Seata
+./package.sh -mycat -zipkin # 编译打包：不使用Seata
 ./docker/mydemo.sh -stop -rm -rmi -build -run # 重新构建Docker镜像、运行Docker容器
 ```
 

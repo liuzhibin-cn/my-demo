@@ -1,0 +1,45 @@
+schemaName: db_user
+dataSources: #数据源配置，可配置多个
+  ds_0:
+    url: jdbc:mysql://127.0.0.1:3306/mydemo-dn1?serverTimezone=Asia/Shanghai&characterEncoding=utf8&useSSL=false
+    username: root
+    password: 1234
+    connectionTimeoutMilliseconds: 3000 #连接超时毫秒数
+    idleTimeoutMilliseconds: 60000 #空闲连接回收超时毫秒数
+    maxLifetimeMilliseconds: 1800000 #连接最大存活时间毫秒数
+    maxPoolSize: 3
+  ds_1:
+    url: jdbc:mysql://127.0.0.1:3306/mydemo-dn2?serverTimezone=Asia/Shanghai&characterEncoding=utf8&useSSL=false
+    username: root
+    password: 1234
+    connectionTimeoutMilliseconds: 3000
+    idleTimeoutMilliseconds: 60000
+    maxLifetimeMilliseconds: 1800000
+    maxPoolSize: 3
+shardingRule:
+  tables:
+    usr_user:
+      actualDataNodes: ds_${0..1}.usr_user
+      databaseStrategy:
+        inline: 
+          shardingColumn: user_id
+          algorithmExpression: ds_${user_id % 2}
+      keyGenerator:
+        type: SNOWFLAKE
+        column: user_id
+        props: 
+          worker.id: 1
+          max.tolerate.time.difference.milliseconds: 600000 # 允许的系统时钟回拨10分钟
+    usr_user_account:
+      actualDataNodes: ds_${0..1}.usr_user_account
+      databaseStrategy:
+        inline: 
+          shardingColumn: account_hash
+          algorithmExpression: ds_${account_hash % 2}
+    undo_log:
+        actualDataNodes: ds_0.undo_log
+  defaultDataSourceName: ds_0
+  defaultDatabaseStrategy:
+    none:
+  defaultTableStrategy:
+    none:

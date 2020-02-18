@@ -35,6 +35,12 @@ done
 PRGDIR=`dirname "$PRG"`
 BASEDIR=`cd "$PRGDIR/.." >/dev/null; pwd`
 
+$BASEDIR/conf/init.sh
+if [ $? -ne 0 ]; then
+    echo "Config Seata error!"
+	exit 1
+fi
+
 # Reset the REPO variable. If you need to influence this use the environment setup file.
 REPO=
 

@@ -1,32 +1,22 @@
 #### Docker容器管理
-环境要求：
+本地环境要求：
 1. Mac、Windows环境都可以，但Windows环境必须支持bash，例如安装git bash，将相关bash工具路径添加到PATH中；
 2. JDK 8 + maven；
-3. Git客户端；
-4. Docker；
+3. Docker；
 
 ```sh
-# 创建Docker Network，初始化执行一次即可
-docker network create mydemo
+# init.sh:
+# 首次运行使用。初始化Docker容器，为数据库和所有中间件构建Docker镜像，运行Docker容器。
+# 如果不需要某个中间件，修改init.sh注释掉再执行。
+$PROJECT_HOME/docker/init.sh
 
-# 运行MySQL容器，已经建立了项目所需的全部数据库、表结构和用户
-$PROJECT_HOME/docker/mysql/build.sh # 构建Image
-$PROJECT_HOME/docker/mysql/run.sh   # 运行容器
+# 编译打包演示应用：启用Mycat、Seata和ZipKin
+$PROJECT_HOME/package.sh -clean -mycat -seata -zipkin
 
-# 运行Mycat容器
-$PROJECT_HOME/docker/mycat/build.sh # 构建Image
-$PROJECT_HOME/docker/mycat/run.sh   # 运行容器
-
-# 运行Nacos容器
-$PROJECT_HOME/docker/nacos/build.sh # 构建Image
-$PROJECT_HOME/docker/nacos/run.sh   # 运行容器
-
-# 运行Seata容器
-$PROJECT_HOME/docker/seata/build.sh # 构建Image
-$PROJECT_HOME/docker/seata/run.sh   # 运行容器
-
-# 编译打包演示应用
-$PROJECT_HOME/package.sh -mycat -seata -zipkin -clean
-# 容器运行所有Dubbo服务和演示应用
-$PROJECT_HOME/docker/mydemo.sh -build -run
+# app-container.sh:
+# 管理mydemo项目下所有Dubbo服务和shop-web应用的镜像和容器。
+# 为Dubbo服务、shop-web应用构建镜像，运行容器：
+$PROJECT_HOME/docker/app-container.sh -build -run
+# 为Dubbo服务、shop-web应用停止容器，并删除容器和镜像
+$PROJECT_HOME/docker/app-container.sh -stop -rm -rmi
 ```

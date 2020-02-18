@@ -14,4 +14,4 @@ sed -i "s/url=\"[^\"]*\"/url=\"$MYSQL_HOST:$MYSQL_PORT\"/g" $MYCAT_HOME/conf/sch
 sed -i "s/user=\"[^\"]*\"/user=\"$MYSQL_USER\"/g" $MYCAT_HOME/conf/schema.xml
 sed -i "s/password=\"[^\"]*\"/password=\"$MYSQL_PSW\"/g" $MYCAT_HOME/conf/schema.xml
 
-$MYCAT_HOME/bin/mycat console
+$MYCAT_HOME/bin/startup_nowrap.sh

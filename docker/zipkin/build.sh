@@ -1,16 +1,15 @@
 #!/bin/sh
 
-# 要求本地安装以下依赖项：
-# 1. docker client；
-# 2. git client；
+cd $(dirname "$0")
 
-DIR=`dirname "$0"`
-cd $DIR
-
-# zipkin官方下载方法：curl -sSL https://zipkin.io/quickstart.sh | bash -s
-# 这里对quickstart.sh进行了一些修改：
-# 1. 从阿里云maven镜像仓库下载，加快速度；
-# 2. quickstart.sh默认下载最新版本，这里指定使用2.19.2版本；
+echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
+echo ">>> Build ZipKin image"
+echo ">>> ZipKin's official download: curl -sSL https://zipkin.io/quickstart.sh | bash -s"
+echo ">>> I've made some changes:"
+echo ">>> 1. Download from maven.aliyun.com to improve speed."
+echo ">>> 2. Download 2.19.2 instead of the latest."
 ./quickstart.sh
 
 docker build -t mydemo/zipkin:2.19.2 .
+rm -rf zipkin*
+echo "<<< Finished: mydemo/zipkin:2.19.2"

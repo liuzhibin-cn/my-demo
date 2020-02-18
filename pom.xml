@@ -51,7 +51,7 @@
             <id>dev</id>
         </profile>
         <profile>
-            <id>sharding-proxy</id>
+            <id>shardingproxy</id>
             <properties>
 		        <!-- 使用Sharding-Proxy时，服务端和客户端都不能使用较高版本的MySQL Connector/J，否则报错，这里使用官方文档指定的版本 -->
 		        <mysql-connector.version>5.1.47</mysql-connector.version>

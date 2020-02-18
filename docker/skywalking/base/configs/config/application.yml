@@ -1,0 +1,69 @@
+cluster:
+  standalone:
+core:
+  default:
+    role: ${SW_CORE_ROLE:Mixed} # Mixed/Receiver/Aggregator
+    restHost: ${SW_CORE_REST_HOST:0.0.0.0}
+    restPort: ${SW_CORE_REST_PORT:12800}
+    restContextPath: ${SW_CORE_REST_CONTEXT_PATH:/}
+    gRPCHost: ${SW_CORE_GRPC_HOST:0.0.0.0}
+    gRPCPort: ${SW_CORE_GRPC_PORT:11800}
+    downsampling:
+      - Hour
+      - Day
+      - Month
+    enableDataKeeperExecutor: ${SW_CORE_ENABLE_DATA_KEEPER_EXECUTOR:true} # Turn it off then automatically metrics data delete will be close.
+    dataKeeperExecutePeriod: ${SW_CORE_DATA_KEEPER_EXECUTE_PERIOD:5} # How often the data keeper executor runs periodically, unit is minute
+    recordDataTTL: ${SW_CORE_RECORD_DATA_TTL:90} # Unit is minute
+    minuteMetricsDataTTL: ${SW_CORE_MINUTE_METRIC_DATA_TTL:90} # Unit is minute
+    hourMetricsDataTTL: ${SW_CORE_HOUR_METRIC_DATA_TTL:36} # Unit is hour
+    dayMetricsDataTTL: ${SW_CORE_DAY_METRIC_DATA_TTL:45} # Unit is day
+    monthMetricsDataTTL: ${SW_CORE_MONTH_METRIC_DATA_TTL:18} # Unit is month
+    enableDatabaseSession: ${SW_CORE_ENABLE_DATABASE_SESSION:true}
+storage:
+  mysql:
+    properties:
+      jdbcUrl: ${SW_JDBC_URL:"jdbc:mysql://mysql:3306/skywalking"}
+      dataSource.user: ${SW_DATA_SOURCE_USER:skywalking}
+      dataSource.password: ${SW_DATA_SOURCE_PASSWORD:skywalking}
+      dataSource.cachePrepStmts: ${SW_DATA_SOURCE_CACHE_PREP_STMTS:true}
+      dataSource.prepStmtCacheSize: ${SW_DATA_SOURCE_PREP_STMT_CACHE_SQL_SIZE:250}
+      dataSource.prepStmtCacheSqlLimit: ${SW_DATA_SOURCE_PREP_STMT_CACHE_SQL_LIMIT:2048}
+      dataSource.useServerPrepStmts: ${SW_DATA_SOURCE_USE_SERVER_PREP_STMTS:true}
+      dataSource.useSSL: false # 添加的
+    metadataQueryMaxSize: ${SW_STORAGE_MYSQL_QUERY_MAX_SIZE:5000}
+receiver-sharing-server:
+  default:
+receiver-register:
+  default:
+receiver-trace:
+  default:
+    bufferPath: ${SW_RECEIVER_BUFFER_PATH:/home/skywalking/trace-buffer/}  # Path to trace buffer files, suggest to use absolute path
+    bufferOffsetMaxFileSize: ${SW_RECEIVER_BUFFER_OFFSET_MAX_FILE_SIZE:100} # Unit is MB
+    bufferDataMaxFileSize: ${SW_RECEIVER_BUFFER_DATA_MAX_FILE_SIZE:500} # Unit is MB
+    bufferFileCleanWhenRestart: ${SW_RECEIVER_BUFFER_FILE_CLEAN_WHEN_RESTART:false}
+    sampleRate: ${SW_TRACE_SAMPLE_RATE:10000} # The sample rate precision is 1/10000. 10000 means 100% sample in default.
+    slowDBAccessThreshold: ${SW_SLOW_DB_THRESHOLD:default:200,mongodb:100} # The slow database access thresholds. Unit ms.
+receiver-jvm:
+  default:
+receiver-clr:
+  default:
+service-mesh:
+  default:
+    bufferPath: ${SW_SERVICE_MESH_BUFFER_PATH:/home/skywalking/mesh-buffer/}  # Path to trace buffer files, suggest to use absolute path
+    bufferOffsetMaxFileSize: ${SW_SERVICE_MESH_OFFSET_MAX_FILE_SIZE:100} # Unit is MB
+    bufferDataMaxFileSize: ${SW_SERVICE_MESH_BUFFER_DATA_MAX_FILE_SIZE:500} # Unit is MB
+    bufferFileCleanWhenRestart: ${SW_SERVICE_MESH_BUFFER_FILE_CLEAN_WHEN_RESTART:false}
+istio-telemetry:
+  default:
+envoy-metric:
+  default:
+query:
+  graphql:
+    path: ${SW_QUERY_GRAPHQL_PATH:/graphql}
+alarm:
+  default:
+telemetry:
+  none:
+configuration:
+  none:

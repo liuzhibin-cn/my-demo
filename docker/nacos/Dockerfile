@@ -1,18 +1,16 @@
-FROM openjdk:8
+FROM mydemo/openjdk:8-jre-alpine
 
-# Debian 10.2 [cat /etc/issue.net, cat /etc/debian_version]
-# openjdk version "1.8.0_242"
-# OpenJDK Runtime Environment (build 1.8.0_242-b08)
-# OpenJDK 64-Bit Server VM (build 25.242-b08, mixed mode)
-# git: 2.20.1
+# Official download: https://github.com/alibaba/nacos/releases
+# Download from github-mirror.bugkiller.org instead of github.com to improve speed.
+# ATTENTION: Security risks not clear!
+RUN curl -fL -o /home/nacos.tar.gz http://github-mirror.bugkiller.org/alibaba/nacos/releases/download/1.1.4/nacos-server-1.1.4.tar.gz \
+	&& tar xzf /home/nacos.tar.gz -C /home/ \
+	&& rm -rf /home/nacos.tar.gz
+WORKDIR /home/nacos
+ADD ./scripts/ ./
+# sh files with Windows format can't run in container (Alpine Linux), transform to unix format
+RUN dos2unix ./init.sh && dos2unix ./bin/startup.sh && ./init.sh
 
-WORKDIR /home
-# dist目录由build.sh脚本本地源码编译nacos生成
-ADD ./dist/ /home/nacos/
-# nacos的bin/startup.sh为Windows格式，在容器中执行报错，需将文件格式转换为unix格式
-ADD ./dos2unix_6.0.4-1_amd64.deb /home/dos2unix_6.0.4-1_amd64.deb
-RUN dpkg -i dos2unix_6.0.4-1_amd64.deb && dos2unix /home/nacos/bin/startup.sh
-
-ENV MYSQL_HOST=mysql MYSQL_USER=nacos MYSQL_PSW=nacos
+ENV MYSQL_HOST=mysql MYSQL_PORT=3306 MYSQL_DB=nacos MYSQL_USER=nacos MYSQL_PSW=nacos
 EXPOSE 8848
-ENTRYPOINT ["/bin/bash", "/home/nacos/bin/startup.sh", "-m", "standalone"]
+ENTRYPOINT ["bash", "bin/startup.sh", "-m", "standalone"]

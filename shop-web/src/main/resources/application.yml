@@ -1,4 +1,4 @@
-server.port: ${WEB_PORT:8090}
+server.port: ${SERVICE_PORT:8090}
 
 spring:
    application:

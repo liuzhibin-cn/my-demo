@@ -32,7 +32,7 @@ dubbo:
     protocol: # see com.alibaba.dubbo.config.ProtocolConfig
         id: dubbo
         name: dubbo
-        port: ${ORDER_SRV_PORT:20883}
+        port: ${SERVICE_PORT:20883}
         threads: 3
         iothreads: 1
         server: netty
@@ -57,7 +57,7 @@ druid:
    defaultTransactionIsolation: 2
    initialSize: 1
    maxActive: 3
-   maxWait: 4000
+   maxWait: 10000
    minIdle: 1
    validationQuery: /* ping */ select 1
    testOnBorrow: false

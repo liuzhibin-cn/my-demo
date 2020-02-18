@@ -33,7 +33,7 @@ store.db.url=jdbc:mysql://mysql:3306/seata?useUnicode=true
 store.db.user=seata
 store.db.password=seata
 store.db.min-conn=1
-store.db.max-conn=3
+store.db.max-conn=5
 store.db.global.table=global_table
 store.db.branch.table=branch_table
 store.db.query-limit=100

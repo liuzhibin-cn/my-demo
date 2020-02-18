@@ -1,0 +1,6 @@
+#!/bin/bash
+
+SW_AGENT_COLLECTOR_BACKEND_SERVICES=$SKYWALKING_HOST:$SKYWALKING_PORT
+
+set -ex
+eval java $@

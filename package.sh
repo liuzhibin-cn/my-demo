@@ -28,6 +28,7 @@ fi;
 
 PROFILES="-P dev"
 DB_HOST="mysql"
+APM=""
 CLEAN=""
 
 while [ -n "$1" ] 
@@ -37,14 +38,23 @@ do
 		    PROFILES="$PROFILES,mycat";
 		    DB_HOST="mycat"
 		    shift 1;;
-		-sharding-proxy|--sharding-proxy) 
-		    PROFILES="$PROFILES,sharding-proxy"; 
+		-shardingproxy|--shardingproxy) 
+		    PROFILES="$PROFILES,shardingproxy"; 
 		    DB_HOST="shardingproxy"
 		    shift 1;;
 		-seata|--seata) PROFILES="$PROFILES,seata"; shift 1;;
-		-zipkin|--zipkin) PROFILES="$PROFILES,zipkin"; shift 1;;
-		-skywaling|--skywaling) PROFILES="$PROFILES,skywaling"; shift 1;;
-		-pinpoint|--pinpoint) PROFILES="$PROFILES,pinpoint"; shift 1;;
+		-zipkin|--zipkin) 
+			PROFILES="$PROFILES,zipkin"; 
+			APM="zipkin"
+			shift 1;;
+		-skywalking|--skywalking) 
+			PROFILES="$PROFILES,skywalking"; 
+			APM="skywalking"
+			shift 1;;
+		-pinpoint|--pinpoint) 
+			PROFILES="$PROFILES,pinpoint"; 
+			APM="pinpoint"
+			shift 1;;
 		-clean|--clean) CLEAN="clean"; shift 1;;
 		?|-?|-help|--help) show_usage; exit 0;;
 		--) break;;
@@ -66,8 +76,14 @@ package_project "shop-web"
 
 # order和user服务需要连接数据库：
 # 1. 本地运行模式：通过maven的profile完成数据库HOST、PORT配置；
-# 2. Docker容器运行：通过docker run传递环境变量值，将数据库HOST、PORT传递到容器；
+# 2. Docker容器运行：通过docker run传递环境变量，将数据库HOST、PORT传递到容器；
 sed -i "s/^MYSQL_HOST=.*$/MYSQL_HOST=$DB_HOST/g" order-service/run.sh
 sed -i "s/^MYSQL_HOST=.*$/MYSQL_HOST=$DB_HOST/g" user-service/run.sh
+# APM使用zipkin和skywalking时，Docker容器构建方法不一样，这里为Docker容器构建进行参数设置
+sed -i "s/^APM=.*$/APM=$APM/g" item-service/build.sh
+sed -i "s/^APM=.*$/APM=$APM/g" stock-service/build.sh
+sed -i "s/^APM=.*$/APM=$APM/g" user-service/build.sh
+sed -i "s/^APM=.*$/APM=$APM/g" order-service/build.sh
+sed -i "s/^APM=.*$/APM=$APM/g" shop-web/build.sh
 
 echo " Finished"

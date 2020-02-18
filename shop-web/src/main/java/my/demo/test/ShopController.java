@@ -83,7 +83,7 @@ public class ShopController {
 		return this.createOrder(cart);
 	}
 	@GetMapping(value="/full-test")
-	@GlobalTransactional(timeoutMills = 3000, name = "full-test-case")
+	@GlobalTransactional(timeoutMills = 10000, name = "full-test-case")
 	public @ResponseBody TestResult fullTestCase(@RequestParam(name="count", required=false, defaultValue="1") int count) {
 		return this.runFullTestCase(count);
 	}
