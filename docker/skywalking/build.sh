@@ -8,7 +8,7 @@ echo ">>> 1. skywalking-base: A full SkyWalking distribution package, including 
 echo ">>>    webapp (UI) and agent, ONLY \"AS build\"."
 echo ">>> 2. skywalking-oap: OAP service. The webapp and agent were removed."
 echo ">>> 3. skywalking-ui: The webapp. OAP service and agent were removed."
-echo ">>> 4. skywalking-client: A parent image for SkyWalking clients, only including agent,"
+echo ">>> 4. skywalking-client: A parent image for SkyWalking clients, with agent reserved,"
 echo ">>>    OAP service and webapp were removed."
 ./base/build.sh
 echo "<<< Finished: mydemo/skywalking-base:6.6.0"
