@@ -1,6 +1,7 @@
 #### Run the demo application in Docker container
 Prerequisites:
-1. OS: Linux, Mac or Windows (with a bash shell, such as git bash);
+1. OS: Linux, Mac or Windows (with a bash shell, such as git bash); <br />
+   In Mac OSX `gnu-sed` is required: `brew install gnu-sed`
 2. JDK 8 and apache maven;
 3. Docker;
 

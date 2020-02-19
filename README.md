@@ -32,6 +32,15 @@ Seata提供AT、TCC、Saga三种柔性事务模式，可以跨微服务和应用
 
 -------------------------------------------------------------------
 ### 运行演示项目
+#### 环境要求
+- 操作系统
+  - Linux
+  - Windows: 必须安装一个bash shell，例如git bash；
+  - Mac: Mac自带的`sed`与`GNU sed`不同，需要在Mac上安装`gnu-seed`: `brew install gnu-sed`
+- JDK8+, Apache Maven
+- 容器运行需要安装Docker
+
+#### 编译打包
 [package.sh](https://github.com/liuzhibin-cn/my-demo/blob/master/package.sh)为项目编译打包脚本，参数说明：
 - 简单运行：不带任何参数执行`package.sh`，仅运行Dubbo微服务和演示应用，使用单个MySQL数据库、[nacos](https://nacos.io/)注册中心，运行4个Dubbo服务和1个Web应用；
 - 分库分表：`-mycat`、`-sharding-proxy`二选一。
@@ -47,12 +56,11 @@ Seata提供AT、TCC、Saga三种柔性事务模式，可以跨微服务和应用
 例如`./package.sh -mycat -seata -zipkin`
 
 #### 本地运行
-1. 要求JDK 8+。
+1. 安装和配置MySQL。建库脚本[sql-schema.sql](https://github.com/liuzhibin-cn/my-demo/blob/master/docs/sql-schema.sql)，是演示分库分表用的建库脚本，简单方式运行只需要其中`mydemo-dn1`单库即可。
 2. 部署nacos，用于Dubbo注册中心。参考[Nacos快速开始](https://nacos.io/zh-cn/docs/quick-start.html)即可。
-3. 部署MySQL数据库。建库脚本[sql-schema.sql](https://github.com/liuzhibin-cn/my-demo/blob/master/docs/sql-schema.sql)，是演示分库分表用的建库脚本，简单方式运行只需要其中`mydemo-dn1`单库即可。
-4. 确认项目配置。项目配置都在[parent pom.xml](https://github.com/liuzhibin-cn/my-demo/blob/master/pom.xml)中，包括数据库连接信息、nacos地址等。
-5. 编译打包。使用`package.sh`，Windows环境装了git bash就可以运行。
-6. 运行演示项目。按依赖关系依次启动Dubbo服务和Web应用:
+3. 确认项目配置。项目配置都在[parent pom.xml](https://github.com/liuzhibin-cn/my-demo/blob/master/pom.xml)中，包括数据库连接信息、nacos地址等。
+4. 编译打包。使用`package.sh`。
+5. 运行演示项目。按依赖关系依次启动Dubbo服务和Web应用:
    ```sh
    java -jar item-service\target\item-service-0.0.1-SNAPSHOT.jar
    java -jar stock-service\target\stock-service-0.0.1-SNAPSHOT.jar
@@ -60,7 +68,7 @@ Seata提供AT、TCC、Saga三种柔性事务模式，可以跨微服务和应用
    java -jar order-service\target\order-service-0.0.1-SNAPSHOT.jar
    java -jar shop-web\target\shop-web-0.0.1-SNAPSHOT.jar
    ```
-7. 运行演示应用，查看相关结果。
+6. 运行演示应用，查看相关结果。
    - 演示应用：[localhost:8090/shop](http://localhost:8090/shop)
    - Nacos：[localhost:8848/nacos](http://localhost:8848/nacos)，登录用户/密码：nacos/nacos
    - ZipKin：[localhost:9411/zipkin](http://localhost:9411/zipkin/)
@@ -91,7 +99,9 @@ Seata提供AT、TCC、Saga三种柔性事务模式，可以跨微服务和应用
    - Mycat：数据端口`18066`、管理端口`19066`，都可以用MySQL客户端登录访问
    - ShardingProxy：端口`localhost:13307`，可以用MySQL客户端登录访问
 
-例如：
+注意：如果启用的组件比较多，例如同时启用Mycat + Seata + SkyWalking + Nacos，至少给Docker分配5G以上内存，否则内存紧张可能导致容器和应用卡死。因为不少组件内存占用比较大，例如Seata，JVM启动参数`-XX:MaxDirectMemorySize`小于1G时一直报OOM异常。最好每次运行只start需要用到的容器，没有到的stop。
+
+示例：
 ```sh
 ./docker/init.sh # 为所有基础组件构建Docker镜像，运行容器
 ./package.sh -mycat -seata -zipkin # 编译打包演示应用

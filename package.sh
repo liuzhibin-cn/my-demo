@@ -74,16 +74,20 @@ package_project "user-service"
 package_project "order-service"
 package_project "shop-web"
 
+SED="sed"
+if [ `uname` == "Darwin" ]; then
+    SED="gsed"
+fi
 # order和user服务需要连接数据库：
 # 1. 本地运行模式：通过maven的profile完成数据库HOST、PORT配置；
 # 2. Docker容器运行：通过docker run传递环境变量，将数据库HOST、PORT传递到容器；
-sed -i "s/^MYSQL_HOST=.*$/MYSQL_HOST=$DB_HOST/g" order-service/run.sh
-sed -i "s/^MYSQL_HOST=.*$/MYSQL_HOST=$DB_HOST/g" user-service/run.sh
+$SED -i "s/^MYSQL_HOST=.*$/MYSQL_HOST=$DB_HOST/g" order-service/run.sh
+$SED -i "s/^MYSQL_HOST=.*$/MYSQL_HOST=$DB_HOST/g" user-service/run.sh
 # APM使用zipkin和skywalking时，Docker容器构建方法不一样，这里为Docker容器构建进行参数设置
-sed -i "s/^APM=.*$/APM=$APM/g" item-service/build.sh
-sed -i "s/^APM=.*$/APM=$APM/g" stock-service/build.sh
-sed -i "s/^APM=.*$/APM=$APM/g" user-service/build.sh
-sed -i "s/^APM=.*$/APM=$APM/g" order-service/build.sh
-sed -i "s/^APM=.*$/APM=$APM/g" shop-web/build.sh
+$SED -i "s/^APM=.*$/APM=$APM/g" item-service/build.sh
+$SED -i "s/^APM=.*$/APM=$APM/g" stock-service/build.sh
+$SED -i "s/^APM=.*$/APM=$APM/g" user-service/build.sh
+$SED -i "s/^APM=.*$/APM=$APM/g" order-service/build.sh
+$SED -i "s/^APM=.*$/APM=$APM/g" shop-web/build.sh
 
 echo " Finished"
