@@ -1,22 +1,29 @@
-#### Docker容器管理
-本地环境要求：
-1. Mac、Windows环境都可以，但Windows环境必须支持bash，例如安装git bash，将相关bash工具路径添加到PATH中；
-2. JDK 8 + maven；
-3. Docker；
+#### Run the demo application in Docker container
+Prerequisites:
+1. OS: Linux, Mac or Windows (with a bash shell, such as git bash);
+2. JDK 8 and apache maven;
+3. Docker;
 
+##### `init.sh`
 ```sh
-# init.sh:
-# 首次运行使用。初始化Docker容器，为数据库和所有中间件构建Docker镜像，运行Docker容器。
-# 如果不需要某个中间件，修改init.sh注释掉再执行。
 $PROJECT_HOME/docker/init.sh
+```
+Do initializations before you run the demo application first time:
+1. Create a docker network.
+2. Build necessary docker images and run containers: MySQL, Mycat, ShardingProxy, Nacos, Seata, SkyWalking, ZipKin. <br />
+   Taking `init.sh` as reference, build and run containers as you want.
 
-# 编译打包演示应用：启用Mycat、Seata和ZipKin
+##### `package.sh`
+```sh
 $PROJECT_HOME/package.sh -clean -mycat -seata -zipkin
+```
+Compile and package demo application with variant components support.
 
-# app-container.sh:
-# 管理mydemo项目下所有Dubbo服务和shop-web应用的镜像和容器。
-# 为Dubbo服务、shop-web应用构建镜像，运行容器：
+##### `app-container.sh`
+Build docker images and run containers for all Dubbo services and shop-web in this demo application.
+```sh
+# Build images, then run containers.
 $PROJECT_HOME/docker/app-container.sh -build -run
-# 为Dubbo服务、shop-web应用停止容器，并删除容器和镜像
+# Stop and remove containers, remove images, so as to repackage and rerun the demo application.
 $PROJECT_HOME/docker/app-container.sh -stop -rm -rmi
 ```
