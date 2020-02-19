@@ -5,18 +5,18 @@ BASE_DIR=`pwd`
 
 set -e
 
-#docker network create mydemo
+docker network create mydemo
 
-#./mysql/build.sh
-#./mysql/run.sh
+./mysql/build.sh
+./mysql/run.sh
 
-#./java/build.sh
+./java/build.sh
 
-#./mycat/build.sh
-#./mycat/run.sh
+./mycat/build.sh
+./mycat/run.sh
 
-#./shardingproxy/build.sh
-#./shardingproxy/run.sh
+./shardingproxy/build.sh
+./shardingproxy/run.sh
 
 ./nacos/build.sh
 ./nacos/run.sh
