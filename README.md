@@ -8,7 +8,15 @@
 除PinPoint外，整个演示项目支持Docker容器运行，包含Dockerfile和相关管理脚本，可以方便快速运行演示应用，无需自己动手部署配置数据库和各种中间件，参考后文*Docker容器运行*部分。
 
 #### 2、Kubernetes
+- Kubernetes是一个优秀的自动化运维管理平台，极大简化了应用大规模部署和管理问题，结合Service Mesh的路由、熔断、限流，微服务架构中的非功能性需求基本都被分拆出来了，应用只需聚焦于业务逻辑。
+- 不可变基础设施、基础设施即代码，基于Docker容器、Kubernetes、DevOps的云原生理念，是对运维管理的一场革命。
+- 将研发团队持续集成、持续部署、持续交付能力提升一个台阶。
+
 本项目为`MySQL`、`Mycat`、`Nacos`、`ZipKin`，以及所有演示用Dubbo服务和`shopweb`应用提供了Deployment YAML文件，可以部署到k8s运行，参考后文*Kubernetes运行*部分。
+
+**关于Dubbo服务在K8s中的部署** <br />
+- Dubbo服务采用自己的服务注册发现机制，不能使用K8s的Service，因此也无需为Dubbo服务注册Service。服务提供者注册时，通过Downward API得到POD IP，通过`protocol.host`拿POD IP向注册中心注册。
+- Dubbo服务使用Deployment部署到K8s，可以完全接受K8s的调度和管理，包括手动扩缩容以及利用HPA自动扩缩容。Dubbo本身的服务注册发现机制能够处理POD下线、新POD上线问题。
 
 #### 3、数据库分库分表
 本项目演示了使用Mycat和Sharding-Proxy进行分库分表，相关概念、部署和使用方法，参考[MyCat分库分表概览](https://github.com/liuzhibin-cn/my-demo/blob/master/docs/Sharding-Mycat-Overview-Quickstart.md)、[Sharding-Proxy分库分表概览](https://github.com/liuzhibin-cn/my-demo/blob/master/docs/Sharding-Sharding-Proxy-Overview-Quickstart.md)，以及它们与阿里云DRDS对比[DRDS产品概览](https://github.com/liuzhibin-cn/my-demo/blob/master/docs/Sharding-DRDS-Overview.md)。
