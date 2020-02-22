@@ -1,0 +1,39 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: com-nacos
+spec: # ReplicaSet定义
+  replicas: 1
+  selector:
+    matchLabels:
+      svc: com-nacos
+  template: # Pod元数据
+    metadata:
+      labels:
+        tier: middleware
+        svc: com-nacos
+    spec: # Container定义
+      containers:
+      - name: com-nacos
+        image: mydemo/nacos:1.1.4
+        imagePullPolicy: IfNotPresent
+        env:
+        - name: MYSQL_HOST
+          value: "db-mydemo"
+        ports:
+        - containerPort: 8848
+---
+kind: Service
+apiVersion: v1
+metadata:
+  labels:
+    svc: com-nacos
+  name: com-nacos
+spec:
+  type: NodePort
+  ports:
+    - port: 8848
+      targetPort: 8848
+      nodePort: 30048
+  selector:
+    svc: com-nacos

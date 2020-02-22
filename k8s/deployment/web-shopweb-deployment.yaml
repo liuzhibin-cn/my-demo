@@ -1,0 +1,41 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: web-shopweb
+spec: # ReplicaSet定义
+  replicas: 1
+  selector:
+    matchLabels:
+      svc: web-shopweb
+  template: # Pod元数据
+    metadata:
+      labels:
+        tier: web
+        svc: web-shopweb
+    spec: # Container定义
+      containers:
+      - name: web-shopweb
+        image: mydemo/shopweb
+        imagePullPolicy: IfNotPresent
+        env:
+        - name: NACOS_HOST
+          value: "com-nacos"
+        - name: ZIPKIN_HOST
+          value: "com-zipkin"
+        ports:
+        - containerPort: 8090
+---
+kind: Service
+apiVersion: v1
+metadata:
+  labels:
+    svc: web-shopweb
+  name: web-shopweb
+spec:
+  type: NodePort
+  ports:
+    - port: 8090
+      targetPort: 8090
+      nodePort: 30090
+  selector:
+    svc: web-shopweb

@@ -83,6 +83,9 @@ fi
 # 2. Docker容器运行：通过docker run传递环境变量，将数据库HOST、PORT传递到容器；
 $SED -i "s/^MYSQL_HOST=.*$/MYSQL_HOST=$DB_HOST/g" order-service/run.sh
 $SED -i "s/^MYSQL_HOST=.*$/MYSQL_HOST=$DB_HOST/g" user-service/run.sh
+# 3. K8s运行：修改通过yaml文件指定HOST、PORT
+$SED -i "s/(db|mycat)-mydemo/$DB_HOST/g" k8s/svc-user-deployment.yaml
+$SED -i "s/(db|mycat)-mydemo/$DB_HOST/g" k8s/svc-order-deployment.yaml
 # APM使用zipkin和skywalking时，Docker容器构建方法不一样，这里为Docker容器构建进行参数设置
 $SED -i "s/^APM=.*$/APM=$APM/g" item-service/build.sh
 $SED -i "s/^APM=.*$/APM=$APM/g" stock-service/build.sh

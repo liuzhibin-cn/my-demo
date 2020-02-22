@@ -1,0 +1,45 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mycat-mydemo
+spec: # ReplicaSet定义
+  replicas: 1
+  selector:
+    matchLabels:
+      svc: mycat-mydemo
+  template: # Pod元数据
+    metadata:
+      labels:
+        tier: middleware
+        svc: mycat-mydemo
+    spec: # Container定义
+      containers:
+      - name: mycat-mydemo
+        image: mydemo/mycat:1.6.7.3
+        imagePullPolicy: IfNotPresent
+        env:
+        - name: MYSQL_HOST
+          value: "db-mydemo"
+        ports:
+        - containerPort: 8066
+        - containerPort: 9066
+---
+kind: Service
+apiVersion: v1
+metadata:
+  labels:
+    svc: mycat-mydemo
+  name: mycat-mydemo
+spec:
+  type: NodePort
+  ports:
+    - port: 8066
+      targetPort: 8066
+      nodePort: 30066
+      name: data-port
+    - port: 9066
+      targetPort: 9066
+      name: management-port
+      nodePort: 30067
+  selector:
+    svc: mycat-mydemo

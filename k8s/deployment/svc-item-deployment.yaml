@@ -1,0 +1,32 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: svc-item
+spec: # ReplicaSet定义
+  replicas: 1
+  selector:
+    matchLabels:
+      svc: svc-item
+  template: # Pod元数据
+    metadata:
+      labels:
+        tier: dubbo
+        svc: svc-item
+    spec: # Container定义
+      containers:
+      - name: svc-item
+        image: mydemo/item
+        imagePullPolicy: IfNotPresent
+        env:
+        - name: NACOS_HOST
+          value: "com-nacos"
+        - name: ZIPKIN_HOST
+          value: "com-zipkin"
+        - name: SERVICE_HOST # 使用POD IP注册Dubbo服务
+          valueFrom:
+            fieldRef:
+              fieldPath: status.podIP
+        - name: SERVICE_PORT
+          value: "20880"
+        ports:
+        - containerPort: 20880

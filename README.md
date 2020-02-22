@@ -7,19 +7,22 @@
 #### 1、Docker容器化
 除PinPoint外，整个演示项目支持Docker容器运行，包含Dockerfile和相关管理脚本，可以方便快速运行演示应用，无需自己动手部署配置数据库和各种中间件，参考后文*Docker容器运行*部分。
 
-#### 2、数据库分库分表
-本项目演示了使用Mycat和Sharding-Proxy进行分库分表，相关概念、部署和使用方法，参考[MyCat分库分表概览](https://github.com/liuzhibin-cn/my-demo/blob/master/docs/Sharding-Mycat-Overview-Quickstart.md)、[Sharding-Proxy分库分表概览](https://github.com/liuzhibin-cn/my-demo/blob/master/docs/Sharding-Sharding-Proxy-Overview-Quickstart.md)，这2个分库分表开源方案与阿里云DRDS对比，参考[DRDS产品概览](https://github.com/liuzhibin-cn/my-demo/blob/master/docs/Sharding-DRDS-Overview.md)。
+#### 2、Kubernetes
+本项目为`MySQL`、`Mycat`、`Nacos`、`ZipKin`，以及所有演示用Dubbo服务和`shopweb`应用提供了Deployment YAML文件，可以部署到k8s运行，参考后文*Kubernetes运行*部分。
+
+#### 3、数据库分库分表
+本项目演示了使用Mycat和Sharding-Proxy进行分库分表，相关概念、部署和使用方法，参考[MyCat分库分表概览](https://github.com/liuzhibin-cn/my-demo/blob/master/docs/Sharding-Mycat-Overview-Quickstart.md)、[Sharding-Proxy分库分表概览](https://github.com/liuzhibin-cn/my-demo/blob/master/docs/Sharding-Sharding-Proxy-Overview-Quickstart.md)，以及它们与阿里云DRDS对比[DRDS产品概览](https://github.com/liuzhibin-cn/my-demo/blob/master/docs/Sharding-DRDS-Overview.md)。
 
 Mycat、Sharding-Proxy和DRDS都实现了MySQL协议，成为独立的中间件，将分库分表、读写分离等数据存储的弹性伸缩方案与应用隔离，对应用透明，并且实现语言无关。
 
-#### 3、分布式事务管理
+#### 4、分布式事务管理
 Seata是阿里云分布式事务管理GTS的开源版，2019年1月开源，1.0.0版已经发布。相关概念、部署和使用方法参考[Seata分布式事务管理框架概览](https://github.com/liuzhibin-cn/my-demo/blob/master/docs/Seata-Distributed-Transaction-Management.md)。
 
 Seata提供AT、TCC、Saga三种柔性事务模式，可以跨微服务和应用实现分布式事务管理，AT模式对应用几乎透明，使用方便，但目前还存在一些比较严重的问题：
 1. 性能开销还比较高；
 2. 在使用Mycat、Sharding-Proxy进行分库分表时，Seata会产生不少路由到全分片执行的SQL操作，详细参考[Seata分布式事务管理框架概览](https://github.com/liuzhibin-cn/my-demo/blob/master/docs/Seata-Distributed-Transaction-Management.md)文末；
 
-#### 4、APM全链路监控
+#### 5、APM全链路监控
 演示项目支持PinPoint、SkyWalking、ZipKin三种APM工具进行全链路跟踪和性能分析，相关概念、部署和使用方法，参考[PinPoint部署和使用](https://github.com/liuzhibin-cn/my-demo/blob/master/docs/APM-PinPoint.md)、[SkyWalking部署和使用](https://github.com/liuzhibin-cn/my-demo/blob/master/docs/APM-SkyWalking.md)、[ZipKin部署和使用](https://github.com/liuzhibin-cn/my-demo/blob/master/docs/APM-ZipKin.md)。三种APM工具对比：
 - 使用方式：PinPoint和SkyWalking都采用javaagent方式，对应用代码几乎没有侵入性；ZipKin需要和应用打包到一起，并在应用中完成各种配置，属于强依赖关系；
 - 链路跟踪能力：整体上看相差不大，基本都参照[Google Dapper](http://research.google.com/pubs/pub36356.html)，也都支持对大量主流框架的跟踪，细节上有些差异：
@@ -98,8 +101,9 @@ Seata提供AT、TCC、Saga三种柔性事务模式，可以跨微服务和应用
    - SkyWalking: [localhost:18080](http://localhost:18080/)
    - Mycat：数据端口`18066`、管理端口`19066`，都可以用MySQL客户端登录访问
    - ShardingProxy：端口`localhost:13307`，可以用MySQL客户端登录访问
+   - MySQL：`13306`，可以用MySQL客户端登录访问
 
-注意：如果启用的组件比较多，例如同时启用Mycat + Seata + SkyWalking + Nacos，至少给Docker分配5G以上内存，否则内存紧张可能导致容器和应用卡死。因为不少组件内存占用比较大，例如Seata，JVM启动参数`-XX:MaxDirectMemorySize`小于1G时一直报OOM异常。最好每次运行只start需要用到的容器，没有到的stop。
+注意：如果启用的组件比较多，例如同时启用Mycat + Seata + SkyWalking + Nacos，至少给Docker分配5G以上内存，否则内存紧张可能导致容器和应用卡死。因为不少组件内存占用比较大，例如Seata，JVM启动参数`-XX:MaxDirectMemorySize`小于1G时一直报OOM异常。最好每次运行只start需要用到的容器，没用到的stop。
 
 示例：
 ```sh
@@ -115,6 +119,34 @@ Docker容器：<br />
 
 容器资源使用情况：<br />
 ![](docs/images/docker-stats.png)
+
+#### Kubernetes运行
+1. 部署和启动Kubernetes环境。国内环境在Docker Desktop for Windows/Mac中启用Kubernetes，参考[AliyunContainerService/k8s-for-docker-desktop](https://github.com/AliyunContainerService/k8s-for-docker-desktop)。
+2. 参考*Docker容器运行*，为基础组件和`mydemo`的Dubbo服务和Web应用构建Docker镜像。<br />
+   基础组件支持`MySQL`、`Mycat`、`Nacos`、`ZipKin`，如果想在K8s中运行`ShardingProxy`、`Seata`、`SkyWalking`，需要自己编写Deployment YAML文件。<br />
+3. 通过[k8s/init-basis.sh](k8s/init-basis.sh)和[k8s/deploy-mydemo.sh](k8s/deploy-mydemo.sh)在K8s中部署基础组件和`mydemo`应用。
+4. 运行演示应用，查看相关结果。
+   - 演示应用：[localhost:30090/shop](http://localhost:30090/shop)
+   - Nacos：[localhost:30048/nacos](http://localhost:30048/nacos)，登录用户/密码：nacos/nacos
+   - ZipKin：[localhost:30041/zipkin](http://localhost:30041/zipkin/)
+   - Mycat：数据端口`30066`、管理端口`30067`，都可以用MySQL客户端登录访问
+   - MySQL：`30006`，可以用MySQL客户端登录访问
+
+基础组件大部分为有状态服务，不支持扩容，本项目未采用StatefulSet部署，仅采用普通服务方式，POD重启所有数据都会丢失。<br />
+所有Dubbo服务和`shopweb`支持K8s扩容、缩容（`user-service`默认部署了2个POD），可以尝试K8s管理：
+```sh
+# 将user-service扩容到3个POD
+kubectl scale --replicas=3 -f deployment/svc-user-deployment.yaml
+# 可以开启3个窗口，监控user-service POD日志，查看负载均衡分配情况
+# 1. 找出user-service的POD
+kubectl get pods | grep svc-user
+# 2. 监控每个POD中的容器日志（根据上面语句结果更换容器名称）
+kubectl logs svc-user-68ff844499-9zqf8 -c svc-user -f
+kubectl logs svc-user-68ff844499-dgsnx -c svc-user -f
+...
+```
+
+![](docs/images/kubernetes-overview.png)
 
 -------------------------------------------------------------------
 ### 运行效果
