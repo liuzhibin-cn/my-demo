@@ -1,20 +1,21 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: com-zipkin
+  name: pub-zipkin
 spec: # ReplicaSet定义
   replicas: 1
   selector:
     matchLabels:
-      svc: com-zipkin
+      svc: pub-zipkin
   template: # Pod元数据
     metadata:
       labels:
         tier: middleware
-        svc: com-zipkin
+        scope: public
+        svc: pub-zipkin
     spec: # Container定义
       containers:
-      - name: com-zipkin
+      - name: pub-zipkin
         image: mydemo/zipkin:2.19.2
         imagePullPolicy: IfNotPresent
         env:
@@ -27,8 +28,8 @@ kind: Service
 apiVersion: v1
 metadata:
   labels:
-    svc: com-zipkin
-  name: com-zipkin
+    svc: pub-zipkin
+  name: pub-zipkin
 spec:
   type: NodePort
   ports:
@@ -36,4 +37,4 @@ spec:
     targetPort: 9411
     nodePort: 30041
   selector:
-    svc: com-zipkin
+    svc: pub-zipkin

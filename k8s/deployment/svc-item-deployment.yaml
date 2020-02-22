@@ -11,6 +11,7 @@ spec: # ReplicaSet定义
     metadata:
       labels:
         tier: dubbo
+        scope: mydemo
         svc: svc-item
     spec: # Container定义
       containers:
@@ -19,9 +20,9 @@ spec: # ReplicaSet定义
         imagePullPolicy: IfNotPresent
         env:
         - name: NACOS_HOST
-          value: "com-nacos"
+          value: "pub-nacos"
         - name: ZIPKIN_HOST
-          value: "com-zipkin"
+          value: "pub-zipkin"
         - name: SERVICE_HOST # 使用POD IP注册Dubbo服务
           valueFrom:
             fieldRef:

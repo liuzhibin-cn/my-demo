@@ -1,20 +1,21 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: com-nacos
+  name: pub-nacos
 spec: # ReplicaSet定义
   replicas: 1
   selector:
     matchLabels:
-      svc: com-nacos
+      svc: pub-nacos
   template: # Pod元数据
     metadata:
       labels:
         tier: middleware
-        svc: com-nacos
+        scope: public
+        svc: pub-nacos
     spec: # Container定义
       containers:
-      - name: com-nacos
+      - name: pub-nacos
         image: mydemo/nacos:1.1.4
         imagePullPolicy: IfNotPresent
         env:
@@ -27,8 +28,8 @@ kind: Service
 apiVersion: v1
 metadata:
   labels:
-    svc: com-nacos
-  name: com-nacos
+    svc: pub-nacos
+  name: pub-nacos
 spec:
   type: NodePort
   ports:
@@ -36,4 +37,4 @@ spec:
       targetPort: 8848
       nodePort: 30048
   selector:
-    svc: com-nacos
+    svc: pub-nacos

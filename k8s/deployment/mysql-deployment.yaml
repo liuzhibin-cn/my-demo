@@ -11,7 +11,7 @@ spec: # ReplicaSet定义
     metadata:
       labels:
         tier: mysql
-        app: mydemo
+        scope: mydemo
         svc: db-mydemo
     spec: # Container定义
       containers:

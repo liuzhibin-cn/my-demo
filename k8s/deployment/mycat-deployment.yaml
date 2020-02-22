@@ -11,6 +11,7 @@ spec: # ReplicaSet定义
     metadata:
       labels:
         tier: middleware
+        scope: mydemo
         svc: mycat-mydemo
     spec: # Container定义
       containers:
