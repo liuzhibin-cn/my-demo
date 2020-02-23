@@ -53,8 +53,8 @@ Seata提供AT、TCC、Saga三种柔性事务模式，可以跨微服务和应用
 - 容器运行需要安装Docker
 
 #### 编译打包
-[package.sh](https://raw.githubusercontent.com/liuzhibin-cn/my-demo/master/package.sh)为项目编译打包脚本，参数说明：
-- 简单运行：不带任何参数执行`package.sh`，仅运行Dubbo微服务和演示应用，使用单个MySQL数据库、[nacos](https://nacos.io/)注册中心，运行4个Dubbo服务和1个Web应用；
+`./package.sh`为项目编译打包脚本，参数说明：
+- 简单运行：不带任何参数执行`package.sh`，仅运行Dubbo微服务和演示应用，使用单个MySQL数据库、Nacos注册中心，运行4个Dubbo服务和1个Web应用；
 - 分库分表：`-mycat`、`-sharding-proxy`二选一。
   - `-mycat`：使用[Mycat](https://github.com/liuzhibin-cn/my-demo/blob/master/docs/Sharding-Mycat-Overview-Quickstart.md)分库分表；
   - `-sharding-proxy`：使用[Sharding-Proxy](https://github.com/liuzhibin-cn/my-demo/blob/master/docs/Sharding-Sharding-Proxy-Overview-Quickstart.md)分库分表；
@@ -68,7 +68,7 @@ Seata提供AT、TCC、Saga三种柔性事务模式，可以跨微服务和应用
 例如`./package.sh -mycat -seata -zipkin`
 
 #### 本地运行演示应用
-1. 安装MySQL，建库建表。建库脚本[sql-schema.sql](https://raw.githubusercontent.com/liuzhibin-cn/my-demo/master/docs/sql-schema.sql)，是演示分库分表用的建库脚本，简单方式运行只需要其中`mydemo-dn1`单库即可。
+1. 安装MySQL，建库建表。建库脚本[docs/sql-schema.sql](https://raw.githubusercontent.com/liuzhibin-cn/my-demo/master/docs/sql-schema.sql)，是演示分库分表用的建库脚本，简单方式运行只需要其中`mydemo-dn1`单库即可。
 2. 部署nacos，用于Dubbo注册中心。参考[Nacos快速开始](https://nacos.io/zh-cn/docs/quick-start.html)即可。
 3. 如果要使用到某个中间件，例如`ShardingProxy`、`PinPoint`，必须部署配置好。
 4. 修改项目配置。项目配置都在[parent pom.xml](https://raw.githubusercontent.com/liuzhibin-cn/my-demo/master/pom.xml)中，包括数据库连接信息、nacos地址等。
@@ -100,7 +100,7 @@ Seata提供AT、TCC、Saga三种柔性事务模式，可以跨微服务和应用
    > 如果启用的组件比较多，例如同时启用`Mycat + Seata + SkyWalking + Nacos`，至少给Docker分配5G以上内存，否则内存紧张可能导致容器和应用卡死。因为不少组件内存占用比较大，例如Seata，JVM启动参数`-XX:MaxDirectMemorySize`小于1G时一直报OOM异常。
 3. 为演示应用构建Docker镜像、运行Docker容器。
    1. 参考`package.sh`，编译打包；
-   2. 使用[docker/deploy-mydemo.sh](https://raw.githubusercontent.com/liuzhibin-cn/my-demo/master/docker/deploy-mydemo.sh)管理Docker镜像和容器，其操作对象为所有Dubbo服务和shop-web应用，参数说明：
+   2. 使用`./docker/deploy-mydemo.sh`管理Docker镜像和容器，其操作对象为所有Dubbo服务和shop-web应用，参数说明：
       - `-build`：构建Docker镜像；
       - `-run`：运行Docker容器；
       - `-stop`：停止Docker容器；
@@ -109,10 +109,10 @@ Seata提供AT、TCC、Saga三种柔性事务模式，可以跨微服务和应用
 
 示例：
 ```sh
-./docker/build-basis.sh # 为所有基础组件构建Docker镜像
+./docker/build-basis.sh  # 为所有基础组件构建Docker镜像
 ./docker/deploy-basis.sh # 为所有基础组件运行Docker容器
-./package.sh -mycat -seata -zipkin # 编译打包演示应用
-./docker/deploy-mydemo.sh -build -run     # 对演示应用构建Docker镜像、运行容器
+./package.sh -mycat -seata -zipkin 		# 编译打包演示应用
+./docker/deploy-mydemo.sh -build -run   # 对演示应用构建Docker镜像、运行容器
 ./package.sh -mycat -zipkin # 编译打包：不使用Seata
 ./docker/deploy-mydemo.sh -stop -rm -rmi -build -run # 重新构建Docker镜像、运行容器
 ```
