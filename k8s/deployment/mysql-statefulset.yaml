@@ -1,0 +1,50 @@
+kind: Service
+apiVersion: v1
+metadata:
+  name: db-mydemo
+spec:
+  type: NodePort        # Expose service port to host machine
+  ports:
+  - port: 3306
+    targetPort: 3306
+    nodePort: 30006     # Expose service port to host machine
+  selector:
+    svc: db-mydemo
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: db-mydemo
+spec:
+  replicas: 1
+  serviceName: db-mydemo
+  selector:
+    matchLabels:
+      svc: db-mydemo
+  template:
+    metadata:
+      labels:
+        tier: mysql
+        scope: mydemo
+        svc: db-mydemo
+    spec:
+      containers:
+      - name: db-mydemo
+        image: mydemo/mysql:5.7.18
+        imagePullPolicy: IfNotPresent
+        env:
+        - name: MYSQL_ROOT_PASSWORD
+          value: "123"
+        ports:
+        - containerPort: 3306
+        readinessProbe: # Check whether MySQL service is ready
+          exec:         # Wait until MySQL executes sql successfully
+            # 下面检测方式存在问题。
+            # 原因：mysql:5.7.18先启动MySQL进程执行初始化，然后停止MySQL再重新正式启动。下面命令可能会在初始化期间执行成功，使Service就绪，
+            #   但随后MySQL进程重启，这期间应用通过Service与MySQL建立长连接，会导致SQL操作一直Connection refused异常。
+            #   所以检测机制准确性取决于MySQL是否能在initialDelaySeconds时间内完成初始化操作。
+            # deploy-basis.sh中通过容器日志来检测，更准确，但不能在这里使用。
+            command: ["mysql", "-h", "localhost", "-uroot", "-p123", "--database", "skywalking", "-e", "SELECT 1"]
+          initialDelaySeconds: 50   # Wait initialDelaySeconds to check the first time
+          periodSeconds: 5          # Wait periodSeconds to check next time
+          timeoutSeconds: 1         # Timeout for check process

@@ -5,18 +5,19 @@
 本项目基础演示部分包括基于SpringBoot的Dubbo微服务和Web演示应用，另外还包含以下几个方面：
 
 #### 1、Docker容器化
-除PinPoint外，整个演示项目支持Docker容器运行，包含Dockerfile和相关管理脚本，可以方便快速运行演示应用，无需自己动手部署配置数据库和各种中间件，参考后文*Docker容器运行*部分。
+除PinPoint外，整个演示项目支持Docker容器运行，包含`Dockerfile`和相关管理脚本。
+使用Docker容器运行演示应用，无需部署、配置任何系统，不需要对项目进行任何配置，使用管理脚本就可以简单快速运行整个演示应用，参考*Docker容器运行演示应用*。
 
 #### 2、Kubernetes
-- Kubernetes是一个优秀的自动化运维管理平台，极大简化了应用大规模部署和管理问题，结合Service Mesh的路由、熔断、限流，微服务架构中的非功能性需求基本都被分拆出来了，应用只需聚焦于业务逻辑。
+- Kubernetes是一个优秀的自动化运维管理平台，极大简化了应用大规模部署和管理问题，结合Service Mesh的路由、熔断和限流，微服务架构中的非功能性需求基本都被分拆出来了，应用只需聚焦于业务逻辑。
 - 不可变基础设施、基础设施即代码，基于Docker容器、Kubernetes、DevOps的云原生理念，是对运维管理的一场革命。
 - 将研发团队持续集成、持续部署、持续交付能力提升一个台阶。
 
-本项目为`MySQL`、`Mycat`、`Nacos`、`ZipKin`，以及所有演示用Dubbo服务和`shopweb`应用提供了Deployment YAML文件，可以部署到k8s运行，参考后文*Kubernetes运行*部分。
+本项目为`Mycat` + `ZipKin`运行演示应用提供了K8s YAML配置文件，可以快速部署到k8s运行，参考*Kubernetes运行演示应用*。
 
 **关于Dubbo服务在K8s中的部署** <br />
-- Dubbo服务采用自己的服务注册发现机制，不能使用K8s的Service，因此也无需为Dubbo服务注册Service。服务提供者注册时，通过Downward API得到POD IP，通过`protocol.host`拿POD IP向注册中心注册。
-- Dubbo服务使用Deployment部署到K8s，可以完全接受K8s的调度和管理，包括手动扩缩容以及利用HPA自动扩缩容。Dubbo本身的服务注册发现机制能够处理POD下线、新POD上线问题。
+- Dubbo服务采用自己的服务注册发现机制，不能使用K8s的Service。提供者注册时通过Downward API得到POD IP，通过`dubbo.protocol.host`拿POD IP向注册中心注册。
+- Dubbo服务使用Deployment部署到K8s，可以完全接受K8s的调度和管理，包括手动扩缩容以及利用HPA自动扩缩容等。Dubbo本身的服务注册发现机制能够处理POD下线、新POD上线问题。
 
 #### 3、数据库分库分表
 本项目演示了使用Mycat和Sharding-Proxy进行分库分表，相关概念、部署和使用方法，参考[MyCat分库分表概览](https://github.com/liuzhibin-cn/my-demo/blob/master/docs/Sharding-Mycat-Overview-Quickstart.md)、[Sharding-Proxy分库分表概览](https://github.com/liuzhibin-cn/my-demo/blob/master/docs/Sharding-Sharding-Proxy-Overview-Quickstart.md)，以及它们与阿里云DRDS对比[DRDS产品概览](https://github.com/liuzhibin-cn/my-demo/blob/master/docs/Sharding-DRDS-Overview.md)。
@@ -42,7 +43,7 @@ Seata提供AT、TCC、Saga三种柔性事务模式，可以跨微服务和应用
 - 社区支持：ZipKin架构灵活、文档完善，社区支持度最高，Spring Cloud和Service Mesh（[istio](https://github.com/istio/)）官方提供ZipKin支持；SkyWalking是华为员工开发，已成为Apache项目；PinPoint为韩国公司开源；
 
 -------------------------------------------------------------------
-### 运行演示项目
+### 运行演示应用
 #### 环境要求
 - 操作系统
   - Linux
@@ -52,7 +53,7 @@ Seata提供AT、TCC、Saga三种柔性事务模式，可以跨微服务和应用
 - 容器运行需要安装Docker
 
 #### 编译打包
-[package.sh](https://github.com/liuzhibin-cn/my-demo/blob/master/package.sh)为项目编译打包脚本，参数说明：
+[package.sh](https://raw.githubusercontent.com/liuzhibin-cn/my-demo/master/package.sh)为项目编译打包脚本，参数说明：
 - 简单运行：不带任何参数执行`package.sh`，仅运行Dubbo微服务和演示应用，使用单个MySQL数据库、[nacos](https://nacos.io/)注册中心，运行4个Dubbo服务和1个Web应用；
 - 分库分表：`-mycat`、`-sharding-proxy`二选一。
   - `-mycat`：使用[Mycat](https://github.com/liuzhibin-cn/my-demo/blob/master/docs/Sharding-Mycat-Overview-Quickstart.md)分库分表；
@@ -66,12 +67,13 @@ Seata提供AT、TCC、Saga三种柔性事务模式，可以跨微服务和应用
 
 例如`./package.sh -mycat -seata -zipkin`
 
-#### 本地运行
-1. 安装和配置MySQL。建库脚本[sql-schema.sql](https://github.com/liuzhibin-cn/my-demo/blob/master/docs/sql-schema.sql)，是演示分库分表用的建库脚本，简单方式运行只需要其中`mydemo-dn1`单库即可。
+#### 本地运行演示应用
+1. 安装MySQL，建库建表。建库脚本[sql-schema.sql](https://raw.githubusercontent.com/liuzhibin-cn/my-demo/master/docs/sql-schema.sql)，是演示分库分表用的建库脚本，简单方式运行只需要其中`mydemo-dn1`单库即可。
 2. 部署nacos，用于Dubbo注册中心。参考[Nacos快速开始](https://nacos.io/zh-cn/docs/quick-start.html)即可。
-3. 确认项目配置。项目配置都在[parent pom.xml](https://github.com/liuzhibin-cn/my-demo/blob/master/pom.xml)中，包括数据库连接信息、nacos地址等。
-4. 编译打包。使用`package.sh`。
-5. 运行演示项目。按依赖关系依次启动Dubbo服务和Web应用:
+3. 如果要使用到某个中间件，例如`ShardingProxy`、`PinPoint`，必须部署配置好。
+4. 修改项目配置。项目配置都在[parent pom.xml](https://raw.githubusercontent.com/liuzhibin-cn/my-demo/master/pom.xml)中，包括数据库连接信息、nacos地址等。
+5. 编译打包。参考上一节*编译打包*。
+6. 按依赖关系依次启动Dubbo服务和Web应用:
    ```sh
    java -jar item-service\target\item-service-0.0.1-SNAPSHOT.jar
    java -jar stock-service\target\stock-service-0.0.1-SNAPSHOT.jar
@@ -79,48 +81,50 @@ Seata提供AT、TCC、Saga三种柔性事务模式，可以跨微服务和应用
    java -jar order-service\target\order-service-0.0.1-SNAPSHOT.jar
    java -jar shop-web\target\shop-web-0.0.1-SNAPSHOT.jar
    ```
-6. 运行演示应用，查看相关结果。
-   - 演示应用：[localhost:8090/shop](http://localhost:8090/shop)
-   - Nacos：[localhost:8848/nacos](http://localhost:8848/nacos)，登录用户/密码：nacos/nacos
-   - ZipKin：[localhost:9411/zipkin](http://localhost:9411/zipkin/)
-   - SkyWalking: [localhost:8080](http://localhost:8080/)
-   - Mycat：数据端口`8066`、管理端口`9066`，都可以用MySQL客户端登录访问
-   - ShardingProxy：端口`localhost:3307`，可以用MySQL客户端登录访问
 
-#### Docker容器运行
+访问方式：
+- 演示应用：[localhost:8090/shop](http://localhost:8090/shop)
+- Nacos：[localhost:8848/nacos](http://localhost:8848/nacos)，登录用户/密码：nacos/nacos
+- ZipKin：[localhost:9411/zipkin](http://localhost:9411/zipkin/)
+- SkyWalking: [localhost:8080](http://localhost:8080/)
+- Mycat：数据端口`8066`、管理端口`9066`，都可以用MySQL客户端登录访问
+- ShardingProxy：端口`localhost:3307`，可以用MySQL客户端登录访问
+
+#### Docker容器运行演示应用
 使用Docker容器运行演示项目非常简单，基础组件无需自行部署、配置，直接运行容器即可。<br />
 由于PinPoint只能采用HBase存储，本项目未制作Dockerfile，除PinPoint外其它组件全部支持容器运行。
-1. 创建Docker NetWork：`docker network create mydemo`
-2. 基础组件构建Docker镜像，运行Docker容器。<br />
-   相关脚本和Dockerfile在[docker](docker/)目录中，每个基础组件一个子目录，其中`build.sh`构建Docker镜像，`run.sh`启动运行Docker容器，都不需要任何参数。<br />
-   注意按基础组件的依赖关系依次启动Docker容器：`mysql -> mycat/shardingproxy/nacos/zipkin/skywalking -> seata`。
-3. 演示用Dubbo服务和Web应用构建Docker镜像、运行Docker容器。
-   1. 先参考`package.sh`，编译打包；
-   2. 使用[docker/app-container.sh](docker/app-container.sh)管理Docker镜像和容器，其操作对象为所有Dubbo服务和shop-web应用，参数说明：
+1. 基础组件构建Docker镜像：`docker/build-basis.sh`<br />
+   相关脚本和Dockerfile在`docker`目录中，每个基础组件一个子目录，其中`build.sh`构建Docker镜像，`run.sh`启动运行Docker容器，都不需要任何参数。
+2. 基础组件运行Docker容器：`docker/deploy-basis.sh`<br />
+   最好根据需要修改`deploy-basis.sh`，仅运行本次需要用到的组件。若手工启动，注意按依赖关系依次启动：`mysql -> mycat/shardingproxy/nacos/zipkin/skywalking -> seata`。
+   > 如果启用的组件比较多，例如同时启用`Mycat + Seata + SkyWalking + Nacos`，至少给Docker分配5G以上内存，否则内存紧张可能导致容器和应用卡死。因为不少组件内存占用比较大，例如Seata，JVM启动参数`-XX:MaxDirectMemorySize`小于1G时一直报OOM异常。
+3. 为演示应用构建Docker镜像、运行Docker容器。
+   1. 参考`package.sh`，编译打包；
+   2. 使用[docker/deploy-mydemo.sh](https://raw.githubusercontent.com/liuzhibin-cn/my-demo/master/docker/deploy-mydemo.sh)管理Docker镜像和容器，其操作对象为所有Dubbo服务和shop-web应用，参数说明：
       - `-build`：构建Docker镜像；
       - `-run`：运行Docker容器；
       - `-stop`：停止Docker容器；
       - `-rm`：删除Docker容器（需要先停止Docker容器）；
-      - `-rmi`：删除Docker镜像（需要先停止Docker容器）；
-4. 运行演示应用，查看相关结果。
-   - 演示应用：[localhost:18090/shop](http://localhost:18090/shop)
-   - Nacos：[localhost:18848/nacos](http://localhost:18848/nacos)，登录用户/密码：nacos/nacos
-   - ZipKin：[localhost:19411/zipkin](http://localhost:19411/zipkin/)
-   - SkyWalking: [localhost:18080](http://localhost:18080/)
-   - Mycat：数据端口`18066`、管理端口`19066`，都可以用MySQL客户端登录访问
-   - ShardingProxy：端口`localhost:13307`，可以用MySQL客户端登录访问
-   - MySQL：`13306`，可以用MySQL客户端登录访问
-
-注意：如果启用的组件比较多，例如同时启用Mycat + Seata + SkyWalking + Nacos，至少给Docker分配5G以上内存，否则内存紧张可能导致容器和应用卡死。因为不少组件内存占用比较大，例如Seata，JVM启动参数`-XX:MaxDirectMemorySize`小于1G时一直报OOM异常。最好每次运行只start需要用到的容器，没用到的stop。
+      - `-rmi`：删除Docker镜像（需要先删除Docker容器）；
 
 示例：
 ```sh
-./docker/init.sh # 为所有基础组件构建Docker镜像，运行容器
+./docker/build-basis.sh # 为所有基础组件构建Docker镜像
+./docker/deploy-basis.sh # 为所有基础组件运行Docker容器
 ./package.sh -mycat -seata -zipkin # 编译打包演示应用
-./docker/app-container.sh -build -run     # 对演示应用构建Docker镜像、运行容器
+./docker/deploy-mydemo.sh -build -run     # 对演示应用构建Docker镜像、运行容器
 ./package.sh -mycat -zipkin # 编译打包：不使用Seata
-./docker/app-container.sh -stop -rm -rmi -build -run # 重新构建Docker镜像、运行容器
+./docker/deploy-mydemo.sh -stop -rm -rmi -build -run # 重新构建Docker镜像、运行容器
 ```
+
+访问入口：
+- 演示应用：[localhost:18090/shop](http://localhost:18090/shop)
+- Nacos：[localhost:18848/nacos](http://localhost:18848/nacos)，登录用户/密码：nacos/nacos
+- ZipKin：[localhost:19411/zipkin](http://localhost:19411/zipkin/)
+- SkyWalking: [localhost:18080](http://localhost:18080/)
+- Mycat：数据端口`18066`、管理端口`19066`，都可以用MySQL客户端登录访问
+- ShardingProxy：端口`localhost:13307`，可以用MySQL客户端登录访问
+- MySQL：`13306`，可以用MySQL客户端登录访问
 
 Docker容器：<br />
 ![](docs/images/docker-containers.png)
@@ -128,31 +132,35 @@ Docker容器：<br />
 容器资源使用情况：<br />
 ![](docs/images/docker-stats.png)
 
-#### Kubernetes运行
+#### Kubernetes运行演示应用
 1. 部署和启动Kubernetes环境。国内环境在Docker Desktop for Windows/Mac中启用Kubernetes，参考[AliyunContainerService/k8s-for-docker-desktop](https://github.com/AliyunContainerService/k8s-for-docker-desktop)。
-2. 参考*Docker容器运行*，为基础组件和`mydemo`的Dubbo服务和Web应用构建Docker镜像。<br />
-   基础组件支持`MySQL`、`Mycat`、`Nacos`、`ZipKin`，如果想在K8s中运行`ShardingProxy`、`Seata`、`SkyWalking`，需要自己编写Deployment YAML文件。<br />
-3. 通过[k8s/init-basis.sh](k8s/init-basis.sh)和[k8s/deploy-mydemo.sh](k8s/deploy-mydemo.sh)在K8s中部署基础组件和`mydemo`应用。
-4. 运行演示应用，查看相关结果。
-   - 演示应用：[localhost:30090/shop](http://localhost:30090/shop)
-   - Nacos：[localhost:30048/nacos](http://localhost:30048/nacos)，登录用户/密码：nacos/nacos
-   - ZipKin：[localhost:30041/zipkin](http://localhost:30041/zipkin/)
-   - Mycat：数据端口`30066`、管理端口`30067`，都可以用MySQL客户端登录访问
-   - MySQL：`30006`，可以用MySQL客户端登录访问
+2. 参考*Docker容器运行*，为基础组件`MySQL`、`Nacos`、`Mycat`、`ZipKin`构建Docker镜像。
+   无需为演示用用构建Docker镜像，在下面脚本中会自动重新打包应用，构建Docker镜像。
+3. 执行`./k8s/deploy-k8s.sh`在K8s中部署演示应用。<br />
+   如果部署过程有错误，执行`./k8s/undeploy-k8s.sh`可以将k8s中已经部署好的部分全部删除。
 
-基础组件大部分为有状态服务，不支持扩容，本项目未采用StatefulSet部署，仅采用普通服务方式，POD重启所有数据都会丢失。<br />
-所有Dubbo服务和`shopweb`支持K8s扩容、缩容（`user-service`默认部署了2个POD），可以尝试K8s管理：
-```sh
-# 将user-service扩容到3个POD
-kubectl scale --replicas=3 -f deployment/svc-user-deployment.yaml
-# 可以开启3个窗口，监控user-service POD日志，查看负载均衡分配情况
-# 1. 找出user-service的POD
-kubectl get pods | grep svc-user
-# 2. 监控每个POD中的容器日志（根据上面语句结果更换容器名称）
-kubectl logs svc-user-68ff844499-9zqf8 -c svc-user -f
-kubectl logs svc-user-68ff844499-dgsnx -c svc-user -f
-...
-```
+访问入口：
+- 演示应用：[localhost:30090/shop](http://localhost:30090/shop)
+- Nacos：[localhost:30048/nacos](http://localhost:30048/nacos)，登录用户/密码：nacos/nacos
+- ZipKin：[localhost:30041/zipkin](http://localhost:30041/zipkin/)
+- Mycat：数据端口`30066`、管理端口`30067`，都可以用MySQL客户端登录访问
+- MySQL：`30006`，可以用MySQL客户端登录访问
+
+备注说明：
+1. 简单起见，本演示项目采用`NodePort`方式向K8s集群外部暴露端口，方便Docker Desktop单机模式本地访问，可自行尝试Ingress等其它K8s方案。
+2. 基础组件多为有状态服务，不支持扩缩容（会数据不一致、错误等），另外未采用PV、PVC等，POD重启所有数据都会丢失。
+3. 所有Dubbo服务和`shopweb`支持K8s扩缩容（`user-service`默认部署了2个POD），可以尝试K8s管理：
+   ```sh
+   # 将user-service扩容到3个POD
+   kubectl scale --replicas=3 -f deployment/svc-user-deployment.yaml
+   # 扩容后可以开启3个窗口，监控user-service POD日志，查看负载均衡分配情况
+   # 1. 找出user-service的POD
+   kubectl get pods | grep svc-user
+   # 2. 监控每个POD中的容器日志（根据上面语句结果更换容器名称）
+   kubectl logs svc-user-68ff844499-9zqf8 -c svc-user -f
+   kubectl logs svc-user-68ff844499-dgsnx -c svc-user -f
+   ...
+   ```
 
 ![](docs/images/kubernetes-overview.png)
 
