@@ -27,7 +27,7 @@ public class UserServiceImpl implements UserService {
 	
 	@Autowired
 	UserDao dao;
-	 
+	
 	static {
 		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
 		try {
@@ -152,5 +152,4 @@ public class UserServiceImpl implements UserService {
 		int hashcode = account.hashCode();
 		return hashcode<0 ? -hashcode : hashcode;
 	}
-
 }

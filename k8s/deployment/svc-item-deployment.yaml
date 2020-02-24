@@ -32,13 +32,16 @@ spec:
         ports:
         - containerPort: 20880
         readinessProbe: # Check whether Item Service is ready
-          tcpSocket:    # Wait until TCP port is opened
-            port: 20880
+          #tcpSocket:    # Wait until TCP port is opened
+          #  port: 20880
+          # 使用tcpSocket方式，k8s会不断与20880端口建立、断开连接，导致Dubbo不断打印"[DUBBO] disconnected from /10.1.0.1:33994 ..."日志，所以这里改用exec方式
+          exec:
+            command: ["sh", "-c", "COUNT=`netstat -antp tcp | grep 20880 | grep LISTEN -c`; if [ $COUNT -eq 1 ]; then exit 0; else exit 1; fi"]
           initialDelaySeconds: 3    # Wait initialDelaySeconds to check the first time
-          periodSeconds: 2          # Wait periodSeconds to check next time
+          periodSeconds: 5          # Wait periodSeconds to check next time
           timeoutSeconds: 1         # Timeout for check process
       initContainers:
-      - name: check-nacos
+      - name: wait-dependencies
         image: busybox
         imagePullPolicy: IfNotPresent
         # 等待时间可能会比较长：

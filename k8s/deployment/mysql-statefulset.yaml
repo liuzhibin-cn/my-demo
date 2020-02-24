@@ -46,5 +46,5 @@ spec:
             # deploy-basis.sh中通过容器日志来检测，更准确，但不能在这里使用。
             command: ["mysql", "-h", "localhost", "-uroot", "-p123", "--database", "skywalking", "-e", "SELECT 1"]
           initialDelaySeconds: 50   # Wait initialDelaySeconds to check the first time
-          periodSeconds: 5          # Wait periodSeconds to check next time
+          periodSeconds: 10         # Wait periodSeconds to check next time
           timeoutSeconds: 1         # Timeout for check process

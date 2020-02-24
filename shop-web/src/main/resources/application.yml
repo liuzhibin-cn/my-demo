@@ -22,6 +22,10 @@ dubbo:
         qosEnable: false
     registry: # see com.alibaba.dubbo.config.RegistryConfig
         address: nacos://${nacos.address}
+    protocol: # see com.alibaba.dubbo.config.ProtocolConfig
+        id: dubbo
+        name: dubbo
+        host: ${SERVICE_HOST:localhost} # 用于k8s使用POD IP注册服务
     consumer:
         filter: ${dubbo.filter}
 

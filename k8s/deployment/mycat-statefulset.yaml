@@ -47,10 +47,10 @@ spec:
           tcpSocket:    # Wait until TCP port is opened
             port: 8066
           initialDelaySeconds: 3    # Wait initialDelaySeconds to check the first time
-          periodSeconds: 2          # Wait periodSeconds to check next time
-          timeoutSeconds: 1         # Timeout for check process
+          periodSeconds: 5          # Wait periodSeconds to check next time
+          timeoutSeconds: 2         # Timeout for check process
       initContainers:
-      - name: check-mysql
+      - name: wait-dependencies
         image: busybox
         imagePullPolicy: IfNotPresent
         # nslookup success until db-mydemo is ready

@@ -43,10 +43,10 @@ spec:
             path: /shop
             port: 8090
           initialDelaySeconds: 3    # Wait initialDelaySeconds to check the first time
-          periodSeconds: 3          # Wait periodSeconds to check next time
+          periodSeconds: 5          # Wait periodSeconds to check next time
           timeoutSeconds: 2         # Timeout for check process
       initContainers:
-      - name: check-nacos-order
+      - name: wait-dependencies
         image: busybox
         imagePullPolicy: IfNotPresent
         # 等待时间可能会比较长：
