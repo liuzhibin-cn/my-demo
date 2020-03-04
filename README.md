@@ -125,15 +125,17 @@ kubectl logs svc-user-68ff844499-dgsnx -c svc-user -f
 
 ![](docs/images/kubernetes-overview.png)
 
-#### Screen shots
-Logs for shop-web:<br />
-![](docs/images/shopweb-out.png)
-
-Logs for order-service:<br />
+-------------------------------------------------------------------
+### Screen shots
+Logs for order-service, debug logs for Seata is printed:<br />
 ![](docs/images/order-service-out.png)
 
 Data distribution in shards:<br />
-![](docs/images/db-sharding-overview.png)
+![](docs/images/db-sharding-1.png)<br />
+![](docs/images/db-sharding-2.png)
+
+Mycat explain:<br />
+![](docs/images/mycat-explain.png)
 
 ZipKin:<br />
 ![](https://richie-leo.github.io/ydres/img/10/120/1013/screen-trace-detail-sql.png)
