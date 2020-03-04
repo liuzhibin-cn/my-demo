@@ -16,12 +16,13 @@ A simple demo application for building scalable applications using Microservices
   Seata implements three transaction modes: [AT](https://seata.io/en-us/docs/dev/mode/at-mode.html), [TCC](https://seata.io/en-us/docs/dev/mode/tcc-mode.html) and [SAGA](https://seata.io/en-us/docs/dev/mode/saga-mode.html). The demo application uses `AT` mode, it's transparent for application code.
 - [ZipKin](https://zipkin.io/), [PinPoint](https://github.com/naver/pinpoint), [SkyWalking](https://skywalking.apache.org/): APM tools for microservices, `ZipKin` and `SkyWalking` can work with `Istio`.
 
+-------------------------------------------------------------------
 ### Run the demo application
 #### Prerequisites
 1. OS: Linux, Mac, or Windows with a bash shell, such as git bash;
    > In Mac OSX `gnu-sed` is required: `brew install gnu-sed`
 2. JDK 8+ and apache maven;
-3. Docker;
+3. Docker, 5GB memory for Docker is recommended;
 
 #### Package demo application
 Using `package.sh` to compile and package the demo application. 
@@ -37,14 +38,13 @@ package.sh -mycat -zipkin
 ```
 
 #### Run with Docker
-5GB memory for Docker is recommended.
-
 Build Docker images for all 3-party components used in the demo application.
 ```sh
 docker/build-basis.sh
 ```
 
-Run Docker containers for all 3-party components.
+Run Docker containers for all 3-party components. It's recommended for you that take `docker/deploy-basis.sh` as a reference, 
+and run those containers as you wanted, to avoid Docker hungs because of memory pressure.
 ```sh 
 docker/deploy-basis.sh
 ```
@@ -60,8 +60,8 @@ Usage:
 
 Example:
 ```sh
-# Run demo application with Mycat and ZipKin
-package.sh -mycat -zipkin
+# Run demo application with Mycat, Seata and ZipKin
+package.sh -mycat -seata -zipkin
 docker/deploy-mydemo.sh -build -run
 # Run demo application with ShardingProxy and SkyWalking
 package.sh -shardingproxy -skywaling
@@ -120,6 +120,7 @@ kubectl get pods | grep svc-user
 kubectl logs svc-user-68ff844499-9zqf8 -c svc-user -f
 kubectl logs svc-user-68ff844499-dgsnx -c svc-user -f
 ...
+# 3. Open http://localhost:30090/shop, Click "Run a Full TestCase" button and watch which user-service instance is used.
 ```
 
 ![](docs/images/kubernetes-overview.png)
@@ -130,6 +131,9 @@ Logs for shop-web:<br />
 
 Logs for order-service:<br />
 ![](docs/images/order-service-out.png)
+
+Data distribution in shards:<br />
+![](docs/images/db-sharding-overview.png)
 
 ZipKin:<br />
 ![](https://richie-leo.github.io/ydres/img/10/120/1013/screen-trace-detail-sql.png)

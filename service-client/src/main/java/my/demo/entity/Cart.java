@@ -22,13 +22,13 @@ public class Cart implements Serializable {
 		this.address = address;
 		return this;
 	}
-	public Cart addItem(int itemId, int quantity, double price, double subtotal, double discount) {
+	public Cart addItem(int itemId, int quantity, double price, double discount) {
 		CartItem ci = new CartItem();
 		ci.setItemId(itemId);
 		ci.setQuantity(quantity);
 		ci.setPrice(price);
-		ci.setSubtotal(subtotal);
 		ci.setDiscount(discount);
+		ci.setSubtotal(quantity * price - discount);
 		this.items.add(ci);
 		return this;
 	}

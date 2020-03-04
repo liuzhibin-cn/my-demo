@@ -160,10 +160,10 @@ public class ShopController {
 		return orderResult.getResult();
 	}
 	private Cart addCart(User user, List<Item> items) {
-		Cart cart = new Cart(user.getUserId()).saveAddress(user.getNickname(), user.getMobile(), "北京市海淀区翠微路17号院");
+		Cart cart = new Cart(user.getUserId()).saveAddress(user.getNickname(), user.getMobile(), "No. 18, Danleng Street, Haidian District, Beijing City, China");
 		List<Item> pickedItems = this.pickupItems(items);
 		pickedItems.forEach(item -> {
-			cart.addItem(item.getId(), 1, item.getPrice(), item.getPrice(), (1-Math.random()/10) * item.getPrice());
+			cart.addItem(item.getId(), 1, item.getPrice(), Math.random()/10 * item.getPrice());
 			CartItem ci = cart.getItems().get(cart.getItems().size()-1);
 			log.info("[add-cart] item:" + ci.getItemId() + ", qty:" + ci.getQuantity() + ", price:" + String.format("%.2f", ci.getPrice()) 
 				+ ", amt:" + String.format("%.2f", ci.getSubtotal()) + ", discount:" + String.format("%.2f", ci.getDiscount()));
