@@ -35,18 +35,18 @@
 	</tableRule>
 
 	<function name="order-func" class="io.mycat.route.function.PartitionByPattern">
-		<property name="patternValue">32</property> <!-- 对32求模 -->
-		<property name="mapFile">order-partition.txt</property> <!-- 求模结果按照文件配置的规则映射到分片 -->
+		<property name="patternValue">32</property> <!-- Mod by 32 -->
+		<property name="mapFile">order-partition.txt</property> <!-- Mapping rules from mod result to datanode -->
 	</function>
 	<function name="user-order-func" class="io.mycat.route.function.PartitionByPattern">
-		<property name="patternValue">32</property> <!-- 对32求模 -->
-		<property name="mapFile">order-partition.txt</property> <!-- 公用订单的分片规则 -->
+		<property name="patternValue">32</property> 
+		<property name="mapFile">order-partition.txt</property>
 	</function>
 	<function name="user-func" class="io.mycat.route.function.PartitionByPattern">
-			<property name="patternValue">32</property> <!-- 对32求模 -->
-			<property name="mapFile">user-partition.txt</property> <!-- 求模结果按照文件配置的规则映射到分片 -->
+			<property name="patternValue">32</property>
+			<property name="mapFile">user-partition.txt</property>
 	</function>
 	<function name="user-account-func" class="io.mycat.route.function.PartitionByMod">
-			<property name="count">2</property> <!-- 数据分为2片 -->
+			<property name="count">2</property> <!-- Number of shards -->
 	</function>
 </mycat:rule>

@@ -88,9 +88,9 @@ Mycat事务管理方案和代码比较简单，不够严谨，例如：
 [Mycat](http://www.mycat.io/)版本[1.6.7.3](http://dl.mycat.io/1.6.7.3/)，Mycat配置文件参考[docs/mycat-conf](https://github.com/liuzhibin-cn/my-demo/tree/master/docs/mycat-conf)
 
 ##### 配置
-使用了Mycat数据库方式的全局序列，SQL脚本参考[sql-schema.sql](https://github.com/liuzhibin-cn/my-demo/blob/master/docs/sql-schema.sql)。
+使用了Mycat数据库方式的全局序列，SQL脚本参考[../docker/mysql/scripts/1-mydemo.sql](https://github.com/liuzhibin-cn/my-demo/tree/master/docker/mysql/scripts/1-mydemo.sql)。
 
-- [server.xml](https://github.com/liuzhibin-cn/my-demo/blob/master/docs/mycat-conf/server.xml)：配置服务器参数，配置逻辑用户名密码：
+- [server.xml](https://github.com/liuzhibin-cn/my-demo/blob/master/docker/mycat/scripts/conf/server.xml)：配置服务器参数，配置逻辑用户名密码：
   ```xml
   <!-- 为Mycat逻辑库定义用户、密码 -->
   <user name="mydemo" defaultAccount="true">
@@ -98,7 +98,7 @@ Mycat事务管理方案和代码比较简单，不够严谨，例如：
     <property name="schemas">db_user,db_order</property>
   </user>
   ```
-- [schema.xml](https://github.com/liuzhibin-cn/my-demo/blob/master/docs/mycat-conf/schema.xml)：配置dataHost、dataNode、逻辑schema：
+- [schema.xml](https://github.com/liuzhibin-cn/my-demo/blob/master/docker/mycat/scripts/conf/schema.xml)：配置dataHost、dataNode、逻辑schema：
   ```xml
   <mycat:schema xmlns:mycat="http://io.mycat/">
     <schema name="db_order" checkSQLschema="false" sqlMaxLimit="100">
@@ -132,7 +132,7 @@ Mycat事务管理方案和代码比较简单，不够严谨，例如：
     </dataHost>
   </mycat:schema>
   ```
-- [rule.xml](https://github.com/liuzhibin-cn/my-demo/blob/master/docs/mycat-conf/rule.xml)：配置分片规则：
+- [rule.xml](https://github.com/liuzhibin-cn/my-demo/blob/master/docker/mycat/scripts/conf/rule.xml)：配置分片规则：
   ```xml
   <mycat:rule xmlns:mycat="http://io.mycat/">
 	  <tableRule name="order-rule">
@@ -177,14 +177,14 @@ Mycat事务管理方案和代码比较简单，不够严谨，例如：
 	  </function>
   </mycat:rule>
   ```
-- [order-partition.txt](https://github.com/liuzhibin-cn/my-demo/blob/master/docs/mycat-conf/order-partition.txt)，配置分片映射关系：
+- [order-partition.txt](https://github.com/liuzhibin-cn/my-demo/blob/master/docker/mycat/scripts/conf/order-partition.txt)，配置分片映射关系：
   ```
   0-7=0
   8-15=1
   16-23=2
   24-31=3
   ```
-- [sequence_db_conf.properties](https://github.com/liuzhibin-cn/my-demo/blob/master/docs/mycat-conf/sequence_db_conf.properties)，配置Mycat全局序列位于哪个dataNode：
+- [sequence_db_conf.properties](https://github.com/liuzhibin-cn/my-demo/blob/master/docker/mycat/scripts/conf/sequence_db_conf.properties)，配置Mycat全局序列位于哪个dataNode：
   ```
   GLOBAL=dn0
   ORD_ORDER_ITEM=dn0

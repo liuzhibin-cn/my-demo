@@ -59,7 +59,7 @@
    > 注意：Windows环境用WinRAR解压会将文件名较长的截断，导致启动时无法加载相关jar，报找不到Java Main Class错误。需要使用tar解压。
 2. 下载[mysql-connector-java-5.1.47.tar.gz](https://cdn.mysql.com//Downloads/Connector-J/mysql-connector-java-5.1.47.tar.gz)，将`mysql-connector-java-5.1.47.jar`拷贝到`lib`目录。
    > 使用`MySQL Connector/J 8.0`以上版本会报错，改回官方使用的版本。
-3. 配置分库分表规则。实现[MyCat分库分表概览](https://github.com/liuzhibin-cn/my-demo/blob/master/docs/Sharding-Mycat-Overview-Quickstart.md)同等效果的规则配置如下（详细配置文件参考[docs/sharding-proxy-conf](https://github.com/liuzhibin-cn/my-demo/tree/master/docs/sharding-proxy-conf)）：
+3. 配置分库分表规则。实现[MyCat分库分表概览](https://github.com/liuzhibin-cn/my-demo/blob/master/docs/Sharding-Mycat-Overview-Quickstart.md)同等效果的规则配置如下（详细配置文件参考[docs/sharding-proxy-conf](https://github.com/liuzhibin-cn/my-demo/tree/master/docker/shardingproxy/scripts/conf)）：
    - `server.yaml`
      ```yaml
      authentication:

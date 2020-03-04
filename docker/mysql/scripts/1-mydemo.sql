@@ -1,5 +1,5 @@
 -- ====================================================================
--- mydemo-dn0
+-- mydemo-dn0: tables and functions for Mycat
 -- ====================================================================
 DROP DATABASE IF EXISTS `mydemo-dn0`;
 CREATE SCHEMA `mydemo-dn0` DEFAULT CHARACTER SET utf8 ;
@@ -107,65 +107,65 @@ CREATE SCHEMA `mydemo-dn1` DEFAULT CHARACTER SET utf8 ;
 USE `mydemo-dn1`;
 DROP TABLE IF EXISTS `ord_order`;
 CREATE TABLE `ord_order` (
-  `order_id` BIGINT NOT NULL DEFAULT 0 COMMENT '订单ID',
-  `user_id` BIGINT NOT NULL DEFAULT 0 COMMENT '会员ID',
-  `status` VARCHAR(10) NOT NULL DEFAULT '' COMMENT '订单状态',
-  `total` DECIMAL(10,2) NOT NULL DEFAULT 0 COMMENT '总金额',
-  `discount` DECIMAL(10,2) NOT NULL DEFAULT 0 COMMENT '优惠金额',
-  `payment` DECIMAL(10,2) NOT NULL DEFAULT 0 COMMENT '付款金额',
-  `pay_time` DATETIME NOT NULL DEFAULT '1900-01-01' COMMENT '付款时间',
-  `pay_status` VARCHAR(10) NOT NULL DEFAULT '' COMMENT '付款状态',
-  `contact` VARCHAR(30) NOT NULL DEFAULT '' COMMENT '收货人',
-  `phone` VARCHAR(20) NOT NULL DEFAULT '' COMMENT '电话',
-  `address` VARCHAR(70) NOT NULL DEFAULT '' COMMENT '详细地址',
-  `created_at` DATETIME NOT NULL DEFAULT current_timestamp COMMENT '下单时间',
-  `last_update` TIMESTAMP NOT NULL DEFAULT current_timestamp on update current_timestamp COMMENT '最后更新时间',
+  `order_id` BIGINT NOT NULL DEFAULT 0,
+  `user_id` BIGINT NOT NULL DEFAULT 0,
+  `status` VARCHAR(10) NOT NULL DEFAULT '' COMMENT 'Order Status',
+  `total` DECIMAL(10,2) NOT NULL DEFAULT 0 COMMENT 'Total order amount',
+  `discount` DECIMAL(10,2) NOT NULL DEFAULT 0,
+  `payment` DECIMAL(10,2) NOT NULL DEFAULT 0,
+  `pay_time` DATETIME NOT NULL DEFAULT '1900-01-01',
+  `pay_status` VARCHAR(10) NOT NULL DEFAULT '',
+  `contact` VARCHAR(30) NOT NULL DEFAULT '',
+  `phone` VARCHAR(20) NOT NULL DEFAULT '',
+  `address` VARCHAR(70) NOT NULL DEFAULT '',
+  `created_at` DATETIME NOT NULL DEFAULT current_timestamp,
+  `last_update` TIMESTAMP NOT NULL DEFAULT current_timestamp on update current_timestamp,
   PRIMARY KEY (`order_id`)
-) ENGINE = InnoDB DEFAULT CHARACTER SET = utf8 COLLATE=utf8_general_ci COMMENT = '订单主表';
+) ENGINE = InnoDB DEFAULT CHARACTER SET = utf8 COLLATE=utf8_general_ci;
 DROP TABLE IF EXISTS `ord_order_item`;
 CREATE TABLE `ord_order_item` (
-  `order_item_id` BIGINT NOT NULL AUTO_INCREMENT COMMENT '订单明细ID',
-  `order_id` BIGINT NOT NULL DEFAULT 0 COMMENT '订单ID',
-  `item_id` INT NOT NULL DEFAULT 0 COMMENT '产品ID',
-  `title` VARCHAR(100) NOT NULL DEFAULT '' COMMENT '产品标题',
-  `quantity` INT NOT NULL DEFAULT 0 COMMENT '数量',
-  `price` DECIMAL(10,2) NOT NULL DEFAULT 0 COMMENT '价格',
-  `subtotal` DECIMAL(10,2) NOT NULL DEFAULT 0 COMMENT '小计金额',
-  `discount` DECIMAL(10,2) NOT NULL DEFAULT 0 COMMENT '优惠金额',
-  `created_at` DATETIME NOT NULL DEFAULT current_timestamp COMMENT '创建时间',
-  `last_update` DATETIME NOT NULL DEFAULT current_timestamp on update current_timestamp COMMENT '最后更新时间',
+  `order_item_id` BIGINT NOT NULL AUTO_INCREMENT,
+  `order_id` BIGINT NOT NULL DEFAULT 0,
+  `item_id` INT NOT NULL DEFAULT 0,
+  `title` VARCHAR(100) NOT NULL DEFAULT '' COMMENT 'Item title',
+  `quantity` INT NOT NULL DEFAULT 0,
+  `price` DECIMAL(10,2) NOT NULL DEFAULT 0,
+  `subtotal` DECIMAL(10,2) NOT NULL DEFAULT 0,
+  `discount` DECIMAL(10,2) NOT NULL DEFAULT 0,
+  `created_at` DATETIME NOT NULL DEFAULT current_timestamp,
+  `last_update` DATETIME NOT NULL DEFAULT current_timestamp on update current_timestamp,
   PRIMARY KEY (`order_item_id`),
   INDEX `ix_order_id` (`order_id` ASC)
-) ENGINE = InnoDB AUTO_INCREMENT = 3692471 DEFAULT CHARACTER SET = utf8 COLLATE=utf8_general_ci COMMENT = '订单明细';
+) ENGINE = InnoDB AUTO_INCREMENT = 3692471 DEFAULT CHARACTER SET = utf8 COLLATE=utf8_general_ci;
 DROP TABLE IF EXISTS `ord_user_order`;
 CREATE TABLE `ord_user_order` (
-  `id` BIGINT NOT NULL AUTO_INCREMENT COMMENT '无意义主键，目前seata不支持组合主键',
-  `user_id` BIGINT NOT NULL DEFAULT 0 COMMENT '会员ID',
-  `order_id` BIGINT NOT NULL DEFAULT 0 COMMENT '订单ID',
+  `id` BIGINT NOT NULL AUTO_INCREMENT COMMENT 'Meaningless key, Seata does not support tables without PK',
+  `user_id` BIGINT NOT NULL DEFAULT 0,
+  `order_id` BIGINT NOT NULL DEFAULT 0,
   PRIMARY KEY (`id`),
   UNIQUE INDEX `uk_uid_oid` (`user_id` ASC, `order_id` ASC)
-) ENGINE = InnoDB AUTO_INCREMENT = 9965738 DEFAULT CHARACTER SET = utf8 COLLATE=utf8_general_ci COMMENT = '会员-订单异构索引表';
+) ENGINE = InnoDB AUTO_INCREMENT = 9965738 DEFAULT CHARACTER SET = utf8 COLLATE=utf8_general_ci COMMENT = 'User defined index table for database sharding';
 DROP TABLE IF EXISTS `usr_user`;
 CREATE TABLE `usr_user` (
-  `user_id` BIGINT NOT NULL AUTO_INCREMENT COMMENT '会员ID',
-  `nickname` VARCHAR(30) NOT NULL DEFAULT '' COMMENT '昵称',
-  `mobile` VARCHAR(11) NOT NULL DEFAULT '' COMMENT '邮箱',
-  `email` VARCHAR(40) NOT NULL DEFAULT '' COMMENT '手机号',
-  `created_at` DATETIME NOT NULL DEFAULT current_timestamp COMMENT '注册时间',
-  `last_update` DATETIME NOT NULL DEFAULT current_timestamp on update current_timestamp COMMENT '最后更新时间',
+  `user_id` BIGINT NOT NULL AUTO_INCREMENT,
+  `nickname` VARCHAR(30) NOT NULL DEFAULT '',
+  `mobile` VARCHAR(11) NOT NULL DEFAULT '',
+  `email` VARCHAR(40) NOT NULL DEFAULT '',
+  `created_at` DATETIME NOT NULL DEFAULT current_timestamp,
+  `last_update` DATETIME NOT NULL DEFAULT current_timestamp on update current_timestamp,
   PRIMARY KEY (`user_id`)
-) ENGINE = InnoDB AUTO_INCREMENT = 2906300 DEFAULT CHARACTER SET = utf8 COLLATE=utf8_general_ci COMMENT = '会员主表';
+) ENGINE = InnoDB AUTO_INCREMENT = 2906300 DEFAULT CHARACTER SET = utf8 COLLATE=utf8_general_ci;
 DROP TABLE IF EXISTS `usr_user_account`;
 CREATE TABLE `usr_user_account` (
-  `account` VARCHAR(30) NOT NULL DEFAULT '' COMMENT '登录账号',
-  `password` VARCHAR(50) NOT NULL DEFAULT '' COMMENT '密码',
-  `user_id` BIGINT NOT NULL DEFAULT 0 COMMENT '会员ID',
-  `account_hash` int not null default 0 comment 'account的hashcode，分片字段',
+  `account` VARCHAR(30) NOT NULL DEFAULT '',
+  `password` VARCHAR(50) NOT NULL DEFAULT '',
+  `user_id` BIGINT NOT NULL DEFAULT 0,
+  `account_hash` int not null default 0 comment 'Hashcode of account, as sharding field',
   PRIMARY KEY (`account`),
   INDEX ix_account_hash (account_hash asc),
   INDEX ix_user_id (user_id asc)
-) ENGINE = InnoDB DEFAULT CHARACTER SET = utf8 COLLATE=utf8_general_ci COMMENT = '会员登录账号';
--- Seata回滚表
+) ENGINE = InnoDB DEFAULT CHARACTER SET = utf8 COLLATE=utf8_general_ci;
+-- Seata Undo Log table
 DROP TABLE IF EXISTS `undo_log`;
 CREATE TABLE IF NOT EXISTS `undo_log`
 (
@@ -189,64 +189,64 @@ CREATE SCHEMA `mydemo-dn2` DEFAULT CHARACTER SET utf8 ;
 USE `mydemo-dn2`;
 DROP TABLE IF EXISTS `ord_order`;
 CREATE TABLE `ord_order` (
-  `order_id` BIGINT NOT NULL DEFAULT 0 COMMENT '订单ID',
-  `user_id` BIGINT NOT NULL DEFAULT 0 COMMENT '会员ID',
-  `status` VARCHAR(10) NOT NULL DEFAULT '' COMMENT '订单状态',
-  `total` DECIMAL(10,2) NOT NULL DEFAULT 0 COMMENT '总金额',
-  `discount` DECIMAL(10,2) NOT NULL DEFAULT 0 COMMENT '优惠金额',
-  `payment` DECIMAL(10,2) NOT NULL DEFAULT 0 COMMENT '付款金额',
-  `pay_time` DATETIME NOT NULL DEFAULT '1900-01-01' COMMENT '付款时间',
-  `pay_status` VARCHAR(10) NOT NULL DEFAULT '' COMMENT '付款状态',
-  `contact` VARCHAR(30) NOT NULL DEFAULT '' COMMENT '收货人',
-  `phone` VARCHAR(20) NOT NULL DEFAULT '' COMMENT '电话',
-  `address` VARCHAR(70) NOT NULL DEFAULT '' COMMENT '详细地址',
-  `created_at` DATETIME NOT NULL DEFAULT current_timestamp COMMENT '下单时间',
-  `last_update` TIMESTAMP NOT NULL DEFAULT current_timestamp on update current_timestamp COMMENT '最后更新时间',
+  `order_id` BIGINT NOT NULL DEFAULT 0,
+  `user_id` BIGINT NOT NULL DEFAULT 0,
+  `status` VARCHAR(10) NOT NULL DEFAULT '' COMMENT 'Order Status',
+  `total` DECIMAL(10,2) NOT NULL DEFAULT 0 COMMENT 'Total order amount',
+  `discount` DECIMAL(10,2) NOT NULL DEFAULT 0,
+  `payment` DECIMAL(10,2) NOT NULL DEFAULT 0,
+  `pay_time` DATETIME NOT NULL DEFAULT '1900-01-01',
+  `pay_status` VARCHAR(10) NOT NULL DEFAULT '',
+  `contact` VARCHAR(30) NOT NULL DEFAULT '',
+  `phone` VARCHAR(20) NOT NULL DEFAULT '',
+  `address` VARCHAR(70) NOT NULL DEFAULT '',
+  `created_at` DATETIME NOT NULL DEFAULT current_timestamp,
+  `last_update` TIMESTAMP NOT NULL DEFAULT current_timestamp on update current_timestamp,
   PRIMARY KEY (`order_id`)
-) ENGINE = InnoDB DEFAULT CHARACTER SET = utf8 COLLATE=utf8_general_ci COMMENT = '订单主表';
+) ENGINE = InnoDB DEFAULT CHARACTER SET = utf8 COLLATE=utf8_general_ci;
 DROP TABLE IF EXISTS `ord_order_item`;
 CREATE TABLE `ord_order_item` (
-  `order_item_id` BIGINT NOT NULL AUTO_INCREMENT COMMENT '订单明细ID',
-  `order_id` BIGINT NOT NULL DEFAULT 0 COMMENT '订单ID',
-  `item_id` INT NOT NULL DEFAULT 0 COMMENT '产品ID',
-  `title` VARCHAR(100) NOT NULL DEFAULT '' COMMENT '产品标题',
-  `quantity` INT NOT NULL DEFAULT 0 COMMENT '数量',
-  `price` DECIMAL(10,2) NOT NULL DEFAULT 0 COMMENT '价格',
-  `subtotal` DECIMAL(10,2) NOT NULL DEFAULT 0 COMMENT '小计金额',
-  `discount` DECIMAL(10,2) NOT NULL DEFAULT 0 COMMENT '优惠金额',
-  `created_at` DATETIME NOT NULL DEFAULT current_timestamp COMMENT '创建时间',
-  `last_update` DATETIME NOT NULL DEFAULT current_timestamp on update current_timestamp COMMENT '最后更新时间',
+  `order_item_id` BIGINT NOT NULL AUTO_INCREMENT,
+  `order_id` BIGINT NOT NULL DEFAULT 0,
+  `item_id` INT NOT NULL DEFAULT 0,
+  `title` VARCHAR(100) NOT NULL DEFAULT '' COMMENT 'Item title',
+  `quantity` INT NOT NULL DEFAULT 0,
+  `price` DECIMAL(10,2) NOT NULL DEFAULT 0,
+  `subtotal` DECIMAL(10,2) NOT NULL DEFAULT 0,
+  `discount` DECIMAL(10,2) NOT NULL DEFAULT 0,
+  `created_at` DATETIME NOT NULL DEFAULT current_timestamp,
+  `last_update` DATETIME NOT NULL DEFAULT current_timestamp on update current_timestamp,
   PRIMARY KEY (`order_item_id`),
   INDEX `ix_order_id` (`order_id` ASC)
-) ENGINE = InnoDB DEFAULT CHARACTER SET = utf8 COLLATE=utf8_general_ci COMMENT = '订单明细';
+) ENGINE = InnoDB DEFAULT CHARACTER SET = utf8 COLLATE=utf8_general_ci;
 DROP TABLE IF EXISTS `ord_user_order`;
 CREATE TABLE `ord_user_order` (
-  `id` BIGINT NOT NULL AUTO_INCREMENT COMMENT '无意义主键，目前seata不支持组合主键',
-  `user_id` BIGINT NOT NULL DEFAULT 0 COMMENT '会员ID',
-  `order_id` BIGINT NOT NULL DEFAULT 0 COMMENT '订单ID',
+  `id` BIGINT NOT NULL AUTO_INCREMENT COMMENT 'Meaningless key, Seata does not support tables without PK',
+  `user_id` BIGINT NOT NULL DEFAULT 0,
+  `order_id` BIGINT NOT NULL DEFAULT 0,
   PRIMARY KEY (`id`),
   UNIQUE INDEX `uk_uid_oid` (`user_id` ASC, `order_id` ASC)
-) ENGINE = InnoDB DEFAULT CHARACTER SET = utf8 COLLATE=utf8_general_ci COMMENT = '会员-订单异构索引表';
+) ENGINE = InnoDB DEFAULT CHARACTER SET = utf8 COLLATE=utf8_general_ci COMMENT = 'User defined index table for database sharding';
 DROP TABLE IF EXISTS `usr_user`;
 CREATE TABLE `usr_user` (
-  `user_id` BIGINT NOT NULL AUTO_INCREMENT COMMENT '会员ID',
-  `nickname` VARCHAR(30) NOT NULL DEFAULT '' COMMENT '昵称',
-  `mobile` VARCHAR(11) NOT NULL DEFAULT '' COMMENT '邮箱',
-  `email` VARCHAR(40) NOT NULL DEFAULT '' COMMENT '手机号',
-  `created_at` DATETIME NOT NULL DEFAULT current_timestamp COMMENT '注册时间',
-  `last_update` DATETIME NOT NULL DEFAULT current_timestamp on update current_timestamp COMMENT '最后更新时间',
+  `user_id` BIGINT NOT NULL AUTO_INCREMENT,
+  `nickname` VARCHAR(30) NOT NULL DEFAULT '',
+  `mobile` VARCHAR(11) NOT NULL DEFAULT '',
+  `email` VARCHAR(40) NOT NULL DEFAULT '',
+  `created_at` DATETIME NOT NULL DEFAULT current_timestamp,
+  `last_update` DATETIME NOT NULL DEFAULT current_timestamp on update current_timestamp,
   PRIMARY KEY (`user_id`)
-) ENGINE = InnoDB DEFAULT CHARACTER SET = utf8 COLLATE=utf8_general_ci COMMENT = '会员主表';
+) ENGINE = InnoDB DEFAULT CHARACTER SET = utf8 COLLATE=utf8_general_ci;
 DROP TABLE IF EXISTS `usr_user_account`;
 CREATE TABLE `usr_user_account` (
-  `account` VARCHAR(30) NOT NULL DEFAULT '' COMMENT '登录账号',
-  `password` VARCHAR(50) NOT NULL DEFAULT '' COMMENT '密码',
-  `user_id` BIGINT NOT NULL DEFAULT 0 COMMENT '会员ID',
-  `account_hash` int not null default 0 comment 'account的hashcode，分片字段',
+  `account` VARCHAR(30) NOT NULL DEFAULT '',
+  `password` VARCHAR(50) NOT NULL DEFAULT '',
+  `user_id` BIGINT NOT NULL DEFAULT 0,
+  `account_hash` int not null default 0 comment 'Hashcode of account, as sharding field',
   PRIMARY KEY (`account`),
   INDEX ix_account_hash (account_hash asc),
   INDEX ix_user_id (user_id asc)
-) ENGINE = InnoDB DEFAULT CHARACTER SET = utf8 COLLATE=utf8_general_ci COMMENT = '会员登录账号';
+) ENGINE = InnoDB DEFAULT CHARACTER SET = utf8 COLLATE=utf8_general_ci;
 
 -- ====================================================================
 -- mydemo-dn3: ord_order, ord_order_item, ord_user_order
@@ -256,44 +256,44 @@ CREATE SCHEMA `mydemo-dn3` DEFAULT CHARACTER SET utf8 ;
 USE `mydemo-dn3`;
 DROP TABLE IF EXISTS `ord_order`;
 CREATE TABLE `ord_order` (
-  `order_id` BIGINT NOT NULL DEFAULT 0 COMMENT '订单ID',
-  `user_id` BIGINT NOT NULL DEFAULT 0 COMMENT '会员ID',
-  `status` VARCHAR(10) NOT NULL DEFAULT '' COMMENT '订单状态',
-  `total` DECIMAL(10,2) NOT NULL DEFAULT 0 COMMENT '总金额',
-  `discount` DECIMAL(10,2) NOT NULL DEFAULT 0 COMMENT '优惠金额',
-  `payment` DECIMAL(10,2) NOT NULL DEFAULT 0 COMMENT '付款金额',
-  `pay_time` DATETIME NOT NULL DEFAULT '1900-01-01' COMMENT '付款时间',
-  `pay_status` VARCHAR(10) NOT NULL DEFAULT '' COMMENT '付款状态',
-  `contact` VARCHAR(30) NOT NULL DEFAULT '' COMMENT '收货人',
-  `phone` VARCHAR(20) NOT NULL DEFAULT '' COMMENT '电话',
-  `address` VARCHAR(70) NOT NULL DEFAULT '' COMMENT '详细地址',
-  `created_at` DATETIME NOT NULL DEFAULT current_timestamp COMMENT '下单时间',
-  `last_update` TIMESTAMP NOT NULL DEFAULT current_timestamp on update current_timestamp COMMENT '最后更新时间',
+  `order_id` BIGINT NOT NULL DEFAULT 0,
+  `user_id` BIGINT NOT NULL DEFAULT 0,
+  `status` VARCHAR(10) NOT NULL DEFAULT '' COMMENT 'Order Status',
+  `total` DECIMAL(10,2) NOT NULL DEFAULT 0 COMMENT 'Total order amount',
+  `discount` DECIMAL(10,2) NOT NULL DEFAULT 0,
+  `payment` DECIMAL(10,2) NOT NULL DEFAULT 0,
+  `pay_time` DATETIME NOT NULL DEFAULT '1900-01-01',
+  `pay_status` VARCHAR(10) NOT NULL DEFAULT '',
+  `contact` VARCHAR(30) NOT NULL DEFAULT '',
+  `phone` VARCHAR(20) NOT NULL DEFAULT '',
+  `address` VARCHAR(70) NOT NULL DEFAULT '',
+  `created_at` DATETIME NOT NULL DEFAULT current_timestamp,
+  `last_update` TIMESTAMP NOT NULL DEFAULT current_timestamp on update current_timestamp,
   PRIMARY KEY (`order_id`)
-) ENGINE = InnoDB DEFAULT CHARACTER SET = utf8 COLLATE=utf8_general_ci COMMENT = '订单主表';
+) ENGINE = InnoDB DEFAULT CHARACTER SET = utf8 COLLATE=utf8_general_ci;
 DROP TABLE IF EXISTS `ord_order_item`;
 CREATE TABLE `ord_order_item` (
-  `order_item_id` BIGINT NOT NULL AUTO_INCREMENT COMMENT '订单明细ID',
-  `order_id` BIGINT NOT NULL DEFAULT 0 COMMENT '订单ID',
-  `item_id` INT NOT NULL DEFAULT 0 COMMENT '产品ID',
-  `title` VARCHAR(100) NOT NULL DEFAULT '' COMMENT '产品标题',
-  `quantity` INT NOT NULL DEFAULT 0 COMMENT '数量',
-  `price` DECIMAL(10,2) NOT NULL DEFAULT 0 COMMENT '价格',
-  `subtotal` DECIMAL(10,2) NOT NULL DEFAULT 0 COMMENT '小计金额',
-  `discount` DECIMAL(10,2) NOT NULL DEFAULT 0 COMMENT '优惠金额',
-  `created_at` DATETIME NOT NULL DEFAULT current_timestamp COMMENT '创建时间',
-  `last_update` DATETIME NOT NULL DEFAULT current_timestamp on update current_timestamp COMMENT '最后更新时间',
+  `order_item_id` BIGINT NOT NULL AUTO_INCREMENT,
+  `order_id` BIGINT NOT NULL DEFAULT 0,
+  `item_id` INT NOT NULL DEFAULT 0,
+  `title` VARCHAR(100) NOT NULL DEFAULT '' COMMENT 'Item title',
+  `quantity` INT NOT NULL DEFAULT 0,
+  `price` DECIMAL(10,2) NOT NULL DEFAULT 0,
+  `subtotal` DECIMAL(10,2) NOT NULL DEFAULT 0,
+  `discount` DECIMAL(10,2) NOT NULL DEFAULT 0,
+  `created_at` DATETIME NOT NULL DEFAULT current_timestamp,
+  `last_update` DATETIME NOT NULL DEFAULT current_timestamp on update current_timestamp,
   PRIMARY KEY (`order_item_id`),
   INDEX `ix_order_id` (`order_id` ASC)
-) ENGINE = InnoDB DEFAULT CHARACTER SET = utf8 COLLATE=utf8_general_ci COMMENT = '订单明细';
+) ENGINE = InnoDB DEFAULT CHARACTER SET = utf8 COLLATE=utf8_general_ci;
 DROP TABLE IF EXISTS `ord_user_order`;
 CREATE TABLE `ord_user_order` (
-  `id` BIGINT NOT NULL AUTO_INCREMENT COMMENT '无意义主键，目前seata不支持组合主键',
-  `user_id` BIGINT NOT NULL DEFAULT 0 COMMENT '会员ID',
-  `order_id` BIGINT NOT NULL DEFAULT 0 COMMENT '订单ID',
+  `id` BIGINT NOT NULL AUTO_INCREMENT COMMENT 'Meaningless key, Seata does not support tables without PK',
+  `user_id` BIGINT NOT NULL DEFAULT 0,
+  `order_id` BIGINT NOT NULL DEFAULT 0,
   PRIMARY KEY (`id`),
   UNIQUE INDEX `uk_uid_oid` (`user_id` ASC, `order_id` ASC)
-) ENGINE = InnoDB DEFAULT CHARACTER SET = utf8 COLLATE=utf8_general_ci COMMENT = '会员-订单异构索引表';
+) ENGINE = InnoDB DEFAULT CHARACTER SET = utf8 COLLATE=utf8_general_ci COMMENT = 'User defined index table for database sharding';
 
 -- ====================================================================
 -- mydemo-dn4: ord_order, ord_order_item, ord_user_order
@@ -303,41 +303,41 @@ CREATE SCHEMA `mydemo-dn4` DEFAULT CHARACTER SET utf8 ;
 USE `mydemo-dn4`;
 DROP TABLE IF EXISTS `ord_order`;
 CREATE TABLE `ord_order` (
-  `order_id` BIGINT NOT NULL DEFAULT 0 COMMENT '订单ID',
-  `user_id` BIGINT NOT NULL DEFAULT 0 COMMENT '会员ID',
-  `status` VARCHAR(10) NOT NULL DEFAULT '' COMMENT '订单状态',
-  `total` DECIMAL(10,2) NOT NULL DEFAULT 0 COMMENT '总金额',
-  `discount` DECIMAL(10,2) NOT NULL DEFAULT 0 COMMENT '优惠金额',
-  `payment` DECIMAL(10,2) NOT NULL DEFAULT 0 COMMENT '付款金额',
-  `pay_time` DATETIME NOT NULL DEFAULT '1900-01-01' COMMENT '付款时间',
-  `pay_status` VARCHAR(10) NOT NULL DEFAULT '' COMMENT '付款状态',
-  `contact` VARCHAR(30) NOT NULL DEFAULT '' COMMENT '收货人',
-  `phone` VARCHAR(20) NOT NULL DEFAULT '' COMMENT '电话',
-  `address` VARCHAR(70) NOT NULL DEFAULT '' COMMENT '详细地址',
-  `created_at` DATETIME NOT NULL DEFAULT current_timestamp COMMENT '下单时间',
-  `last_update` TIMESTAMP NOT NULL DEFAULT current_timestamp on update current_timestamp COMMENT '最后更新时间',
+  `order_id` BIGINT NOT NULL DEFAULT 0,
+  `user_id` BIGINT NOT NULL DEFAULT 0,
+  `status` VARCHAR(10) NOT NULL DEFAULT '' COMMENT 'Order Status',
+  `total` DECIMAL(10,2) NOT NULL DEFAULT 0 COMMENT 'Total order amount',
+  `discount` DECIMAL(10,2) NOT NULL DEFAULT 0,
+  `payment` DECIMAL(10,2) NOT NULL DEFAULT 0,
+  `pay_time` DATETIME NOT NULL DEFAULT '1900-01-01',
+  `pay_status` VARCHAR(10) NOT NULL DEFAULT '',
+  `contact` VARCHAR(30) NOT NULL DEFAULT '',
+  `phone` VARCHAR(20) NOT NULL DEFAULT '',
+  `address` VARCHAR(70) NOT NULL DEFAULT '',
+  `created_at` DATETIME NOT NULL DEFAULT current_timestamp,
+  `last_update` TIMESTAMP NOT NULL DEFAULT current_timestamp on update current_timestamp,
   PRIMARY KEY (`order_id`)
-) ENGINE = InnoDB DEFAULT CHARACTER SET = utf8 COLLATE=utf8_general_ci COMMENT = '订单主表';
+) ENGINE = InnoDB DEFAULT CHARACTER SET = utf8 COLLATE=utf8_general_ci;
 DROP TABLE IF EXISTS `ord_order_item`;
 CREATE TABLE `ord_order_item` (
-  `order_item_id` BIGINT NOT NULL AUTO_INCREMENT COMMENT '订单明细ID',
-  `order_id` BIGINT NOT NULL DEFAULT 0 COMMENT '订单ID',
-  `item_id` INT NOT NULL DEFAULT 0 COMMENT '产品ID',
-  `title` VARCHAR(100) NOT NULL DEFAULT '' COMMENT '产品标题',
-  `quantity` INT NOT NULL DEFAULT 0 COMMENT '数量',
-  `price` DECIMAL(10,2) NOT NULL DEFAULT 0 COMMENT '价格',
-  `subtotal` DECIMAL(10,2) NOT NULL DEFAULT 0 COMMENT '小计金额',
-  `discount` DECIMAL(10,2) NOT NULL DEFAULT 0 COMMENT '优惠金额',
-  `created_at` DATETIME NOT NULL DEFAULT current_timestamp COMMENT '创建时间',
-  `last_update` DATETIME NOT NULL DEFAULT current_timestamp on update current_timestamp COMMENT '最后更新时间',
+  `order_item_id` BIGINT NOT NULL AUTO_INCREMENT,
+  `order_id` BIGINT NOT NULL DEFAULT 0,
+  `item_id` INT NOT NULL DEFAULT 0,
+  `title` VARCHAR(100) NOT NULL DEFAULT '' COMMENT 'Item title',
+  `quantity` INT NOT NULL DEFAULT 0,
+  `price` DECIMAL(10,2) NOT NULL DEFAULT 0,
+  `subtotal` DECIMAL(10,2) NOT NULL DEFAULT 0,
+  `discount` DECIMAL(10,2) NOT NULL DEFAULT 0,
+  `created_at` DATETIME NOT NULL DEFAULT current_timestamp,
+  `last_update` DATETIME NOT NULL DEFAULT current_timestamp on update current_timestamp,
   PRIMARY KEY (`order_item_id`),
   INDEX `ix_order_id` (`order_id` ASC)
-) ENGINE = InnoDB DEFAULT CHARACTER SET = utf8 COLLATE=utf8_general_ci COMMENT = '订单明细';
+) ENGINE = InnoDB DEFAULT CHARACTER SET = utf8 COLLATE=utf8_general_ci;
 DROP TABLE IF EXISTS `ord_user_order`;
 CREATE TABLE `ord_user_order` (
-  `id` BIGINT NOT NULL AUTO_INCREMENT COMMENT '无意义主键，目前seata不支持组合主键',
-  `user_id` BIGINT NOT NULL DEFAULT 0 COMMENT '会员ID',
-  `order_id` BIGINT NOT NULL DEFAULT 0 COMMENT '订单ID',
+  `id` BIGINT NOT NULL AUTO_INCREMENT COMMENT 'Meaningless key, Seata does not support tables without PK',
+  `user_id` BIGINT NOT NULL DEFAULT 0,
+  `order_id` BIGINT NOT NULL DEFAULT 0,
   PRIMARY KEY (`id`),
   UNIQUE INDEX `uk_uid_oid` (`user_id` ASC, `order_id` ASC)
-) ENGINE = InnoDB DEFAULT CHARACTER SET = utf8 COLLATE=utf8_general_ci COMMENT = '会员-订单异构索引表';
+) ENGINE = InnoDB DEFAULT CHARACTER SET = utf8 COLLATE=utf8_general_ci COMMENT = 'User defined index table for database sharding';

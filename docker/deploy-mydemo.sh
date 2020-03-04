@@ -2,11 +2,11 @@
 
 show_usage() {
 	echo " Usage:"
-	echo "   -build: build images for item, stock, user, order services and shop-web app."
-	echo "   -run: run containers for item, stock, user, order services and shop-web app."
-	echo "   -stop: stop containers for item, stock, user, order services and shop-web app."
-	echo "   -rm: remove containers for item, stock, user, order services and shop-web app."
-	echo "   -rmi: remove images for item, stock, user, order services and shop-web app."
+	echo "   -build: Build images for item, stock, user, order services and shop-web app."
+	echo "   -run: Run containers for item, stock, user, order services and shop-web app."
+	echo "   -stop: Stop containers for item, stock, user, order services and shop-web app."
+	echo "   -rm: Remove containers for item, stock, user, order services and shop-web app."
+	echo "   -rmi: Remove images for item, stock, user, order services and shop-web app."
 }
 
 if [ $# -eq 0 ]; then

@@ -44,8 +44,11 @@ spec:
         - containerPort: 8066
         - containerPort: 9066
         readinessProbe: # Check whether Mycat is ready
-          tcpSocket:    # Wait until TCP port is opened
-            port: 8066
+          #tcpSocket:    # Wait until TCP port is opened
+          #  port: 8066
+          # 避免连接8066端口
+          exec:
+            command: ["sh", "-c", "COUNT=`netstat -antp tcp | grep 8066 | grep LISTEN -c`; if [ $COUNT -eq 1 ]; then exit 0; else exit 1; fi"]
           initialDelaySeconds: 3    # Wait initialDelaySeconds to check the first time
           periodSeconds: 5          # Wait periodSeconds to check next time
           timeoutSeconds: 2         # Timeout for check process
@@ -57,4 +60,4 @@ spec:
         # 等待时间可能会比较长：
         # 1. 需要等待依赖项的容器启动，POD进入就绪状态；
         # 2. 需要等待依赖项服务在K8S集群内生效，包括DNS解析在本容器中生效；
-        command: ['sh', '-c', 'until nslookup db-mydemo; do echo "Waiting for db-mydemo"; sleep 3; done;']
+        command: ['sh', '-c', 'until nslookup db-mydemo; do echo "Waiting for db-mydemo"; sleep 3; done; while : do COUNT=`nc -zv db-mydemo 3306|grep open -c`; if [ $COUNT -eq 1 ]; then break; else echo "Waiting MySQL"; sleep 3; fi; done;']

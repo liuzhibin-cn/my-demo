@@ -31,7 +31,7 @@ spec:
           value: "20880"
         ports:
         - containerPort: 20880
-        readinessProbe: # Check whether Stock Service is ready
+        readinessProbe:  # Check whether Stock Service is ready
           #tcpSocket:    # Wait until TCP port is opened
           #  port: 20880
           # 使用tcpSocket方式，k8s会不断与20880端口建立、断开连接，导致Dubbo不断打印"[DUBBO] disconnected from /10.1.0.1:33994 ..."日志，所以这里改用exec方式

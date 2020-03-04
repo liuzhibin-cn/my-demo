@@ -3,39 +3,49 @@
 	- you may not use this file except in compliance with the License. - You 
 	may obtain a copy of the License at - - http://www.apache.org/licenses/LICENSE-2.0 
 	- - Unless required by applicable law or agreed to in writing, software - 
-	distributed under the License is distributed on an "AS IS" BASIS, - WITHOUT 
+	distributed under the License is distributed on an "AS IS" BASIS, - WITHOUT +
 	WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. - See the 
 	License for the specific language governing permissions and - limitations 
 	under the License. -->
 <!DOCTYPE mycat:server SYSTEM "server.dtd">
 <mycat:server xmlns:mycat="http://io.mycat/">
 <system>
-	<property name="nonePasswordLogin">0</property> <!-- 0为需要密码登陆、1为不需要密码登陆 ,默认为0，设置为1则需要指定默认账户-->
+	<property name="nonePasswordLogin">0</property>
 	<property name="useHandshakeV10">1</property>
-	<property name="useSqlStat">0</property>  <!-- 1为开启实时统计、0为关闭 -->
-	<property name="useGlobleTableCheck">0</property>  <!-- 1为开启全加班一致性检测、0为关闭 -->
+	<property name="useSqlStat">0</property>
+	<property name="useGlobleTableCheck">0</property>
 
-	<property name="sequnceHandlerType">1</property> <!-- 1: mycat全局序列使用数据库方式  -->
-	<property name="subqueryRelationshipCheck">false</property> <!-- 子查询中存在关联查询的情况下,检查关联字段中是否有分片字段 .默认 false -->
-        <!--默认为type 0: DirectByteBufferPool | type 1 ByteBufferArea | type 2 NettyBufferPool -->
+	<!-- 1: Use MySQL to store Mycat global sequence data -->
+	<property name="sequnceHandlerType">1</property>
+	<!-- To check whether the table join is using sharding keys -->
+	<property name="subqueryRelationshipCheck">true</property>
+	<!-- 0: DirectByteBufferPool, 1: ByteBufferArea, 2: NettyBufferPool -->
 	<property name="processorBufferPoolType">0</property>
-	<!--分布式事务开关，0为不过滤分布式事务，1为过滤分布式事务（如果分布式事务内只涉及全局表，则不过滤），2为不过滤分布式事务,但是记录分布式事务日志-->
+	<!-- 0: Enable XA transaction; 1: Disable XA transaction; 2: Enable and log XA transaction -->
 	<property name="handleDistributedTransactions">0</property>
 	<property name="useOffHeapForMerge">1</property>
-    <property name="memoryPageSize">64k</property>
+	<property name="memoryPageSize">64k</property>
 	<property name="spillsFileBufferSize">1k</property>
 	<property name="useStreamOutput">0</property>
 	<property name="systemReserveMemorySize">384m</property>
 
-	<!--是否采用zookeeper协调切换  -->
 	<property name="useZKSwitch">false</property>
-	<!--如果为 true的话 严格遵守隔离级别,不会在仅仅只有select语句的时候在事务中切换连接-->
+	<!-- Disable backend MySQL connection reuse feature in XA transaction from client application -->
 	<property name="strictTxIsolation">true</property>
-	<property name="dataNodeHeartbeatPeriod">600000</property>
-	<property name="dataNodeIdleCheckPeriod">600000</property>
+	
+	<property name="idleTimeout">60000</property> <!-- Unit: millisecond -->
+	<property name="sqlExecuteTimeout">10</property> <!-- Unit: secend -->
+	<property name="txIsolation">2</property> <!-- 2: READ COMMITTED; 3: REPEADABLE READ -->
+
+	<!-- Time intervals in milliseconds to check frontend and backend NIO processors, extra idle or timeout ones will be released -->
+	<property name="processorCheckPeriod">1000</property>
+	<!-- Time intervals in milliseconds for heartbeat on backend MySQL connections -->
+	<property name="dataNodeHeartbeatPeriod">30000</property>
+	<!-- Time intervals in milliseconds to check backend MySQL connections, extra idle or timeout ones will be released -->
+	<property name="dataNodeIdleCheckPeriod">60000</property>
 </system>
 
-<!-- 设置为不需要密码登录时(nonePasswordLogin=1)，mycat使用这里的用户、密码登录 -->
+<!-- Account for connecting to Mycat -->
 <user name="mydemo" defaultAccount="true">
 	<property name="password">mydemo</property>
 	<property name="schemas">db_user,db_order</property>

@@ -15,7 +15,7 @@ BASE_DIR=`pwd`
 # 再部署后续服务。
 
 # =================================================================
-# 启动MySQL
+# Start MySQL
 kubectl create -f deployment/mysql-statefulset.yaml
 echo "> Wait MySQL POD to run ... "
 STATUS=""
@@ -54,7 +54,7 @@ do
 done
 
 # =================================================================
-# 启动Mycat
+# Start Mycat
 kubectl create -f deployment/mycat-statefulset.yaml
 echo "> Wait Mycat POD to be READY"
 while :
@@ -68,7 +68,7 @@ do
 done
 
 # =================================================================
-# 启动Nacos、ZipKin
+# Start Nacos, ZipKin
 kubectl create -f deployment/nacos-statefulset.yaml
 kubectl create -f deployment/zipkin-statefulset.yaml
 echo "> Wait Nacos POD to be READY"

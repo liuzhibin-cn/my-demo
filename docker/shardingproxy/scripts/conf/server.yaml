@@ -6,13 +6,13 @@
 #    serverLists: 192.168.31.108:2181
 #    namespace: orchestration
 authentication:
-  users: # 定义逻辑库用户密码
-    root: # 用户名：root，可访问所有逻辑库
+  users: # Account for connecting to ShardingProxy
+    root: # root user without authorizedSchemas specified can access all logical schemas
       password: 123
-    mydemo: # 用户名：mydemo
+    mydemo: # mydemo user
       password: mydemo
-      authorizedSchemas: db_user, db_order # 只能访问指定的逻辑库
+      authorizedSchemas: db_user, db_order
 props:
-  acceptor.size: 16  # 接收客户端请求的工作线程数，默认CPU核数*2
+  acceptor.size: 4  # Number of workers for client connections
   proxy.transaction.type: LOCAL
   sql.show: true
