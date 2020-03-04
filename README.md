@@ -58,7 +58,17 @@ Usage:
 - `-rm`: Remove containers for item, stock, user, order services and shop-web app.
 - `-rmi`: Remove images for item, stock, user, order services and shop-web app.
 
-Endpoints:
+Example:
+```sh
+# Run demo application with Mycat and ZipKin
+package.sh -mycat -zipkin
+docker/deploy-mydemo.sh -build -run
+# Run demo application with ShardingProxy and SkyWalking
+package.sh -shardingproxy -skywaling
+docker/deploy-mydemo.sh -stop -rm -rmi -build -run
+```
+
+Entrypoints:
 - Demo Application: [localhost:18090/shop](http://localhost:18090/shop)
 - Nacos: [localhost:18848/nacos](http://localhost:18848/nacos), user/password: nacos/nacos
 - ZipKin: [localhost:19411/zipkin](http://localhost:19411/zipkin/)
@@ -66,7 +76,7 @@ Endpoints:
 - Mycat: data port is `18066`, management port is `19066`, use mysql client to connect, user/password: mydemo/mydemo
   > In Mac OSX, `--protocol` must be specified: 
   > ```sh
-  > mysql -h localhost -P 8066 -umydemo -pmydemo --protocol=TCP
+  > mysql -h localhost -P 18066 -umydemo -pmydemo --protocol=TCP
   > ```
 - ShardingProxy: `13307`, use mysql client to connect, user/password: mydemo/mydemo
 - MySQL：`13306`, use mysql client to connect, user/password: root/123
@@ -76,6 +86,8 @@ Endpoints:
 ![](docs/images/docker-stats.png)
 
 #### Run with Kubernetes
+The YAML and script files in `k8s` support run the demo application with Mycat and ZipKin in Kubernetes.
+
 Build Docker images for all 3-party components used in the demo application.
 ```sh
 docker/build-basis.sh
@@ -86,7 +98,7 @@ Deploy demo application in Kubernetes:
 k8s/deploy-k8s.sh
 ```
 
-Endpoints:
+Entrypoints:
 - Demo Application: [localhost:30090/shop](http://localhost:30090/shop)
 - Nacos: [localhost:30048/nacos](http://localhost:30048/nacos), user/password: nacos/nacos
 - ZipKin: [localhost:30041/zipkin](http://localhost:30041/zipkin/)
@@ -96,6 +108,19 @@ Endpoints:
   > mysql -h localhost -P 30066 -umydemo -pmydemo --protocol=TCP
   > ```
 - MySQL：`30006`, use mysql client to connect, user/password: root/123
+
+Dubbo services can be scaled:
+```sh
+# Scale user-service to 3 PODs
+kubectl scale --replicas=3 -f k8s/deployment/svc-user-deployment.yaml
+# Open 3 terminals to watch user-service logs
+# 1. Find user-service PODs
+kubectl get pods | grep svc-user
+# 2. Watch logs for each svc-user POD
+kubectl logs svc-user-68ff844499-9zqf8 -c svc-user -f
+kubectl logs svc-user-68ff844499-dgsnx -c svc-user -f
+...
+```
 
 ![](docs/images/kubernetes-overview.png)
 
