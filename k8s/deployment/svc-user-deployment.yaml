@@ -43,7 +43,7 @@ spec:
           periodSeconds: 5          # Wait periodSeconds to check next time
           timeoutSeconds: 1         # Timeout for check process
       initContainers:
-      - name: wait-dependencies
+      - name: wait-deps
         image: busybox
         imagePullPolicy: IfNotPresent
         # 等待时间可能会比较长：

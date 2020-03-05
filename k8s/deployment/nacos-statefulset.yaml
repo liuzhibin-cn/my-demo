@@ -45,7 +45,7 @@ spec:
           periodSeconds: 5          # Wait periodSeconds to check next time
           timeoutSeconds: 2         # Timeout for check process
       initContainers:
-      - name: wait-dependencies
+      - name: wait-deps
         image: busybox
         imagePullPolicy: IfNotPresent
         # nslookup success until db-mydemo is ready

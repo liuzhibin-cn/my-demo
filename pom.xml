@@ -1,24 +1,24 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-	<modelVersion>4.0.0</modelVersion>
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
 
-	<groupId>my.demo</groupId>
-	<artifactId>mydemo-parent</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
-	<packaging>pom</packaging>
+    <groupId>my.demo</groupId>
+    <artifactId>mydemo-parent</artifactId>
+    <version>0.0.1-SNAPSHOT</version>
+    <packaging>pom</packaging>
 
-	<properties>
-		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-		<maven.compiler.source>8</maven.compiler.source>
-		<maven.compiler.target>8</maven.compiler.target>
-		<springboot.version>2.2.2.RELEASE</springboot.version>
-		<dubbo.version>2.6.7</dubbo.version>
-		<dubbo-springboot-starter.version>0.2.1.RELEASE</dubbo-springboot-starter.version>
-		<dubbo-registry-nacos.version>2.6.7</dubbo-registry-nacos.version>
-		<zipkin-brave.version>5.9.1</zipkin-brave.version>
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+        <maven.compiler.source>8</maven.compiler.source>
+        <maven.compiler.target>8</maven.compiler.target>
+        <springboot.version>2.2.2.RELEASE</springboot.version>
+        <dubbo.version>2.6.7</dubbo.version>
+        <dubbo-springboot-starter.version>0.2.1.RELEASE</dubbo-springboot-starter.version>
+        <dubbo-registry-nacos.version>2.6.7</dubbo-registry-nacos.version>
+        <zipkin-brave.version>5.9.1</zipkin-brave.version>
         <zipkin-reporter.version>2.12.0</zipkin-reporter.version>
         <skywalking.version>6.5.0</skywalking.version>
         <seata.version>1.0.0</seata.version>
@@ -29,22 +29,25 @@
         <!-- Class of logback layout -->
         <log.layout>ch.qos.logback.classic.PatternLayout</log.layout>
         <log.traceInfo></log.traceInfo>
+        <!-- PinPoint and SkyWalking can trace Dubbo services by default, Dubbo filter configuration is required for ZipKin -->
         <dubbo.filter></dubbo.filter>
-        
-		<mysql-connector.version>8.0.18</mysql-connector.version>
-		<mysql.driver-class>com.mysql.cj.jdbc.Driver</mysql.driver-class>
 
+        <!-- Sharding-Proxy uses an old version of MySQL JDBC driver -->
+        <mysql-connector.version>8.0.18</mysql-connector.version>
+        <mysql.driver-class>com.mysql.cj.jdbc.Driver</mysql.driver-class>
+
+        <!-- MySQL JDBC Connection parameters -->
         <mysql.host>${MYSQL_HOST:localhost}</mysql.host>
         <mysql.port>${MYSQL_PORT:3306}</mysql.port>
         <mysql.user>mydemo</mysql.user>
         <mysql.password>mydemo</mysql.password>
-		<!-- Use physical database mydemo-dn1 in case of database sharding disabled -->
+        <!-- Use physical database mydemo-dn1 in case of database sharding disabled -->
         <db.order>mydemo-dn1</db.order>
         <db.user>mydemo-dn1</db.user>
         <seata-enabled>false</seata-enabled>
         <nacos.address>${NACOS_HOST:localhost}:8848</nacos.address>
         <zipkin.base-url>http://${ZIPKIN_HOST:localhost}:9411</zipkin.base-url>
-	</properties>
+    </properties>
 
     <profiles>
         <profile>
@@ -53,20 +56,19 @@
         <profile>
             <id>shardingproxy</id>
             <properties>
-		        <!-- High version of MySQL JDBC connector is not supported by Sharding-Proxy -->
-		        <mysql-connector.version>5.1.47</mysql-connector.version>
-				<!-- Class for MySQL JDBC driver in old versions -->
-				<mysql.driver-class>com.mysql.jdbc.Driver</mysql.driver-class>
+                <!-- Sharding-Proxy uses an old version of MySQL JDBC driver -->
+                <mysql-connector.version>5.1.47</mysql-connector.version>
+                <mysql.driver-class>com.mysql.jdbc.Driver</mysql.driver-class> <!-- Class for MySQL JDBC driver in old versions -->
                 <mysql.port>${MYSQL_PORT:3307}</mysql.port> <!-- Default data port for Sharding-Proxy is 3307 -->
-		        <db.order>db_order</db.order>
-		        <db.user>db_user</db.user>
+                <db.order>db_order</db.order> <!-- Use logical schema in Sharding-Proxy -->
+                <db.user>db_user</db.user>
             </properties>
         </profile>
         <profile>
             <id>mycat</id>
             <properties>
                 <mysql.port>${MYSQL_PORT:8066}</mysql.port> <!-- Default data port for Mycat is 8066 -->
-                <db.order>db_order</db.order>
+                <db.order>db_order</db.order> <!-- Use logical schema in Mycat -->
                 <db.user>db_user</db.user>
             </properties>
         </profile>
@@ -81,8 +83,10 @@
             <properties>
                 <!-- Exclude SkyWalking dependencies -->
                 <excludeGroupIds>org.apache.skywalking</excludeGroupIds>
-				<log.traceInfo>%clr([%X{traceId} : %X{spanId}]){yellow}</log.traceInfo>
-				<dubbo.filter>tracing</dubbo.filter>
+                <!-- Output ZipKin trace info in logs -->
+                <log.traceInfo>%clr([%X{traceId} : %X{spanId}]){yellow}</log.traceInfo>
+                <!-- Enable ZipKin to trace Dubbo services -->
+                <dubbo.filter>tracing</dubbo.filter>
             </properties>
         </profile>
         <profile>
@@ -90,87 +94,88 @@
             <properties>
                 <!-- Exclude ZipKin dependencies -->
                 <excludeGroupIds>io.zipkin,io.zipkin.zipkin2,io.zipkin.brave,io.zipkin.reporter2,com.squareup.okhttp3,com.squareup.okio</excludeGroupIds>
-				<log.layout>org.apache.skywalking.apm.toolkit.log.logback.v1.x.TraceIdPatternLogbackLayout</log.layout>
-				<log.traceInfo>%clr([%tid]){yellow}</log.traceInfo>
+                <!-- Output SkyWalking trace info in logs -->
+                <log.layout>org.apache.skywalking.apm.toolkit.log.logback.v1.x.TraceIdPatternLogbackLayout</log.layout>
+                <log.traceInfo>%clr([%tid]){yellow}</log.traceInfo>
             </properties>
         </profile>
         <profile>
             <id>pinpoint</id>
             <properties>
-				<log.traceInfo>%clr([%X{PtxId} : %X{PspanId}]){yellow}</log.traceInfo>
+                <log.traceInfo>%clr([%X{PtxId} : %X{PspanId}]){yellow}</log.traceInfo>
             </properties>
         </profile>
     </profiles>
 
-	<build>
-		<plugins>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-resources-plugin</artifactId>
-				<configuration>
-					<!-- Spring-Boot changed delimiters from ${...} to @...@, here restore it to default -->
-					<useDefaultDelimiters>true</useDefaultDelimiters>
-				</configuration>
-				<version>3.1.0</version>
-			</plugin>
-			<plugin>
-				<groupId>org.springframework.boot</groupId>
-				<artifactId>spring-boot-maven-plugin</artifactId>
-				<version>${springboot.version}</version>
-				<configuration>
-				    <!-- Exclude non-used dependencies -->
-	                <excludeGroupIds>${excludeGroupIds}</excludeGroupIds>
-				</configuration>
-			</plugin>
-		</plugins>
-	</build>
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-resources-plugin</artifactId>
+                <configuration>
+                    <!-- Spring-Boot changed delimiters from ${...} to @...@, here restore it to default -->
+                    <useDefaultDelimiters>true</useDefaultDelimiters>
+                </configuration>
+                <version>3.1.0</version>
+            </plugin>
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+                <version>${springboot.version}</version>
+                <configuration>
+                    <!-- Exclude non-used dependencies -->
+                    <excludeGroupIds>${excludeGroupIds}</excludeGroupIds>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
 
     <dependencies>
         <!-- Dubbo -->
         <!-- Dubbo 2.5.1 - 2.6.7 is supported by PinPoint -->
         <dependency> <!-- https://github.com/apache/dubbo-spring-boot-project -->
-			<groupId>com.alibaba.boot</groupId>
-			<artifactId>dubbo-spring-boot-starter</artifactId>
-			<version>${dubbo-springboot-starter.version}</version>
+            <groupId>com.alibaba.boot</groupId>
+            <artifactId>dubbo-spring-boot-starter</artifactId>
+            <version>${dubbo-springboot-starter.version}</version>
         </dependency>
-		<dependency>
-			<groupId>com.alibaba</groupId>
-			<artifactId>dubbo</artifactId>
-			<version>${dubbo.version}</version>
-		</dependency>
+        <dependency>
+            <groupId>com.alibaba</groupId>
+            <artifactId>dubbo</artifactId>
+            <version>${dubbo.version}</version>
+        </dependency>
         <dependency> <!-- Serialization for Dubbo -->
-			<groupId>de.ruedigermoeller</groupId>
-			<artifactId>fst</artifactId>
-			<version>2.57</version>
+            <groupId>de.ruedigermoeller</groupId>
+            <artifactId>fst</artifactId>
+            <version>2.57</version>
         </dependency>
         <dependency> <!-- Registry for Dubbo -->
             <groupId>com.alibaba</groupId>
             <artifactId>dubbo-registry-nacos</artifactId>
             <version>${dubbo-registry-nacos.version}</version>
         </dependency>
-		<dependency>
-		    <groupId>io.netty</groupId>
-		    <artifactId>netty-all</artifactId>
-		    <version>4.1.43.Final</version>
-		</dependency>
-		
+        <dependency> <!-- Use netty for Dubbo RPC -->
+            <groupId>io.netty</groupId>
+            <artifactId>netty-all</artifactId>
+            <version>4.1.43.Final</version>
+        </dependency>
+        
         <!-- SkyWalking -->
-        <dependency>
+        <dependency> <!-- Enable SkyWalking context support to add user defined TAGs in current SPAN -->
            <groupId>org.apache.skywalking</groupId>
            <artifactId>apm-toolkit-trace</artifactId>
            <version>${skywalking.version}</version>
         </dependency>
-         <dependency>
+         <dependency> <!-- Enable SkyWalking to output trace info in logs -->
              <groupId>org.apache.skywalking</groupId>
              <artifactId>apm-toolkit-logback-1.x</artifactId>
              <version>${skywalking.version}</version>
          </dependency>
          <!-- ZipKin -->
-         <dependency>
+         <dependency> <!-- Enable ZipKin to trace Dubbo services -->
             <groupId>io.zipkin.brave</groupId>
             <artifactId>brave-instrumentation-dubbo-rpc</artifactId>
          </dependency>
-         <dependency>
+         <dependency> <!-- Enable ZipKin context to output trace info in logs -->
             <groupId>io.zipkin.brave</groupId>
             <artifactId>brave-context-slf4j</artifactId>
          </dependency>
@@ -180,54 +185,54 @@
          </dependency>
     </dependencies>
 
-	<dependencyManagement>
-		<dependencies>
-	         <!-- MyBatis, MySQL -->
-	        <dependency>
-	            <groupId>org.mybatis.spring.boot</groupId>
-	            <artifactId>mybatis-spring-boot-starter</artifactId>
-	            <version>2.1.1</version>
-	        </dependency>
-	        <dependency>
-	            <groupId>org.mybatis</groupId>
-	            <artifactId>mybatis</artifactId>
-	            <version>3.5.3</version>
-	        </dependency>
-	        <dependency>
-	            <groupId>mysql</groupId>
-	            <artifactId>mysql-connector-java</artifactId>
-	            <version>${mysql-connector.version}</version>
-	        </dependency>
-			<dependency>
-				<groupId>com.alibaba</groupId>
-				<artifactId>druid</artifactId>
-				<version>${druid.version}</version>
-			</dependency>
-	        
-	        <!-- Seata -->
-			<dependency>
-				<groupId>io.seata</groupId>
-				<artifactId>seata-spring-boot-starter</artifactId>
-				<version>${seata.version}</version>
-			</dependency>
-	        
-	        <!-- ZipKin -->
-			<dependency>
-				<groupId>io.zipkin.brave</groupId>
-				<artifactId>brave-bom</artifactId>
-				<version>${zipkin-brave.version}</version>
-				<type>pom</type>
-				<scope>import</scope>
-			</dependency>
-	        
-	        <!-- SpringBoot -->
-			<dependency>
-				<groupId>org.springframework.boot</groupId>
-				<artifactId>spring-boot-dependencies</artifactId>
-				<version>${springboot.version}</version>
-				<type>pom</type>
-				<scope>import</scope>
-			</dependency>
-		</dependencies>
-	</dependencyManagement>
+    <dependencyManagement>
+        <dependencies>
+             <!-- MyBatis, MySQL -->
+            <dependency>
+                <groupId>org.mybatis.spring.boot</groupId>
+                <artifactId>mybatis-spring-boot-starter</artifactId>
+                <version>2.1.1</version>
+            </dependency>
+            <dependency>
+                <groupId>org.mybatis</groupId>
+                <artifactId>mybatis</artifactId>
+                <version>3.5.3</version>
+            </dependency>
+            <dependency>
+                <groupId>mysql</groupId>
+                <artifactId>mysql-connector-java</artifactId>
+                <version>${mysql-connector.version}</version>
+            </dependency>
+            <dependency> <!-- Druid datasource -->
+                <groupId>com.alibaba</groupId>
+                <artifactId>druid</artifactId>
+                <version>${druid.version}</version>
+            </dependency>
+            
+            <!-- Seata -->
+            <dependency>
+                <groupId>io.seata</groupId>
+                <artifactId>seata-spring-boot-starter</artifactId>
+                <version>${seata.version}</version>
+            </dependency>
+            
+            <!-- ZipKin -->
+            <dependency>
+                <groupId>io.zipkin.brave</groupId>
+                <artifactId>brave-bom</artifactId>
+                <version>${zipkin-brave.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+            
+            <!-- SpringBoot -->
+            <dependency>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-dependencies</artifactId>
+                <version>${springboot.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
 </project>

@@ -1,26 +1,27 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-	<modelVersion>4.0.0</modelVersion>
-	
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    
     <parent>
         <groupId>my.demo</groupId>
         <artifactId>mydemo-parent</artifactId>
         <version>0.0.1-SNAPSHOT</version>
     </parent>
 
-	<artifactId>order-service</artifactId>
-	
-	<properties>
+    <artifactId>order-service</artifactId>
+    
+    <properties>
        <application.name>order</application.name>
        <jdbc.interceptors></jdbc.interceptors>
     </properties>
 
-	<profiles>
+    <profiles>
         <profile>
             <id>zipkin</id>
             <properties>
+                <!-- Enable ZipKin to trace JDBC operations -->
                 <jdbc.interceptors>&amp;queryInterceptors=brave.mysql8.TracingQueryInterceptor&amp;exceptionInterceptors=brave.mysql8.TracingExceptionInterceptor&amp;zipkinServiceName=db-${application.name}</jdbc.interceptors>
             </properties>
         </profile>
@@ -33,24 +34,24 @@
                 </dependency>
            </dependencies>
        </profile>
-	</profiles>
+    </profiles>
 
-	<build>
-		<resources>
-			<resource>
-				<directory>src/main/resources</directory>
-				<filtering>true</filtering>
-				<includes>
-					<include>application.yml</include>
-					<include>logback.xml</include>
-					<include>mappers/*.xml</include>
-				</includes>
-			</resource>
-		</resources>
-	</build>
+    <build>
+        <resources>
+            <resource>
+                <directory>src/main/resources</directory>
+                <filtering>true</filtering>
+                <includes>
+                    <include>application.yml</include>
+                    <include>logback.xml</include>
+                    <include>mappers/*.xml</include>
+                </includes>
+            </resource>
+        </resources>
+    </build>
 
-	<dependencies>
-		<dependency>
+    <dependencies>
+        <dependency>
              <groupId>my.demo</groupId>
              <artifactId>service-client</artifactId>
              <version>0.0.1-SNAPSHOT</version>
@@ -63,26 +64,26 @@
             <groupId>org.springframework</groupId>
             <artifactId>spring-tx</artifactId>
         </dependency>
-		<dependency>
-			<groupId>org.mybatis.spring.boot</groupId>
-			<artifactId>mybatis-spring-boot-starter</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.mybatis</groupId>
-			<artifactId>mybatis</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>mysql</groupId>
-			<artifactId>mysql-connector-java</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>com.alibaba</groupId>
-			<artifactId>druid</artifactId>
-		</dependency>
+        <dependency>
+            <groupId>org.mybatis.spring.boot</groupId>
+            <artifactId>mybatis-spring-boot-starter</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.mybatis</groupId>
+            <artifactId>mybatis</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>mysql</groupId>
+            <artifactId>mysql-connector-java</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.alibaba</groupId>
+            <artifactId>druid</artifactId>
+        </dependency>
 
-		<dependency>
-		    <groupId>io.zipkin.brave</groupId>
-		    <artifactId>brave-instrumentation-mysql8</artifactId>
-		</dependency>
-	</dependencies>
+        <dependency>
+            <groupId>io.zipkin.brave</groupId>
+            <artifactId>brave-instrumentation-mysql8</artifactId>
+        </dependency>
+    </dependencies>
 </project>
