@@ -30,10 +30,7 @@ import my.demo.utils.MyDemoUtils;
 @Service
 public class OrderServiceImpl implements OrderService {
 	Logger log = LoggerFactory.getLogger(this.getClass());
-	
-	/**
-	 * 简单演示在应用中创建订单ID
-	 */
+
 	static Date BASE_LINE = null;
 	static Date DEFAULT_TIME = null;
 	
@@ -60,7 +57,7 @@ public class OrderServiceImpl implements OrderService {
 			log.info("[create] XID: " + MyDemoUtils.getXID());
 		}
 		ServiceResult<Order> result = new ServiceResult<Order>();
-		//1. 数据校验
+		//1. Verification
 		if(cart==null) {
 			return result.fail("Null cart");
 		}
@@ -85,7 +82,7 @@ public class OrderServiceImpl implements OrderService {
 	}
 	@Transactional
 	private void createOrder(ServiceResult<Order> result, List<OrderItem> lockList, Cart cart) {
-		//2. 创建订单、订单明细对象
+		//2. Create Order, OrderItem
 		Order order = new Order();
 		order.setOrderId(this.newId());
 		order.setStatus("New");
@@ -100,7 +97,7 @@ public class OrderServiceImpl implements OrderService {
 			OrderItem orderItem = new OrderItem();
 			orderItem.setOrderId(order.getOrderId());
 			orderItem.setItemId(cartItem.getItemId());
-			//获取产品名称
+			//Get item title
 			Item item = itemService.getItem(cartItem.getItemId()).getResult();
 			orderItem.setTitle(item.getTitle());
 			orderItem.setQuantity(cartItem.getQuantity());
@@ -114,9 +111,9 @@ public class OrderServiceImpl implements OrderService {
 		} );
 		MyDemoUtils.tag("orderId", order.getOrderId());
 		
-		//3. 锁定库存（简单起见，不处理锁定失败后释放问题）
+		//3. Lock stock
 		for(OrderItem orderItem : order.getOrderItems()) {
-			//检查可用库存
+			//Check stock availablility
 			ServiceResult<Stock> stockResult = stockService.getStock(orderItem.getItemId());
 			if(!stockResult.isSuccess()) {
 				log.info("[create] Get stock error, item-id: " + orderItem.getItemId() + ", msg: " + stockResult.getMessage());
@@ -128,7 +125,7 @@ public class OrderServiceImpl implements OrderService {
 					+ ", request-qty: " + orderItem.getQuantity());
 				break;
 			}
-			//锁定库存
+			//Lock stock
 			ServiceResult<Boolean> lockResult = stockService.lock(orderItem.getItemId(), orderItem.getQuantity());
 			if(lockResult.isSuccess() && lockResult.getResult()) lockList.add(orderItem);
 			else {
@@ -141,7 +138,7 @@ public class OrderServiceImpl implements OrderService {
 			return;
 		}
 		
-		//4. 插入订单、订单明细数据（简单起见，不处理创建失败后库存释放问题）
+		//4. Insert Order, OrderItem to MySQL
 		order.getOrderItems().forEach(orderItem -> {
 			orderDao.createOrderItem(orderItem);
 			log.info("[create] OrderItem created, item-id: " + orderItem.getItemId());
@@ -149,23 +146,21 @@ public class OrderServiceImpl implements OrderService {
 		orderDao.createOrder(order);
 		log.debug("[create] Order created, order-id: " + order.getOrderId());
 		
-		//5. 维护用户ID、订单ID索引表
+		//5. Manage user defined index for (user-id, order_id) 
 		orderDao.createUserOrder(order.getUserId(), order.getOrderId());
 		log.info("[create] User Order created: user-id: " + order.getUserId() + ", order-id: " + order.getOrderId());
 		
 		orderDao.testUpdateOrderItem(order.getOrderId());
 		
-		//6. 从数据库读取订单返回
+		//6. Get order from MySQL
 		Order persisted = orderDao.getOrder(order.getOrderId());
 		persisted.setOrderItems(orderDao.getOrderItems(persisted.getOrderId()));
 					
 		result.success(persisted);
 	}
 	private void unlockStock(List<OrderItem> list) {
-		//未实现
 	}
 	private long newId() {
-		//高43位毫秒数 + 低21位随机数
 		return ((System.currentTimeMillis() - BASE_LINE.getTime()) & 274877906943L << 10) | new Random(System.currentTimeMillis()).nextInt(1023);
 	}
 	

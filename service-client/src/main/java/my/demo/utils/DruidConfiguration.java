@@ -30,23 +30,23 @@ public class DruidConfiguration {
     @Bean
     public Slf4jLogFilter logFilter() {
     	Slf4jLogFilter filter = new Slf4jLogFilter();
-    	//ResultSet操作日志
+    	//Log operations on ResultSet
     	filter.setResultSetLogEnabled(false);
     	filter.setDataSourceLogEnabled(false);
-    	//Connection日志
-    	filter.setConnectionLogEnabled(false); 				//false关闭所有连接日志，下面设置无效
-//    	filter.setConnectionConnectBeforeLogEnabled(false);	//创建连接
-//    	filter.setConnectionConnectAfterLogEnabled(true); 	//建立连接
-//    	filter.setConnectionCommitAfterLogEnabled(true); 	//完成提交
-//    	filter.setConnectionRollbackAfterLogEnabled(true); 	//完成回滚
-//    	filter.setConnectionCloseAfterLogEnabled(false); 	//关闭连接
-    	//Statement日志
+    	//Log operations on Connection
+    	filter.setConnectionLogEnabled(false); 				//false: Disable all logs on connection events
+//    	filter.setConnectionConnectBeforeLogEnabled(false);	
+//    	filter.setConnectionConnectAfterLogEnabled(true); 	
+//    	filter.setConnectionCommitAfterLogEnabled(true); 	
+//    	filter.setConnectionRollbackAfterLogEnabled(true); 	
+//    	filter.setConnectionCloseAfterLogEnabled(false); 	
+    	//Log operations on Statement
     	filter.setStatementLogEnabled(true);
-    	filter.setStatementCreateAfterLogEnabled(false);	//创建Statement，包括SQL语句
-    	filter.setStatementParameterSetLogEnabled(false);	//Statement参数值、参数类型
+    	filter.setStatementCreateAfterLogEnabled(false);	
+    	filter.setStatementParameterSetLogEnabled(false);	
     	filter.setStatementParameterClearLogEnable(false);	
-    	filter.setStatementCloseAfterLogEnabled(false);		//关闭Statement
-    	filter.setStatementPrepareAfterLogEnabled(false);	//创建PreparedStatement，包括SQL语句
+    	filter.setStatementCloseAfterLogEnabled(false);		
+    	filter.setStatementPrepareAfterLogEnabled(false);	
     	return filter;
     }
     

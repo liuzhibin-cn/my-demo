@@ -55,7 +55,7 @@ public class ShopController {
 		return "home";
 	}
 	
-	@PostMapping(value="/register") //简单起见使用GET请求
+	@PostMapping(value="/register")
 	public @ResponseBody Object register(HttpServletResponse response, @RequestParam(name="mobile") String mobile, @RequestParam(name="password") String password) {
 		ServiceResult<User> r = userService.registerByMobile(mobile, password);
 		if(!r.isSuccess()) return "Register failed: " + r.getMessage();
@@ -113,7 +113,7 @@ public class ShopController {
 		if(MyDemoUtils.isSeataPresent()) {
 			log.debug("Start a test case, XID: " + MyDemoUtils.getXID());
 		}
-		//随机注册一个用户
+		//Register a user
 		String prefix = MOBILE_PREFIXS[(int)Math.round(Math.random()*1000) % MOBILE_PREFIXS.length];
 		String mobile = prefix + String.format("%08d", Math.round(Math.random()*100000000));
 		String password = Math.round(Math.random() * 10000000) + "";
@@ -124,7 +124,7 @@ public class ShopController {
 		}
 		log.info("[register] success, account:" + mobile + ", user-id:" + result.getResult().getUserId());
 		
-		//登录
+		//Login
 		result = userService.login(mobile, password);
 		if(!result.isSuccess()) {
 			log.info("[login] failed, account:" + mobile + ", msg:" + result.getMessage());
@@ -133,16 +133,16 @@ public class ShopController {
 		log.info("[login] success, account:" + mobile + " , user-id:" + result.getResult().getUserId());
 		User user = result.getResult();
 		
-		//浏览商品
+		//View items
 		List<Item> items = itemService.findItem().getResult();
 		
-		//随机选择1-2个添加购物车
+		//Add 1 or 2 items to cart
 		Cart cart = this.addCart(user, items);
 		
-		//下单
+		//Create order
 		Order order = this.createOrder(cart);
 		
-		//打印
+		//Print order info
 		log.debug("[show-order] order:" + order.getOrderId() + ", items:" + order.getOrderItems().size());
 		order.getOrderItems().forEach(orderItem -> {
 			log.debug("[show-order]     item:" + orderItem.getItemId() + ", qty:" + orderItem.getQuantity() 
@@ -171,13 +171,12 @@ public class ShopController {
 		return cart;
 	}
 	private List<Item> pickupItems(List<Item> items) {
-		//随机挑选1-2个商品
 		int count = ((int)Math.round(Math.random() * 10) % 2) + 1;
 		List<Item> result = new ArrayList<>(count);
-		Set<Integer> pickedList = new HashSet<>(count); //已经被挑选出来的商品索引（items数组的索引）
+		Set<Integer> pickedList = new HashSet<>(count); 
 		while(count-->0) {
-			int index = (int)Math.round(Math.random()*100) % items.size(); //随机挑选一个
-			if(pickedList.contains(index)) continue; //已被挑选，放弃
+			int index = (int)Math.round(Math.random()*100) % items.size(); 
+			if(pickedList.contains(index)) continue; 
 			result.add(items.get(index));
 			pickedList.add(index);
 		}

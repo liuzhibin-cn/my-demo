@@ -24,13 +24,6 @@ import com.alibaba.druid.pool.DruidDataSource;
 
 import io.seata.rm.datasource.DataSourceProxy;
 
-/**
- * <p>如果启用了Seata，在这里配置Seata数据源代理，拦截JDBC数据库操作实现AT事务管理，
- * 主要是使用Seata的{@link DataSourceProxy}创建Spring {@link DataSourceTransactionManager}和
- * MyBatis {@link SqlSessionFactory}。
- * 
- * <p>没有启用Seata时，该配置类不会生效，一切交给Spring、MyBatis自动配置即可。
- */
 @Configuration
 @ConditionalOnClass({ DataSourceProxy.class, SqlSessionFactory.class })
 @AutoConfigureBefore(MybatisAutoConfiguration.class)
@@ -48,13 +41,11 @@ public class SeataConfiguration implements TransactionManagementConfigurer {
     public DataSourceProxy dataSourceProxy(DruidDataSource druidDataSource){
         return new DataSourceProxy(druidDataSource);
     }
-	//为Spring的DataSourceTransactionManager使用dataSourceProxy
     @Bean
     @Primary
     public DataSourceTransactionManager transactionManager(DataSourceProxy dataSourceProxy) {
         return new DataSourceTransactionManager(dataSourceProxy);
     }
-    // 项目使用了mybatis，使用dataSourceProxy创建SqlSessionFactory bean
     @Bean
     public SqlSessionFactory sqlSessionFactory(DataSourceProxy dataSourceProxy) throws Exception {
     	log.info("[seata-configuration] Mybatis sqlSessionFactory created, mapperLocations: " + mapperLocations);

@@ -38,13 +38,6 @@ public interface OrderDao {
 	
 	@Insert("insert into ord_user_order (user_id, order_id) values(#{userId}, #{orderId})")
 	int createUserOrder(@Param("userId") long userId, @Param("orderId") long orderId);
-	/**
-	 * 查找某个用户的订单ID列表
-	 * @param userId
-	 * @param offset
-	 * @param count
-	 * @return
-	 */
 	@Select("select order_id from ord_user_order where user_id = #{userId} limit #{offset}, #{count}")
 	@ResultType(Long.class)
 	List<Long> findUserOrderIds(@Param("userId") long userId, @Param("offset") int offset, @Param("count") int count);

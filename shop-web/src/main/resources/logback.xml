@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <configuration>
 	<!-- <include resource="org/springframework/boot/logging/logback/defaults.xml" /> -->
-	<!-- 去掉logback启动时搜索、解析logback.xml的日志 -->
     <statusListener class="ch.qos.logback.core.status.NopStatusListener" />
     
     <!-- copied from org/springframework/boot/logging/logback/ defaults.xml and console-appender.xml in spring-boot-xxx.jar -->

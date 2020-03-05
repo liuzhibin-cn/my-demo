@@ -2,9 +2,6 @@ package my.demo.entity;
 
 import java.io.Serializable;
 
-/**
- * 用户账号、用户ID对应关系
- */
 public class UserAccount implements Serializable {
 	private static final long serialVersionUID = 8639953921479963556L;
 	private String account;

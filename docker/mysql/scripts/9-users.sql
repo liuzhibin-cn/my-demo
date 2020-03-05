@@ -17,7 +17,6 @@ GRANT ALL ON `skywalking`.* TO skywalking@'%';
 CREATE USER seata IDENTIFIED BY 'seata';
 GRANT ALL ON `seata`.* TO seata@'%';
 
--- docker的mysql:5.7.18镜像为root@'%'用户分配的权限有限，无法远程连接
 GRANT ALL ON *.* TO root@'%';
 
 FLUSH PRIVILEGES;

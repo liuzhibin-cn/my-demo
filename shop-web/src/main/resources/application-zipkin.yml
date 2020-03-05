@@ -1,9 +1,9 @@
 spring:
-   zipkin: # spring-cloud-sleuth配置
-      base-url: ${zipkin.base-url}  # ZipKin Server地址
+   zipkin: 
+      base-url: ${zipkin.base-url}  
       sleuth:
          sampler:
-            percentage: 1.0  # 采样比例，1.0表示100%采样
+            percentage: 1.0  # 1.0 stands for 100%
 
 zipkin:
    server: ${zipkin.base-url}/api/v2/spans

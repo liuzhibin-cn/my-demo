@@ -4,7 +4,6 @@ SHARDINGPROXY_HOME=`dirname "$0"`
 cd $SHARDINGPROXY_HOME/..
 SHARDINGPROXY_HOME=`pwd`
 
-# 根据环境变量配置ShardingProxy数据库连接
 if [[ -z "$MYSQL_HOST" || -z "$MYSQL_PORT" || -z "$MYSQL_USER" || -z "$MYSQL_PSW" ]]; then
     echo "ENV: MYSQL_HOST, MYSQL_PORT, MYSQL_USER or MYSQL_PSW is empty"
     exit 1

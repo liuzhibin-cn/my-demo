@@ -1,6 +1,6 @@
 #!/bin/sh
 
-# package.sh根据打包参数设置该环境变量值
+# The value will be set by package.sh
 APM=zipkin
 
 DIR=`dirname "$0"`

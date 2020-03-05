@@ -1,3 +1,5 @@
+[English](README.md) | [中文](README-cn.md)
+
 -------------------------------------------------------------------
 ### 演示项目架构
 ![](docs/images/architecture.png) <br />
@@ -5,12 +7,12 @@
 本项目基础演示部分包括基于SpringBoot的Dubbo微服务和Web演示应用，另外还包含以下几个方面：
 
 #### 1、Docker容器化
-除PinPoint外，整个演示项目支持Docker容器运行，包含`Dockerfile`和相关管理脚本。
-使用Docker容器运行演示应用，无需部署、配置任何系统，不需要对项目进行任何配置，使用管理脚本就可以简单快速运行整个演示应用，参考*Docker容器运行演示应用*。
+除PinPoint外，整个演示项目支持Docker容器运行，包含`Dockerfile`和相关管理脚本。<br />
+使用Docker容器运行演示应用，架构中用到的组件都无需部署、配置，也不需要对项目进行任何配置，使用管理脚本就可以简单快速运行整个演示应用，参考*Docker容器运行演示应用*。
 
 #### 2、Kubernetes
 - Kubernetes是一个优秀的自动化运维管理平台，极大简化了应用大规模部署和管理问题，结合Service Mesh的路由、熔断和限流，微服务架构中的非功能性需求基本都被分拆出来了，应用只需聚焦于业务逻辑。
-- 不可变基础设施、基础设施即代码，基于Docker容器、Kubernetes、DevOps的云原生理念，是对运维管理的一场革命。
+- 不可变基础设施、基础设施即代码，基于Docker、Kubernetes、DevOps的云原生理念，是对运维管理的一场革命。
 - 将研发团队持续集成、持续部署、持续交付能力提升一个台阶。
 
 本项目为`Mycat` + `ZipKin`运行演示应用提供了K8s YAML配置文件，可以快速部署到k8s运行，参考*Kubernetes运行演示应用*。
@@ -42,6 +44,8 @@ Seata提供AT、TCC、Saga三种柔性事务模式，可以跨微服务和应用
   额外的UI功能，可以读取APM工具的数据，自定义开发；
 - 社区支持：ZipKin架构灵活、文档完善，社区支持度最高，Spring Cloud和Service Mesh（[istio](https://github.com/istio/)）官方提供ZipKin支持；SkyWalking是华为员工开发，已成为Apache项目；PinPoint为韩国公司开源；
 
+`ZipKin`和`SkyWalking`支持`Istio`，其使用方法也与应用中直接使用有所区别。
+
 -------------------------------------------------------------------
 ### 运行演示应用
 #### 环境要求
@@ -56,14 +60,14 @@ Seata提供AT、TCC、Saga三种柔性事务模式，可以跨微服务和应用
 `./package.sh`为项目编译打包脚本，参数说明：
 - 简单运行：不带任何参数执行`package.sh`，仅运行Dubbo微服务和演示应用，使用单个MySQL数据库、Nacos注册中心，运行4个Dubbo服务和1个Web应用；
 - 分库分表：`-mycat`、`-sharding-proxy`二选一。
-  - `-mycat`：使用[Mycat](https://github.com/liuzhibin-cn/my-demo/blob/master/docs/Sharding-Mycat-Overview-Quickstart.md)分库分表；
-  - `-sharding-proxy`：使用[Sharding-Proxy](https://github.com/liuzhibin-cn/my-demo/blob/master/docs/Sharding-Sharding-Proxy-Overview-Quickstart.md)分库分表；
+  - `-mycat`：使用`Mycat`分库分表；
+  - `-sharding-proxy`：使用`Sharding-Proxy`分库分表；
 - 分布式事务：
-  - `-seata`：使用[Seata](https://github.com/liuzhibin-cn/my-demo/blob/master/docs/Seata-Distributed-Transaction-Management.md)分布式事务管理；
+  - `-seata`：使用`Seata`分布式事务管理；
 - APM全链路跟踪：`-zipkin`、`-pinpoint`、`-skywalking`三选一。
-  - `-zipkin`：使用[ZipKin](https://github.com/liuzhibin-cn/my-demo/blob/master/docs/APM-ZipKin.md)进行链路跟踪、性能分析；
-  - `-pinpoint`：使用[PinPoint](https://github.com/liuzhibin-cn/my-demo/blob/master/docs/APM-PinPoint.md)进行链路跟踪、性能分析；
-  - `-skywalking`：使用[SkyWalking](https://github.com/liuzhibin-cn/my-demo/blob/master/docs/APM-SkyWalking.md)进行链路跟踪、性能分析；
+  - `-zipkin`：使用`ZipKin`进行链路跟踪、性能分析；
+  - `-pinpoint`：使用`PinPoint`进行链路跟踪、性能分析；
+  - `-skywalking`：使用`SkyWalking`进行链路跟踪、性能分析；
 
 例如`./package.sh -mycat -seata -zipkin`
 
@@ -135,7 +139,7 @@ Docker容器：<br />
 #### Kubernetes运行演示应用
 1. 部署和启动Kubernetes环境。国内环境在Docker Desktop for Windows/Mac中启用Kubernetes，参考[AliyunContainerService/k8s-for-docker-desktop](https://github.com/AliyunContainerService/k8s-for-docker-desktop)。
 2. 参考*Docker容器运行*，为基础组件`MySQL`、`Nacos`、`Mycat`、`ZipKin`构建Docker镜像。
-   无需为演示用用构建Docker镜像，在下面脚本中会自动重新打包应用，构建Docker镜像。
+   无需为演示应用构建Docker镜像，在下面脚本中会自动重新打包应用，构建Docker镜像。
 3. 执行`./k8s/deploy-k8s.sh`在K8s中部署演示应用。<br />
    如果部署过程有错误，执行`./k8s/undeploy-k8s.sh`可以将k8s中已经部署好的部分全部删除。
 
@@ -149,7 +153,7 @@ Docker容器：<br />
 备注说明：
 1. 简单起见，本演示项目采用`NodePort`方式向K8s集群外部暴露端口，方便Docker Desktop单机模式本地访问，可自行尝试Ingress等其它K8s方案。
 2. 基础组件多为有状态服务，不支持扩缩容（会数据不一致、错误等），另外未采用PV、PVC等，POD重启所有数据都会丢失。
-3. 所有Dubbo服务和`shopweb`支持K8s扩缩容（`user-service`默认部署了2个POD），可以尝试K8s管理：
+3. 所有Dubbo服务支持K8s扩缩容（`user-service`默认部署了2个POD），可以尝试K8s管理（在`Docker Desktop`中`shop-web`不支持扩容，因为使用了`NodePort`）：
    ```sh
    # 将user-service扩容到3个POD
    kubectl scale --replicas=3 -f deployment/svc-user-deployment.yaml
@@ -169,8 +173,15 @@ Docker容器：<br />
 shop-web日志输出：<br />
 ![](docs/images/shopweb-out.png)
 
-order-service日志输出：<br />
+order-service日志输出，打印了Seata分布式事务日志：<br />
 ![](docs/images/order-service-out.png)
+
+使用数据库水平拆分后的数据分布情况:<br />
+![](docs/images/db-sharding-1.png)<br />
+![](docs/images/db-sharding-2.png)
+
+Mycat的执行计划:<br />
+![](docs/images/mycat-explain.png)
 
 ZipKin：<br />
 ![](https://richie-leo.github.io/ydres/img/10/120/1013/screen-trace-detail-sql.png)

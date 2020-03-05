@@ -10,7 +10,7 @@ public class MyDemoUtils {
 	private static boolean seataPresent = ClassUtils.isPresent("io.seata.core.context.RootContext", ClassUtils.getDefaultClassLoader());
 	
 	/**
-	 * 启用SkyWalking时，在当前Span中添加一个Tag。未启用SkyWalking不做任何操作
+	 * Add a user defined tag in current span if SkyWalking is enabled
 	 * @param name
 	 * @param value
 	 */
@@ -21,15 +21,11 @@ public class MyDemoUtils {
 		}
 	}
 
-	/**
-	 * 是否启用了Seata
-	 * @return
-	 */
 	public static boolean isSeataPresent() {
 		return seataPresent;
 	}
 	/**
-	 * 获取Seata全局事务XID
+	 * XID: Seata global transaction ID
 	 * @return
 	 */
 	public static String getXID() {

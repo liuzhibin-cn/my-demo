@@ -1,17 +1,16 @@
-# MySQL JDBC Driver的Bug（Mac OSX环境下）：
-# 中国的时区简写为CST (China Standard Time)，但全球简写为CST的时区一共有4个：
-#    CST Central Standard Time (USA) UT-6:00
-#    CST Central Standard Time (Australia) UT+9:30
-#    CST China Standard Time UT+8:00
-#    CST Cuba Standard Time UT-4:00
-# 安装MySQL Server时，从操作系统获取时区并以简写CST表示，show variables like '%time_zone%'如下：
+# Bug fix for MySQL JDBC driver:
+# CST: Central Standard Time (USA) UT-6:00
+# CST: Central Standard Time (Australia) UT+9:30
+# CST: China Standard Time UT+8:00
+# CST: Cuba Standard Time UT-4:00
+# MySQL Server get timezone from OS, show variables like '%time_zone%':
 #    | Variable_name    | Value  |
 #    | system_time_zone | CST    |
 #    | time_zone        | SYSTEM |
-# MyBatis的DateTypeHandler将java.util.Date类型转换成java.sql.Timestamp交给MySQL JDBC Driver处理，
-# 而MySQL JDBC Driver会使用MySQL Server的CST创建Java TimeZone对象来处理Timestamp参数，
-# 此时实际得到的Java TimeZone为Central Standard Time (USA) UT-6:00，而不是China Standard Time UT+8:00，导致存入MySQL的时间不正确。
-# 通过JDBC url的serverTimezone参数指定TimeZone ID全称可以避免这个问题。
+# java.util.Date is converted to java.sql.Timestamp and passed to MySQL JDBC Driver by MyBatis DateTypeHandler,
+# MySQL JDBC Driver uses timezone CST to process Timestamp parameters, 
+# the actual timezone it takes is Central Standard Time (USA) UT-6:00, not China Standard Time UT+8:00.
+# Specify serverTimezone=Asia/Shanghai parameter in JDBC url to avoid this problem.
 spring:
    main:
       allow-bean-definition-overriding: true
@@ -32,7 +31,7 @@ dubbo:
     protocol: # see com.alibaba.dubbo.config.ProtocolConfig
         id: dubbo
         name: dubbo
-        host: ${SERVICE_HOST:localhost} # 用于k8s使用POD IP注册服务
+        host: ${SERVICE_HOST:localhost} # Use POD IP to register Dubbo service
         port: ${SERVICE_PORT:20883}
         threads: 3
         iothreads: 1
@@ -64,13 +63,12 @@ druid:
    testOnBorrow: false
    testOnReturn: false
    testWhileIdle: true
-   timeBetweenEvictionRunsMillis: 60000 # 每分钟心跳测试
-   minEvictableIdleTimeMillis: 1800000  # 空闲30分钟回收 
+   timeBetweenEvictionRunsMillis: 60000
+   minEvictableIdleTimeMillis: 1800000
    removeAbandoned: true
    removeAbandonedTimeout: 1800
    logAbandoned: true
 
-# Spring Boot应用中mybatis的配置方法（备注：改为手工创建SessionFactory）
 mybatis: # see MybatisProperties.class in mybatis-spring-boot-autoconfigure
    mapperLocations: classpath:mappers/*.xml
 

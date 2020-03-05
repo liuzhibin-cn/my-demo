@@ -19,18 +19,12 @@ public class User implements Serializable {
 	@JsonFormat(pattern="yyyy-MM-dd HH:mm:ss.SSS", timezone="Asia/Shanghai")
 	private Date lastUpdate;
 	
-	/**
-	 * 用户ID
-	 */
 	public long getUserId() {
 		return userId;
 	}
 	public void setUserId(long userId) {
 		this.userId = userId;
 	}
-	/**
-	 * 用户昵称
-	 */
 	public String getNickname() {
 		return nickname;
 	}

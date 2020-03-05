@@ -2,7 +2,6 @@ package my.demo.service.stock;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Random;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -55,14 +54,7 @@ public class StockServiceImpl implements StockService {
 		if(lockQty<=0) {
 			return new ServiceResult<Boolean>().fail("Illegal quantity " + lockQty + " to lock");
 		}
-		
-		//随机休眠一段时间模拟服务耗时
-		try {
-			long time = new Random(System.currentTimeMillis()).nextInt(50);
-			Thread.sleep(time);
-		} catch (InterruptedException e) {}
-		
-		//锁定库存
+
 		Stock stock = stocks.get(itemId);
 		synchronized (stock) {
 			if(stock.getAvailableQty() < lockQty) {

@@ -17,7 +17,7 @@ A simple demo application for building scalable applications using Microservices
 - [ZipKin](https://zipkin.io/), [PinPoint](https://github.com/naver/pinpoint), [SkyWalking](https://skywalking.apache.org/): APM tools for microservices, `ZipKin` and `SkyWalking` can work with `Istio`.
 
 -------------------------------------------------------------------
-### Run the demo application
+### Run demo application
 #### Prerequisites
 1. OS: Linux, Mac, or Windows with a bash shell, such as git bash;
    > In Mac OSX `gnu-sed` is required: `brew install gnu-sed`
@@ -25,10 +25,10 @@ A simple demo application for building scalable applications using Microservices
 3. Docker, 5GB memory for Docker is recommended;
 
 #### Package demo application
-Using `package.sh` to compile and package the demo application. 
+Use [package.sh](package.sh) to compile and package the demo application. 
 
 Usage: 
-1. Options to enable database sharding: `-mycat`, `-sharding-proxy`
+1. Options to enable database sharding: `-mycat`, `-shardingproxy`
 2. Options to enable global transaction management: `-seata`
 3. Options to enable APM tools: `-skywalking`, `-pinpoint`, `-zipkin`
 
@@ -37,19 +37,26 @@ Example:
 package.sh -mycat -zipkin
 ```
 
-#### Run with Docker
-Build Docker images for all 3-party components used in the demo application.
+#### Run in local machine
+You can run the demo application in local machine. `MySQL` and `Nacos` must be installed, see [MySQL scripts](docker/mysql/scripts) and [Nacos quickstart](https://nacos.io/en-us/docs/quick-start.html). Which other 3-party components should be installed depends on the options you used in `package.sh`, go to project home for help, [Dockerfiles and scripts](docker/) in demo application are also references for you.
+
+Edit parent [pom.xml](https://github.com/liuzhibin-cn/my-demo/blob/master/pom.xml) and config for your local environment.
+
+#### Run in Docker
+Build Docker images for all 3-party components used in demo application.
+> ATTENTION: No docker support is provided for `PinPoint` in demo application, `-pinpoint` option cann't be used in `package.sh` if you run the demo application in Docker.
+
 ```sh
 docker/build-basis.sh
 ```
 
 Run Docker containers for all 3-party components. It's recommended for you that take `docker/deploy-basis.sh` as a reference, 
-and run those containers as you wanted, to avoid Docker hungs because of memory pressure.
+and only run those containers you wanted, to avoid Docker hungs because of memory pressure.
 ```sh 
 docker/deploy-basis.sh
 ```
 
-Using `docker/deploy-mydemo.sh` to build images and run containers for demo application.
+Use [docker/deploy-mydemo.sh](docker/deploy-mydemo.sh) to build images and run containers for demo application.
 
 Usage:
 - `-build`: Build images for item, stock, user, order services and shop-web app.
@@ -85,8 +92,8 @@ Entrypoints:
 
 ![](docs/images/docker-stats.png)
 
-#### Run with Kubernetes
-The YAML and script files in `k8s` support run the demo application with Mycat and ZipKin in Kubernetes.
+#### Run in Kubernetes
+The YAML and script files in [k8s/](k8s/) run demo application with Mycat and ZipKin in Kubernetes.
 
 Build Docker images for all 3-party components used in the demo application.
 ```sh
@@ -126,7 +133,7 @@ kubectl logs svc-user-68ff844499-dgsnx -c svc-user -f
 ![](docs/images/kubernetes-overview.png)
 
 -------------------------------------------------------------------
-### Screen shots
+### Screenshots
 Logs for order-service, debug logs for Seata is printed:<br />
 ![](docs/images/order-service-out.png)
 
