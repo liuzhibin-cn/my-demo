@@ -1,0 +1,60 @@
+kind: Service
+apiVersion: v1
+metadata:
+  name: web-shop
+  labels:
+    app: web-shop
+spec:
+  type: ClusterIP
+  ports:
+    - name: http-shop
+      port: 8090
+      targetPort: 8090
+  selector:
+    app: web-shop
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: web-shop
+  labels:
+    app: web-shop
+    version: latest
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: web-shop
+  template:
+    metadata:
+      labels:
+        app: web-shop
+        version: latest
+    spec:
+      containers:
+      - name: web-shop
+        image: mydemo/shopweb
+        imagePullPolicy: IfNotPresent
+        env:
+#        - name: NACOS_HOST
+#          value: "pub-nacos.default.svc.cluster.local"
+#        - name: ZIPKIN_HOST
+#          value: "pub-zipkin.default.svc.cluster.local"
+        ports:
+        - containerPort: 8090
+        readinessProbe: # Check whether web-shop is ready
+          #httpGet:      # Wait until HTTP status ok
+          #  path: /shop
+          #  port: 8090
+          exec:
+            command: ["sh", "-c", "COUNT=`netstat -antp tcp|grep 8090|grep LISTEN -c`; if [ $COUNT -eq 1 ]; then exit 0; else exit 1; fi"]
+          initialDelaySeconds: 3    # Wait initialDelaySeconds to check the first time
+          periodSeconds: 5          # Wait periodSeconds to check next time
+          timeoutSeconds: 2         # Timeout for check process
+#      initContainers:
+#      - name: wait-deps
+#        image: busybox
+#        imagePullPolicy: IfNotPresent
+        # 1. Wait PODs of dependencies to be READY.
+        # 2. Wait services of dependencies to be READY, including service DNS being available.
+#        command: ['sh', '-c', 'until nslookup pub-nacos; do sleep 3; done;']

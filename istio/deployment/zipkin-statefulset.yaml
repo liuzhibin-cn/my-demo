@@ -1,46 +1,46 @@
 kind: Service
 apiVersion: v1
 metadata:
-  name: pub-nacos
+  name: pub-zipkin
 spec:
   type: NodePort        # Expose service port to host machine
   ports:
-  - name: http-nacos
-    port: 8848
-    targetPort: 8848
-    nodePort: 30048     # Expose service port to host machine
+  - name: http-zipkin
+    port: 9411
+    targetPort: 9411
+    nodePort: 30041     # Expose service port to host machine
   selector:
-    app: pub-nacos
+    app: pub-zipkin
 ---
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
-  name: pub-nacos
+  name: pub-zipkin
 spec:
   replicas: 1
-  serviceName: pub-nacos
+  serviceName: pub-zipkin
   selector:
     matchLabels:
-      app: pub-nacos
+      app: pub-zipkin
   template:
     metadata:
       labels:
-        app: pub-nacos
-        version: 1.1.4
+        app: pub-zipkin
+        version: 2.19.2
     spec:
       containers:
-      - name: pub-nacos
-        image: mydemo/nacos:1.1.4
+      - name: pub-zipkin
+        image: mydemo/zipkin:2.19.2
         imagePullPolicy: IfNotPresent
         env:
         - name: MYSQL_HOST
           value: "db-demo.default.svc.cluster.local"
         ports:
-        - containerPort: 8848
-        readinessProbe: # Check whether Nacos is ready
+        - containerPort: 9411
+        readinessProbe: # Check whether ZipKin is ready
           httpGet:      # Wait until HTTP status ok
-            path: /nacos
-            port: 8848
+            path: /zipkin
+            port: 9411
           initialDelaySeconds: 3    # Wait initialDelaySeconds to check the first time
           periodSeconds: 5          # Wait periodSeconds to check next time
           timeoutSeconds: 2         # Timeout for check process
@@ -51,3 +51,25 @@ spec:
         # 1. Wait PODs of dependencies to be READY.
         # 2. Wait services of dependencies to be READY, including service DNS being available.
 #        command: ['sh', '-c', 'until nslookup db-demo; do sleep 3; done;']
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: DestinationRule
+metadata:
+  name: pub-zipkin
+spec:
+  host: pub-zipkin.default.svc.cluster.local
+  trafficPolicy:
+    loadBalancer:
+      simple: ROUND_ROBIN
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: pub-zipkin
+spec:
+  hosts:
+  - pub-zipkin.default.svc.cluster.local
+  http:
+  - route:
+    - destination:
+        host: pub-zipkin

@@ -1,27 +1,39 @@
+kind: Service
+apiVersion: v1
+metadata:
+  name: svc-order
+spec:
+  ports:
+  - name: tcp-order
+    port: 20880
+    targetPort: 20880
+  selector:
+    app: svc-order
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: svc-user
+  name: svc-order
 spec:
-  replicas: 2
+  replicas: 1
   selector:
     matchLabels:
-      app: svc-user
+      app: svc-order
   template:
     metadata:
       labels:
-        app: svc-user
+        app: svc-order
         version: latest
     spec:
       containers:
-      - name: svc-user
-        image: mydemo/user
+      - name: svc-order
+        image: mydemo/order
         imagePullPolicy: IfNotPresent
         env:
         - name: MYSQL_HOST
           value: "mycat-demo.default.svc.cluster.local"
-        - name: NACOS_HOST
-          value: "pub-nacos.default.svc.cluster.local"
+#        - name: NACOS_HOST
+#          value: "pub-nacos.default.svc.cluster.local"
         - name: ZIPKIN_HOST
           value: "pub-zipkin.default.svc.cluster.local"
         - name: SERVICE_HOST # Use POD IP to register Dubbo service
@@ -49,3 +61,33 @@ spec:
         # 1. Wait PODs of dependencies to be READY.
         # 2. Wait services of dependencies to be READY, including service DNS being available.
 #        command: ['sh', '-c', 'until nslookup pub-nacos; do sleep 3; done; until nslookup mycat-demo; do sleep 3; done;']
+#---
+#apiVersion: networking.istio.io/v1alpha3
+#kind: DestinationRule
+#metadata:
+#  name: svc-order
+#spec:
+#  host: svc-order.default.svc.cluster.local
+#  trafficPolicy:
+#    loadBalancer:
+#      simple: ROUND_ROBIN
+#    connectionPool:
+#      tcp:
+#        maxConnections: 5
+#        connectTimeout: 5000ms
+#---
+#apiVersion: networking.istio.io/v1alpha3
+#kind: VirtualService
+#metadata:
+#  name: svc-order
+#spec:
+#  hosts:
+#  - svc-order.default.svc.cluster.local
+#  tcp:
+#  - match:
+#    - port: 20880
+#    route:
+#    - destination:
+#        host: svc-order
+#        port:
+#          number: 20880

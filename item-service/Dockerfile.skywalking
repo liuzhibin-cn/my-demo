@@ -9,5 +9,5 @@ COPY --from=build /home/skywalking /home/skywalking
 ENV NACOS_HOST=nacos SKYWALKING_HOST=skywalking-oap SKYWALKING_PORT=11800 SERVICE_PORT=20880
 ADD ./target/item-service-0.0.1-SNAPSHOT.jar /home/
 ADD ./docker-entrypoint.sh /home/
-EXPOSE $SERVICE_PORT
+EXPOSE 20880
 ENTRYPOINT ["/home/docker-entrypoint.sh", "-javaagent:/home/skywalking/agent/skywalking-agent.jar", "-Dskywalking.agent.service_name=item-svc", "-Dskywalking.collector.backend_service=$SW_AGENT_COLLECTOR_BACKEND_SERVICES", "-jar", "/home/item-service-0.0.1-SNAPSHOT.jar"]

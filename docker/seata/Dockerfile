@@ -14,5 +14,5 @@ RUN dos2unix bin/seata-server.sh \
 	&& dos2unix conf/nacos-config.sh
 
 ENV NACOS_HOST=nacos NACOS_PORT=8848 MYSQL_HOST=mysql MYSQL_PORT=3306 MYSQL_DB=seata MYSQL_USER=seata MYSQL_PSW=seata SEATA_HOST=seata SEATA_PORT=8091
-EXPOSE $SEATA_PORT
+EXPOSE 8091
 ENTRYPOINT ["bin/seata-server.sh", "-h", "127.0.0.1", "-p", "$SEATA_PORT", "-m", "db", "-n", "1", "-e", "test"]

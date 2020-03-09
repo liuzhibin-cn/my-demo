@@ -1,29 +1,39 @@
+kind: Service
+apiVersion: v1
+metadata:
+  name: svc-stock
+spec:
+  ports:
+  - name: tcp-stock
+    port: 20880
+    targetPort: 20880
+  selector:
+    app: svc-stock
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: svc-user
+  name: svc-stock
 spec:
-  replicas: 2
+  replicas: 1
   selector:
     matchLabels:
-      app: svc-user
+      app: svc-stock
   template:
     metadata:
       labels:
-        app: svc-user
+        app: svc-stock
         version: latest
     spec:
       containers:
-      - name: svc-user
-        image: mydemo/user
+      - name: svc-stock
+        image: mydemo/stock
         imagePullPolicy: IfNotPresent
         env:
-        - name: MYSQL_HOST
-          value: "mycat-demo.default.svc.cluster.local"
-        - name: NACOS_HOST
-          value: "pub-nacos.default.svc.cluster.local"
-        - name: ZIPKIN_HOST
-          value: "pub-zipkin.default.svc.cluster.local"
+#        - name: NACOS_HOST
+#          value: "pub-nacos.default.svc.cluster.local"
+#        - name: ZIPKIN_HOST
+#          value: "pub-zipkin.default.svc.cluster.local"
         - name: SERVICE_HOST # Use POD IP to register Dubbo service
           valueFrom:
             fieldRef:
@@ -32,7 +42,7 @@ spec:
           value: "20880"
         ports:
         - containerPort: 20880
-        readinessProbe:  # Check whether User Service is ready
+        readinessProbe:  # Check whether Stock Service is ready
           #tcpSocket:    # Wait until TCP port is opened
           #  port: 20880
           # tcpSocket probe will connect and disconnect to 20880 periodically, 
@@ -48,4 +58,34 @@ spec:
 #        imagePullPolicy: IfNotPresent
         # 1. Wait PODs of dependencies to be READY.
         # 2. Wait services of dependencies to be READY, including service DNS being available.
-#        command: ['sh', '-c', 'until nslookup pub-nacos; do sleep 3; done; until nslookup mycat-demo; do sleep 3; done;']
+#        command: ['sh', '-c', 'until nslookup pub-nacos; do sleep 3; done;']
+#---
+#apiVersion: networking.istio.io/v1alpha3
+#kind: DestinationRule
+#metadata:
+#  name: svc-stock
+#spec:
+#  host: svc-stock.default.svc.cluster.local
+#  trafficPolicy:
+#    loadBalancer:
+#      simple: ROUND_ROBIN
+#    connectionPool:
+#      tcp:
+#        maxConnections: 5
+#        connectTimeout: 3000ms
+#---
+#apiVersion: networking.istio.io/v1alpha3
+#kind: VirtualService
+#metadata:
+#  name: svc-stock
+#spec:
+#  hosts:
+#  - svc-stock.default.svc.cluster.local
+#  tcp:
+#  - match:
+#    - port: 20880
+#    route:
+#    - destination:
+#        host: svc-stock
+#        port:
+#          number: 20880

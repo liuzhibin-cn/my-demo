@@ -23,8 +23,8 @@
 	<dataNode name="dn0" dataHost="db1" database="mydemo-dn0" />
 	<dataNode name="dn1" dataHost="db1" database="mydemo-dn1" />
 	<dataNode name="dn2" dataHost="db1" database="mydemo-dn2" />
-	<dataNode name="dn3" dataHost="db2" database="mydemo-dn3" />
-	<dataNode name="dn4" dataHost="db2" database="mydemo-dn4" />
+	<dataNode name="dn3" dataHost="db1" database="mydemo-dn3" />
+	<dataNode name="dn4" dataHost="db1" database="mydemo-dn4" />
 
 	<!--
 		balance: Load balance stratigies for READs
@@ -42,16 +42,14 @@
 		writeType: Must be 0, All WRITEs are sent to the first writeHost
 
 		dbDriver: native/jdbc
+		
+		minCon="5": 
 	 -->
-	<dataHost name="db1" maxCon="50" minCon="1" balance="0" writeType="0" dbType="mysql" dbDriver="native" switchType="-1" slaveThreshold="100" maxRetryCount="0">
+	<dataHost name="db1" maxCon="50" minCon="5" balance="0" writeType="0" dbType="mysql" dbDriver="native" switchType="-1" slaveThreshold="100" maxRetryCount="0">
 		<heartbeat>select user()</heartbeat>
 		<writeHost host="mysql" url="mysql:3306" user="mydemo" password="mydemo">
 			<!-- can have multi read hosts -->
 			<!-- readHost host="mysql" url="mysql:3306" user="mydemo" password="mydemo" / -->
 		</writeHost>
-	</dataHost>
-	<dataHost name="db2" maxCon="50" minCon="1" balance="0" writeType="0" dbType="mysql" dbDriver="native" switchType="-1" slaveThreshold="100" maxRetryCount="0">
-		<heartbeat>select user()</heartbeat>
-		<writeHost host="mysql" url="mysql:3306" user="mydemo" password="mydemo" />
 	</dataHost>
 </mycat:schema>

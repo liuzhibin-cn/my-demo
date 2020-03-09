@@ -18,7 +18,7 @@
 	<!-- 1: Use MySQL to store Mycat global sequence data -->
 	<property name="sequnceHandlerType">1</property>
 	<!-- To check whether the table join is using sharding keys -->
-	<property name="subqueryRelationshipCheck">true</property>
+	<property name="subqueryRelationshipCheck">false</property>
 	<!-- 0: DirectByteBufferPool, 1: ByteBufferArea, 2: NettyBufferPool -->
 	<property name="processorBufferPoolType">0</property>
 	<!-- 0: Enable XA transaction; 1: Disable XA transaction; 2: Enable and log XA transaction -->
@@ -31,18 +31,18 @@
 
 	<property name="useZKSwitch">false</property>
 	<!-- Disable backend MySQL connection reuse feature in XA transaction from client application -->
-	<property name="strictTxIsolation">true</property>
+	<property name="strictTxIsolation">false</property>
 	
-	<property name="idleTimeout">60000</property> <!-- Unit: millisecond -->
-	<property name="sqlExecuteTimeout">10</property> <!-- Unit: secend -->
+	<property name="idleTimeout">3600000</property> <!-- Unit: millisecond -->
+	<property name="sqlExecuteTimeout">3</property> <!-- Unit: secend -->
 	<property name="txIsolation">2</property> <!-- 2: READ COMMITTED; 3: REPEADABLE READ -->
 
 	<!-- Time intervals in milliseconds to check frontend and backend NIO processors, extra idle or timeout ones will be released -->
-	<property name="processorCheckPeriod">1000</property>
+	<property name="processorCheckPeriod">3600000</property>
 	<!-- Time intervals in milliseconds for heartbeat on backend MySQL connections -->
-	<property name="dataNodeHeartbeatPeriod">30000</property>
+	<property name="dataNodeHeartbeatPeriod">10000</property>
 	<!-- Time intervals in milliseconds to check backend MySQL connections, extra idle or timeout ones will be released -->
-	<property name="dataNodeIdleCheckPeriod">60000</property>
+	<property name="dataNodeIdleCheckPeriod">3600000</property>
 </system>
 
 <!-- Account for connecting to Mycat -->

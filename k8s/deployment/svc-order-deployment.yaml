@@ -6,13 +6,12 @@ spec:
   replicas: 1
   selector:
     matchLabels:
-      svc: svc-order
+      app: svc-order
   template:
     metadata:
       labels:
-        tier: dubbo
-        scope: mydemo
-        svc: svc-order
+        app: svc-order
+        version: latest
     spec:
       containers:
       - name: svc-order
@@ -20,11 +19,11 @@ spec:
         imagePullPolicy: IfNotPresent
         env:
         - name: MYSQL_HOST
-          value: "mycat-mydemo"
+          value: "mycat-demo.default.svc.cluster.local"
         - name: NACOS_HOST
-          value: "pub-nacos"
+          value: "pub-nacos.default.svc.cluster.local"
         - name: ZIPKIN_HOST
-          value: "pub-zipkin"
+          value: "pub-zipkin.default.svc.cluster.local"
         - name: SERVICE_HOST # Use POD IP to register Dubbo service
           valueFrom:
             fieldRef:
@@ -36,17 +35,17 @@ spec:
         readinessProbe:  # Check whether User Service is ready
           #tcpSocket:    # Wait until TCP port is opened
           #  port: 20880
-          # 使用tcpSocket方式，k8s会不断与20880端口建立、断开连接，导致Dubbo不断打印"[DUBBO] disconnected from /10.1.0.1:33994 ..."日志，所以这里改用exec方式
+          # tcpSocket probe will connect and disconnect to 20880 periodically, 
+          # cause massive Dubbo logs: "[DUBBO] disconnected from /10.1.0.1:33994 ..."
           exec:
-            command: ["sh", "-c", "COUNT=`netstat -antp tcp | grep 20880 | grep LISTEN -c`; if [ $COUNT -eq 1 ]; then exit 0; else exit 1; fi"]
+            command: ["sh", "-c", "COUNT=`netstat -antp tcp|grep 20880|grep LISTEN -c`; if [ $COUNT -eq 1 ]; then exit 0; else exit 1; fi"]
           initialDelaySeconds: 3    # Wait initialDelaySeconds to check the first time
           periodSeconds: 5          # Wait periodSeconds to check next time
           timeoutSeconds: 1         # Timeout for check process
-      initContainers:
-      - name: wait-deps
-        image: busybox
-        imagePullPolicy: IfNotPresent
-        # 等待时间可能会比较长：
-        # 1. 需要等待依赖项的容器启动，POD进入就绪状态；
-        # 2. 需要等待依赖项服务在K8S集群内生效，包括DNS解析在本容器中生效；
-        command: ['sh', '-c', 'until nslookup mycat-mydemo; do echo "Waiting for mycat-mydemo"; sleep 3; done; until nslookup pub-nacos; do echo "Waiting for pub-nacos"; sleep 3; done;']
+#      initContainers:
+#      - name: wait-deps
+#        image: busybox
+#        imagePullPolicy: IfNotPresent
+        # 1. Wait PODs of dependencies to be READY.
+        # 2. Wait services of dependencies to be READY, including service DNS being available.
+#        command: ['sh', '-c', 'until nslookup pub-nacos; do sleep 3; done; until nslookup mycat-demo; do sleep 3; done;']

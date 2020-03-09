@@ -1,0 +1,47 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: EnvoyFilter
+metadata:
+  name: svc-item
+  namespace: istio-system
+spec:
+  configPatches:
+  - applyTo: NETWORK_FILTER
+    match:
+      context: SIDECAR_OUTBOUND     #用于配置dubbo协议的内部访问  
+      listener:
+        filter_chain:
+          filter:
+            name: envoy.tcp_proxy
+        name: 10.109.19.148_20880    #name的值为serviceIP_servicePort，指定作用的服务及其端口
+        port_number: 20880     #dubboprovider的service的访问端口
+    patch:
+      operation: REMOVE
+  - applyTo: NETWORK_FILTER
+    match:
+      context: SIDECAR_OUTBOUND
+      listener:
+        filter_chain:
+          filter:
+            name: mixer
+        name: 10.109.19.148_20880
+        port_number: 20880        
+    patch:
+      operation: INSERT_AFTER
+      value:
+        config:
+          dubbo_filters:
+          - name: envoy.filters.dubbo.router
+          protocol_type: Dubbo
+          route_config:
+          - interface: .*       #使用.*代表所有接口   
+            name: local_route
+            routes:
+            - match:
+                method:
+                  name:
+                    regex: .*
+              route:
+                cluster: outbound|20880|v1|svc-item.default.svc.cluster.local     #用于指定路由的负载
+          serialization_type: Hessian2
+          stat_prefix: dubbo_incomming_stats
+        name: envoy.filters.network.dubbo_proxy

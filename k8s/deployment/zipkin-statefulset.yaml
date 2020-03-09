@@ -5,11 +5,12 @@ metadata:
 spec:
   type: NodePort        # Expose service port to host machine
   ports:
-  - port: 9411
+  - name: http-zipkin
+    port: 9411
     targetPort: 9411
     nodePort: 30041     # Expose service port to host machine
   selector:
-    svc: pub-zipkin
+    app: pub-zipkin
 ---
 apiVersion: apps/v1
 kind: StatefulSet
@@ -20,13 +21,12 @@ spec:
   serviceName: pub-zipkin
   selector:
     matchLabels:
-      svc: pub-zipkin
+      app: pub-zipkin
   template:
     metadata:
       labels:
-        tier: middleware
-        scope: public
-        svc: pub-zipkin
+        app: pub-zipkin
+        version: 2.19.2
     spec:
       containers:
       - name: pub-zipkin
@@ -34,7 +34,7 @@ spec:
         imagePullPolicy: IfNotPresent
         env:
         - name: MYSQL_HOST
-          value: "db-mydemo"
+          value: "db-demo.default.svc.cluster.local"
         ports:
         - containerPort: 9411
         readinessProbe: # Check whether ZipKin is ready
@@ -44,12 +44,10 @@ spec:
           initialDelaySeconds: 3    # Wait initialDelaySeconds to check the first time
           periodSeconds: 5          # Wait periodSeconds to check next time
           timeoutSeconds: 2         # Timeout for check process
-      initContainers:
-      - name: wait-deps
-        image: busybox
-        imagePullPolicy: IfNotPresent
-        # nslookup success until db-mydemo is ready
-        # 等待时间可能会比较长：
-        # 1. 需要等待依赖项的容器启动，POD进入就绪状态；
-        # 2. 需要等待依赖项服务在K8S集群内生效，包括DNS解析在本容器中生效；
-        command: ['sh', '-c', 'until nslookup db-mydemo; do echo "Waiting for db-mydemo"; sleep 3; done;']
+#      initContainers:
+#      - name: wait-deps
+#        image: busybox
+#        imagePullPolicy: IfNotPresent
+        # 1. Wait PODs of dependencies to be READY.
+        # 2. Wait services of dependencies to be READY, including service DNS being available.
+#        command: ['sh', '-c', 'until nslookup db-demo; do sleep 3; done;']

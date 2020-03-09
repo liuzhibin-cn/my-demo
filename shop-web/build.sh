@@ -4,7 +4,7 @@
 # Use shell script to build Docker image because additional process is required in case of SkyWalking enabled
 
 # The value will be set by package.sh
-APM=zipkin
+APM=
 
 DIR=`dirname "$0"`
 cd $DIR

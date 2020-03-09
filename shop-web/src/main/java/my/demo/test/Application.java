@@ -5,7 +5,6 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 
 @SpringBootApplication(scanBasePackages = {"my.demo.test", "my.demo.utils"})
-//@NacosPropertySource(dataId = "mydemo-config", autoRefreshed = true, groupId = "app-config")
 public class Application {
 	public static void main(String[] args) {
 		new SpringApplicationBuilder(Application.class).web(WebApplicationType.SERVLET).run(args);
