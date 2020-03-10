@@ -1,20 +1,3 @@
-kind: Service
-apiVersion: v1
-metadata:
-  name: svc-item
-  labels: 
-    app: svc-item
-spec:
-  ports:
-  - name: dubbo
-    port: 20880
-    targetPort: 20880
-    protocol: TCP
-  type: ClusterIP
-  selector:
-    app: svc-item
-    version: v1
----
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -24,22 +7,21 @@ spec:
   selector:
     matchLabels:
       app: svc-item
-      version: v1
   template:
     metadata:
       labels:
         app: svc-item
-        version: v1
+        version: latest
     spec:
       containers:
       - name: svc-item
         image: mydemo/item
         imagePullPolicy: IfNotPresent
         env:
-#        - name: NACOS_HOST
-#          value: "pub-nacos.default.svc.cluster.local"
-#        - name: ZIPKIN_HOST
-#          value: "pub-zipkin.default.svc.cluster.local"
+        - name: NACOS_HOST
+          value: "pub-nacos.default.svc.cluster.local"
+        - name: ZIPKIN_HOST
+          value: "pub-zipkin.default.svc.cluster.local"
         - name: SERVICE_HOST # Use POD IP to register Dubbo service
           valueFrom:
             fieldRef:
@@ -48,7 +30,6 @@ spec:
           value: "20880"
         ports:
         - containerPort: 20880
-          protocol: TCP
         readinessProbe:  # Check whether Item Service is ready
           #tcpSocket:    # Wait until TCP port is opened
           #  port: 20880
@@ -66,34 +47,3 @@ spec:
         # 1. Wait PODs of dependencies to be READY.
         # 2. Wait services of dependencies to be READY, including service DNS being available.
 #        command: ['sh', '-c', 'until nslookup pub-nacos; do sleep 3; done;']
-#---
-#apiVersion: networking.istio.io/v1alpha3
-#kind: DestinationRule
-#metadata:
-#  name: svc-item
-#spec:
-#  host: svc-item.default.svc.cluster.local
-#  subsets:
-#  - name: v1
-#    labels:
-#      version: v1
-#  trafficPolicy:
-#    loadBalancer:
-#      simple: ROUND_ROBIN
-#    outlierDetection:
-#      interval: 10m
-#---
-#apiVersion: networking.istio.io/v1alpha3
-#kind: VirtualService
-#metadata:
-#  name: svc-item
-#spec:
-#  hosts:
-#  - svc-item.default.svc.cluster.local
-#  tcp:
-#  - route:
-#    - destination:
-#        host: svc-item.default.svc.cluster.local
-#        port:
-#          number: 20880
-#        subset: v1

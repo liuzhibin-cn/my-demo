@@ -46,3 +46,7 @@ seata:
       namespace:
 
 nacos.config.server-addr: ${nacos.address}
+
+mydemo:
+  version: ${SHOP_VERSION:latest}
+  hostname: ${HOSTNAME:localhost}

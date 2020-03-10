@@ -1,15 +1,3 @@
-kind: Service
-apiVersion: v1
-metadata:
-  name: svc-stock
-spec:
-  ports:
-  - name: tcp-stock
-    port: 20880
-    targetPort: 20880
-  selector:
-    app: svc-stock
----
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -30,10 +18,10 @@ spec:
         image: mydemo/stock
         imagePullPolicy: IfNotPresent
         env:
-#        - name: NACOS_HOST
-#          value: "pub-nacos.default.svc.cluster.local"
-#        - name: ZIPKIN_HOST
-#          value: "pub-zipkin.default.svc.cluster.local"
+        - name: NACOS_HOST
+          value: "pub-nacos.default.svc.cluster.local"
+        - name: ZIPKIN_HOST
+          value: "pub-zipkin.default.svc.cluster.local"
         - name: SERVICE_HOST # Use POD IP to register Dubbo service
           valueFrom:
             fieldRef:
@@ -59,33 +47,3 @@ spec:
         # 1. Wait PODs of dependencies to be READY.
         # 2. Wait services of dependencies to be READY, including service DNS being available.
 #        command: ['sh', '-c', 'until nslookup pub-nacos; do sleep 3; done;']
-#---
-#apiVersion: networking.istio.io/v1alpha3
-#kind: DestinationRule
-#metadata:
-#  name: svc-stock
-#spec:
-#  host: svc-stock.default.svc.cluster.local
-#  trafficPolicy:
-#    loadBalancer:
-#      simple: ROUND_ROBIN
-#    connectionPool:
-#      tcp:
-#        maxConnections: 5
-#        connectTimeout: 3000ms
-#---
-#apiVersion: networking.istio.io/v1alpha3
-#kind: VirtualService
-#metadata:
-#  name: svc-stock
-#spec:
-#  hosts:
-#  - svc-stock.default.svc.cluster.local
-#  tcp:
-#  - match:
-#    - port: 20880
-#    route:
-#    - destination:
-#        host: svc-stock
-#        port:
-#          number: 20880

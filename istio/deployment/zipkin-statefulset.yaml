@@ -51,25 +51,3 @@ spec:
         # 1. Wait PODs of dependencies to be READY.
         # 2. Wait services of dependencies to be READY, including service DNS being available.
 #        command: ['sh', '-c', 'until nslookup db-demo; do sleep 3; done;']
----
-apiVersion: networking.istio.io/v1alpha3
-kind: DestinationRule
-metadata:
-  name: pub-zipkin
-spec:
-  host: pub-zipkin.default.svc.cluster.local
-  trafficPolicy:
-    loadBalancer:
-      simple: ROUND_ROBIN
----
-apiVersion: networking.istio.io/v1alpha3
-kind: VirtualService
-metadata:
-  name: pub-zipkin
-spec:
-  hosts:
-  - pub-zipkin.default.svc.cluster.local
-  http:
-  - route:
-    - destination:
-        host: pub-zipkin

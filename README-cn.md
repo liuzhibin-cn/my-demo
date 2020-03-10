@@ -7,28 +7,24 @@
 本项目基础演示部分包括基于`SpringBoot`的`Dubbo`微服务和Web演示应用，另外还包含以下几个方面：
 
 #### 1、Docker容器化
-除`PinPoint`外，整个演示项目以及所有中间件都支持`Docker`容器运行，项目中包含`Dockerfile`、构建`Docker`镜像和运行`Docker`容器相关脚本。<br />
-使用`Docker`容器运行演示应用，架构中用到的组件都无需部署、配置，也不需要对项目进行任何配置，使用管理脚本就可以简单快速运行整个演示应用，参考*Docker容器运行演示应用*。
+除`PinPoint`外，整个演示项目以及所有中间件都支持`Docker`容器运行，项目中包含`Dockerfile`、构建`Docker`镜像和运行`Docker`容器的相关脚本。<br />
+使用`Docker`容器运行演示应用，架构中用到的组件和演示项目都无需任何部署、配置，使用管理脚本就可以简单快速运行整个演示应用。
 
 #### 2、Kubernetes
 - `Kubernetes`是一个优秀的自动化运维管理平台，极大简化了应用大规模部署和管理问题，结合`Service Mesh`的路由、熔断和限流，微服务架构中的非功能性需求基本都被分拆出来了，应用只需聚焦于业务逻辑。
 - 不可变基础设施、基础设施即代码，基于`Docker`、`Kubernetes`、`DevOps`的云原生理念，是对运维管理的一场革命。
 - 将研发团队持续集成、持续部署、持续交付能力提升一个台阶。
 
-本项目为`Mycat` + `ZipKin`运行演示应用提供了K8s YAML配置文件，可以快速部署到`k8s`运行，参考*Kubernetes运行演示应用*。
+本项目为`Mycat` + `ZipKin`运行演示应用提供了`K8s`配置文件，可以快速部署到`k8s`运行。
 
-**关于Dubbo服务在K8s中的部署** <br />
-- `Dubbo`服务的注册、发现、负载均衡、故障转移都采用Dubbo自己的机制，不使用`K8s Service`。`Provider`注册时通过`Downward API`得到`POD IP`，用`POD IP`向注册中心注册，`Consumer`从注册中心拿到的`Provider`都是可以直接通讯的。
+**关于K8s中部署Dubbo服务** <br />
+- `Dubbo`服务的注册、发现、负载均衡、故障转移都采用Dubbo自己的机制，不使用`K8s Service`。`Provider`注册时通过`Downward API`得到`POD IP`，用`POD IP`向注册中心注册，这样`Consumer`从注册中心拿到的都是`Provider`的`POD IP`，可以直接通讯。
 - `Dubbo`服务使用`Deployment`部署到`K8s`，无需建立`Service`，`K8s`中基于`Deployment`、`ReplicaSet`的管理功能都能运用在`Dubbo`服务上，包括手动扩缩容以及利用HPA自动扩缩容等。`POD`下线、新`POD`上线由Dubbo本身的服务注册发现机制处理。
 
 #### 3、Service Mesh: Istio
-在演示项目中尝试采用`Dubbo`服务直连方式在`Istio`中运行，没有成功。具体方案是：
-- 禁用`Dubbo`注册中心，所有`Provider`不注册；
-- 为`Dubbo`服务定义`K8s` `Service`，服务注册、发现由`K8s`管理；
-- 为`Dubbo`服务定义`Istio` `DestinationRule`、`VirtualService`，由`Istio`对`Dubbo`的TCP流量进行管理，包括路由、负载均衡、限流、熔断等；
-- `Consumer`通过`K8s`的`Service`直连`Provider`；
+`Istio`无法管理`Dubbo`流量，本项目简单演示了使用`Istio`对`shop-web`进行流量管理。
 
-该方案在`Consumer`调用时出错，`Envoy`无法将调用请求路由到`Provider`。`Dubbo`支持`Istio`不太好处理，如果放弃`Dubbo`的TCP长连接，很可能丧失高性能优势，从架构选型考虑不如采用`SpringBoot`、`Spring Cloud`。
+目前`Dubbo`不支持`Istio`，高性能是`Dubbo`的核心优势，在云原生环境下`Dubbo`是否能及时跟进以及保持这个优势，还有待观察。显然，当这一优势不再，不如直接用`Spring Boot`开发微服务。
 
 #### 4、数据库分库分表
 本项目演示了使用`Mycat`和`Sharding-Proxy`进行分库分表，相关概念、部署和使用方法，参考[MyCat分库分表概览](https://github.com/liuzhibin-cn/my-demo/blob/master/docs/Sharding-Mycat-Overview-Quickstart.md)、[Sharding-Proxy分库分表概览](https://github.com/liuzhibin-cn/my-demo/blob/master/docs/Sharding-Sharding-Proxy-Overview-Quickstart.md)，以及它们与阿里云DRDS对比[DRDS产品概览](https://github.com/liuzhibin-cn/my-demo/blob/master/docs/Sharding-DRDS-Overview.md)。
@@ -65,7 +61,7 @@
 - `JDK8+`, `Apache Maven`
 - 容器运行需要安装`Docker`
 
-#### 编译打包
+#### 演示项目编译打包
 `./package.sh`为项目编译打包脚本，参数说明：
 - 简单运行：不带任何参数执行`package.sh`，仅运行Dubbo微服务和演示应用，使用单个MySQL数据库、`Nacos`注册中心，运行4个`Dubbo`服务和1个Web应用；
 - 分库分表：`-mycat`、`-sharding-proxy`二选一。
@@ -107,13 +103,13 @@
 使用`Docker`容器运行演示项目非常简单，基础组件无需自行部署、配置，直接运行容器即可。<br />
 由于`PinPoint`只能采用`HBase`存储，本项目未制作`Dockerfile`，除`PinPoint`外其它组件全部支持容器运行。
 1. 基础组件构建`Docker`镜像：`docker/build-basis.sh`<br />
-   相关脚本和`Dockerfile`在`docker`目录中，每个基础组件一个子目录，其中`build.sh`构建`Docker`镜像，`run.sh`启动运行Docker容器，都不需要任何参数。
+   相关脚本和`Dockerfile`在`docker`目录中，每个基础组件一个子目录，其中`build.sh`构建`Docker`镜像，`run.sh`启动运行`Docker`容器，都不需要任何参数。
 2. 基础组件运行`Docker`容器：`docker/deploy-basis.sh`<br />
    最好根据需要修改`deploy-basis.sh`，仅运行本次需要用到的组件。若手工启动，注意按依赖关系依次启动：`mysql -> mycat/shardingproxy/nacos/zipkin/skywalking -> seata`。
    > 如果启用的组件比较多，例如同时启用`Mycat + Seata + SkyWalking + Nacos`，至少给`Docker`分配5G以上内存，否则内存紧张可能导致容器和应用卡死。因为不少组件内存占用比较大，例如`Seata`，JVM启动参数`-XX:MaxDirectMemorySize`小于1G时一直报OOM异常。
 3. 为演示应用构建Docker镜像、运行`Docker`容器。
    1. 参考`package.sh`，编译打包；
-   2. 使用`./docker/deploy-mydemo.sh`管理Docker镜像和容器，其操作对象为所有`Dubbo`服务和`shop-web`应用，参数说明：
+   2. 使用`./docker/deploy-mydemo.sh`管理`Docker`镜像和容器，其操作对象为所有`Dubbo`服务和`shop-web`应用，参数说明：
       - `-build`：构建`Docker`镜像；
       - `-run`：运行`Docker`容器；
       - `-stop`：停止`Docker`容器；
@@ -126,7 +122,7 @@
 ./docker/deploy-basis.sh # 为所有基础组件运行Docker容器
 ./package.sh -mycat -seata -zipkin 		# 编译打包演示应用
 ./docker/deploy-mydemo.sh -build -run   # 对演示应用构建Docker镜像、运行容器
-./package.sh -mycat -zipkin # 编译打包：不使用Seata
+./package.sh -shardingproxy -skywalking # 编译打包
 ./docker/deploy-mydemo.sh -stop -rm -rmi -build -run # 重新构建Docker镜像、运行容器
 ```
 
@@ -135,7 +131,7 @@
 - `Nacos`：[localhost:18848/nacos](http://localhost:18848/nacos)，登录用户/密码：nacos/nacos
 - `ZipKin`：[localhost:19411/zipkin](http://localhost:19411/zipkin/)
 - `SkyWalking`: [localhost:18080](http://localhost:18080/)
-- `Mycat`：数据端口`18066`、管理端口`19066`，都可以用`MySQL`客户端登录访问
+- `Mycat`：数据端口`localhost:18066`、管理端口`localhost:19066`，都可以用`MySQL`客户端登录访问
 - `ShardingProxy`：端口`localhost:13307`，可以用`MySQL`客户端登录访问
 - `MySQL`：`13306`，可以用`MySQL`客户端登录访问
 
@@ -176,6 +172,19 @@
    ```
 
 ![](docs/images/kubernetes-overview.png)
+
+#### Istio运行演示应用
+1. 需要在`Kubernetes`集群中部署`Istio`，需要在`istio-system`命名空间部署`istio-ingressgateway`。
+2. 在`default`命名空间开启自动注入：`kubectl label ns default istio-injection=enabled --overwrite`。
+3. 参考*Docker容器运行*，为基础组件`MySQL`、`Nacos`、`Mycat`、`ZipKin`构建`Docker`镜像。
+4. 执行`./istio/deploy-istio.sh`在`K8s`中部署演示应用。<br />
+   如果部署过程有错误，执行`./istio/undeploy-istio.sh`可以将`k8s`中已经部署好的部分全部删除。
+5. 在本地`hosts`文件中绑定`myshop.com`（`Docker Desktop`绑定到本机IP即可）。
+
+通过[http://myshop.com/hello/YourName](http://myshop.com/hello/YourName)访问。
+
+`Dubbo`服务未使用`Istio`进行流量管理，与`Kubernetes`中部署方案相同（采用`Dubbo`自己的服务注册发现机制）。<br />
+`web-shop`部署了`v1`、`v2`两个版本，`v1` 2个`POD`，`v2` 1个`POD`，在URL中添加`?version=v2`来访问`v2`版本。可以分别对`v1`、`v2`版本进行扩缩容，查看访问效果。
 
 -------------------------------------------------------------------
 ### 运行效果
