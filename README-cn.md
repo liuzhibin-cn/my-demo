@@ -1,16 +1,16 @@
 [English](README.md) | [中文](README-cn.md)
 
 -------------------------------------------------------------------
-### 演示项目架构
+## 演示项目架构
 ![](docs/images/architecture.png) <br />
 
 本项目基础演示部分包括基于`SpringBoot`的`Dubbo`微服务和Web演示应用，另外还包含以下几个方面：
 
-#### 1、Docker容器化
+### 1、Docker容器化
 除`PinPoint`外，整个演示项目以及所有中间件都支持`Docker`容器运行，项目中包含`Dockerfile`、构建`Docker`镜像和运行`Docker`容器的相关脚本。<br />
 使用`Docker`容器运行演示应用，架构中用到的组件和演示项目都无需任何部署、配置，使用管理脚本就可以简单快速运行整个演示应用。
 
-#### 2、Kubernetes
+### 2、Kubernetes
 - `Kubernetes`是一个优秀的自动化运维管理平台，极大简化了应用大规模部署和管理问题，结合`Service Mesh`的路由、熔断和限流，微服务架构中的非功能性需求基本都被分拆出来了，应用只需聚焦于业务逻辑。
 - 不可变基础设施、基础设施即代码，基于`Docker`、`Kubernetes`、`DevOps`的云原生理念，是对运维管理的一场革命。
 - 将研发团队持续集成、持续部署、持续交付能力提升一个台阶。
@@ -21,12 +21,12 @@
 - `Dubbo`服务的注册、发现、负载均衡、故障转移都采用Dubbo自己的机制，不使用`K8s Service`。`Provider`注册时通过`Downward API`得到`POD IP`，用`POD IP`向注册中心注册，这样`Consumer`从注册中心拿到的都是`Provider`的`POD IP`，可以直接通讯。
 - `Dubbo`服务使用`Deployment`部署到`K8s`，无需建立`Service`，`K8s`中基于`Deployment`、`ReplicaSet`的管理功能都能运用在`Dubbo`服务上，包括手动扩缩容以及利用HPA自动扩缩容等。`POD`下线、新`POD`上线由Dubbo本身的服务注册发现机制处理。
 
-#### 3、Service Mesh: Istio
-`Istio`无法管理`Dubbo`流量，本项目简单演示了使用`Istio`对`shop-web`进行流量管理。
+### 3、Service Mesh: Istio
+目前`Istio`无法管理`Dubbo`流量，本项目演示了使用`Istio`对`shop-web`进行流量管理。
 
-目前`Dubbo`不支持`Istio`，高性能是`Dubbo`的核心优势，在云原生环境下`Dubbo`是否能及时跟进以及保持这个优势，还有待观察。显然，当这一优势不再，不如直接用`Spring Boot`开发微服务。
+支付宝的[SOFAMesh](https://www.sofastack.tech/projects/sofa-mesh/overview/)扩展了`Istio`协议，增加了[SOFARPC](https://www.sofastack.tech/projects/sofa-rpc/overview/)、`Dubbo`支持，但该项目目前已经作废，直接向`Istio`贡献，所以需要花时间等待`Istio`接纳这些功能。
 
-#### 4、数据库分库分表
+### 4、数据库分库分表
 本项目演示了使用`Mycat`和`Sharding-Proxy`进行分库分表，相关概念、部署和使用方法，参考[MyCat分库分表概览](https://github.com/liuzhibin-cn/my-demo/blob/master/docs/Sharding-Mycat-Overview-Quickstart.md)、[Sharding-Proxy分库分表概览](https://github.com/liuzhibin-cn/my-demo/blob/master/docs/Sharding-Sharding-Proxy-Overview-Quickstart.md)，以及它们与阿里云DRDS对比[DRDS产品概览](https://github.com/liuzhibin-cn/my-demo/blob/master/docs/Sharding-DRDS-Overview.md)。
 
 `Mycat`、`Sharding-Proxy`和`DRDS`都实现了`MySQL`协议，成为独立的中间件，将分库分表、读写分离等数据存储的弹性伸缩方案与应用隔离，对应用透明，并且实现语言无关。
@@ -38,7 +38,7 @@
 1. 性能开销还比较高；
 2. 在使用`Mycat`、`Sharding-Proxy`进行分库分表时，`Seata`会产生不少路由到全分片执行的SQL操作，详细参考[Seata分布式事务管理框架概览](https://github.com/liuzhibin-cn/my-demo/blob/master/docs/Seata-Distributed-Transaction-Management.md)文末；
 
-#### 6、APM全链路监控
+### 6、APM全链路监控
 演示项目支持`PinPoint`、`SkyWalking`、`ZipKin`三种APM工具进行全链路跟踪和性能分析，相关概念、部署和使用方法，参考[PinPoint部署和使用](https://github.com/liuzhibin-cn/my-demo/blob/master/docs/APM-PinPoint.md)、[SkyWalking部署和使用](https://github.com/liuzhibin-cn/my-demo/blob/master/docs/APM-SkyWalking.md)、[ZipKin部署和使用](https://github.com/liuzhibin-cn/my-demo/blob/master/docs/APM-ZipKin.md)。三种APM工具对比：
 - 使用方式：`PinPoint`和`SkyWalking`都采用`javaagent`方式，对应用代码几乎没有侵入性；ZipKin需要和应用打包到一起，并在应用中完成各种配置，属于强依赖关系；
 - 链路跟踪能力：整体上看相差不大，基本都参照[Google Dapper](http://research.google.com/pubs/pub36356.html)，也都支持对大量主流框架的跟踪，细节上有些差异：
@@ -52,9 +52,9 @@
 `ZipKin`和`SkyWalking`支持`Istio`，其使用方法也与应用中直接使用有所区别。
 
 -------------------------------------------------------------------
-### 运行演示应用
+## 运行演示应用
 
-#### 环境要求
+### 环境要求
 - 操作系统
   - `Linux`
   - `Windows`: 必须安装一个`bash shell`，例如`git bash`；
@@ -62,7 +62,7 @@
 - `JDK8+`, `Apache Maven`
 - 容器运行需要安装`Docker`
 
-#### 演示项目编译打包
+### 演示项目编译打包
 `./package.sh`为项目编译打包脚本，参数说明：
 - 简单运行：不带任何参数执行`package.sh`，仅运行Dubbo微服务和演示应用，使用单个MySQL数据库、`Nacos`注册中心，运行4个`Dubbo`服务和1个Web应用；
 - 分库分表：`-mycat`、`-sharding-proxy`二选一。
@@ -77,7 +77,7 @@
 
 例如`./package.sh -mycat -seata -zipkin`
 
-#### 本地运行演示应用
+### 本地运行演示应用
 1. 安装MySQL，建库建表。建库脚本[docker/mysql/scripts/1-mydemo.sql](https://github.com/liuzhibin-cn/my-demo/tree/master/docker/mysql/scripts/1-mydemo.sql)，是演示分库分表用的建库脚本，简单方式运行只需要其中`mydemo-dn1`单库即可。
 2. 部署`nacos`，用于`Dubbo`注册中心。参考[Nacos快速开始](https://nacos.io/zh-cn/docs/quick-start.html)即可。
 3. 如果要使用到某个中间件，例如`ShardingProxy`、`PinPoint`，必须部署配置好。
@@ -100,7 +100,7 @@
 - `Mycat`：数据端口`8066`、管理端口`9066`，都可以用`MySQL`客户端登录访问
 - `ShardingProxy`：端口`localhost:3307`，可以用`MySQL`客户端登录访问
 
-#### Docker容器运行演示应用
+### Docker容器运行演示应用
 使用`Docker`容器运行演示项目非常简单，基础组件无需自行部署、配置，直接运行容器即可。<br />
 由于`PinPoint`只能采用`HBase`存储，本项目未制作`Dockerfile`，除`PinPoint`外其它组件全部支持容器运行。
 1. 基础组件构建`Docker`镜像：`docker/build-basis.sh`<br />
@@ -142,7 +142,7 @@
 容器资源使用情况：<br />
 ![](docs/images/docker-stats.png)
 
-#### Kubernetes运行演示应用
+### Kubernetes运行演示应用
 1. 部署和启动`Kubernetes`环境。国内环境在`Docker Desktop for Windows/Mac`中启用`Kubernetes`，参考[AliyunContainerService/k8s-for-docker-desktop](https://github.com/AliyunContainerService/k8s-for-docker-desktop)。
 2. 参考*Docker容器运行*，为基础组件`MySQL`、`Nacos`、`Mycat`、`ZipKin`构建`Docker`镜像。
    无需为演示应用构建`Docker`镜像，在下面脚本中会自动重新打包应用，构建`Docker`镜像。
@@ -174,7 +174,7 @@
 
 ![](docs/images/kubernetes-overview.png)
 
-#### Istio运行演示应用
+### Istio运行演示应用
 1. 需要在`Kubernetes`集群中部署`Istio`，需要在`istio-system`命名空间部署`istio-ingressgateway`（`Docker Desktop`默认部署和启动`istio-ingressgateway`）。
 2. 在`default`命名空间开启自动注入：`kubectl label ns default istio-injection=enabled --overwrite`。
 3. 参考*Docker容器运行*，为基础组件`MySQL`、`Nacos`、`Mycat`、`ZipKin`构建`Docker`镜像。
@@ -188,7 +188,7 @@
 `web-shop`部署了`v1`、`v2`两个版本，`v1` 2个`POD`，`v2` 1个`POD`，在URL中添加`?version=v2`来访问`v2`版本。可以分别对`v1`、`v2`版本进行扩缩容，查看访问效果。
 
 -------------------------------------------------------------------
-### 运行效果
+## 运行效果
 `shop-web`日志输出：<br />
 ![](docs/images/shopweb-out.png)
 
