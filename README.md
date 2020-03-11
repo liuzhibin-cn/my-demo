@@ -1,9 +1,9 @@
 [English](README.md) | [中文](README-cn.md)
 
-A simple demo application for building scalable applications using **Microservices**, **Database Sharding** Proxies, **Flexible Transactions**, **APM** tools, and deploying to `Docker` and `Kubernetes`.
+A simple demo application for building scalable applications using **Microservices**, **Database Sharding** Proxies, **Flexible Transactions**, **APM** tools, and deploying to **Docker** and **Kubernetes**.
 
 -------------------------------------------------------------------
-### Demo Application Architecture
+## Demo Application Architecture
 ![](docs/images/architecture.png)
 
 - [Dubbo](http://dubbo.apache.org/en-us/): A high-performance, java based open source RPC framework. <br />
@@ -17,15 +17,15 @@ A simple demo application for building scalable applications using **Microservic
 - [ZipKin](https://zipkin.io/), [PinPoint](https://github.com/naver/pinpoint), [SkyWalking](https://skywalking.apache.org/): APM tools for microservices, `ZipKin` and `SkyWalking` can work with `Istio`.
 
 -------------------------------------------------------------------
-### Run demo application
+## Run demo application
 
-#### Prerequisites
+### Prerequisites
 1. OS: Linux, Mac, or Windows with a bash shell, such as git bash;
    > In Mac OSX `gnu-sed` is required: `brew install gnu-sed`
 2. JDK 8+ and apache maven;
-3. `Docker`, 5GB memory for `Docker` is recommended;
+3. `Docker`, 5GB memory for Docker is recommended;
 
-#### Package demo application
+### Package demo application
 Use [package.sh](package.sh) to compile and package the demo application. 
 
 Usage: 
@@ -39,8 +39,7 @@ package.sh -mycat -zipkin
 package.sh -shardingproxy -pinpoint -seata
 ```
 
-#### Run in local machine
-You can run the demo application in local machine:
+### Run in local machine
 1. `MySQL` and `Nacos` must be installed, see [MySQL scripts](docker/mysql/scripts) and [Nacos quickstart](https://nacos.io/en-us/docs/quick-start.html). 
 2. Install and start 3-party components as you wanted, go to project home for help, and [Dockerfiles and scripts](docker/) in demo application are also references for you.
 3. Edit parent [pom.xml](https://github.com/liuzhibin-cn/my-demo/blob/master/pom.xml) and config for your local environment.
@@ -71,7 +70,7 @@ You can run the demo application in local machine:
      java -javaagent:F:\pinpoint\agent\pinpoint-bootstrap-1.8.5.jar -Dpinpoint.agentId=shop-web-1 -Dpinpoint.applicationName=shop-web -jar shop-web\target\shop-web-0.0.1-SNAPSHOT.jar
 	 ```
 
-**Entrypoints**
+Entrypoints:
 - Demo Application: [localhost:8090/shop](http://localhost:8090/shop)
 - `Nacos`: [localhost:8848/nacos](http://localhost:8848/nacos), user/password: `nacos/nacos`
 - `ZipKin`: [localhost:9411/zipkin](http://localhost:9411/zipkin/)
@@ -84,18 +83,18 @@ You can run the demo application in local machine:
   > ```
 - `ShardingProxy`: `3307`, use `mysql` to connect, user/password: `mydemo/mydemo`
 
-#### Run in `Docker`
-1. Build `Docker` images for all 3-party components used in demo application.
-   > ATTENTION: `Docker` support for `PinPoint` is not provided in demo application, `-pinpoint` option cann't be used in `package.sh` if you run the demo application in `Docker`.
+### Run in Docker
+1. Build Docker images for all 3-party components used in demo application.
+   > ATTENTION: Docker support for `PinPoint` is not provided in demo application, `-pinpoint` option cann't be used in `package.sh` if you run the demo application in Docker.
    ```sh
    docker/build-basis.sh
    ```
-2. Run `Docker` containers for all 3-party components. It's recommended for you that take `docker/deploy-basis.sh` as a reference, 
-and only run those containers you wanted, to avoid `Docker` hungs because of memory pressure.
+2. Run Docker containers for all 3-party components. It's recommended for you that take `docker/deploy-basis.sh` as a reference, 
+and only run those containers you wanted, to avoid Docker hungs because of memory pressure.
    ```sh 
    docker/deploy-basis.sh
    ```
-   All containers run in a `Docker` network `mydemo` created in `docker/deploy-basis.sh`, `docker-compose` is not used.
+   All containers run in a `Docker Network` `mydemo` created in `docker/deploy-basis.sh`, `docker-compose` is not used.
 3. Use [docker/deploy-mydemo.sh](docker/deploy-mydemo.sh) to build images and run containers for demo application. <br />
    Usage:
    - `-build`: Build images for `item`, `stock`, `user`, `order` services and `shop-web` app.
@@ -104,7 +103,7 @@ and only run those containers you wanted, to avoid `Docker` hungs because of mem
    - `-rm`: Remove containers for `item`, `stock`, `user`, `order` services and `shop-web` app.
    - `-rmi`: Remove images for `item`, `stock`, `user`, `order` services and `shop-web` app.
 
-**Example**
+Example:
 ```sh
 docker/build-basis.sh
 docker/deploy-basis.sh
@@ -116,7 +115,7 @@ package.sh -shardingproxy -skywaling
 docker/deploy-mydemo.sh -stop -rm -rmi -build -run
 ```
 
-**Entrypoints**
+Entrypoints:
 - Demo Application: [localhost:18090/shop](http://localhost:18090/shop)
 - `Nacos`: [localhost:18848/nacos](http://localhost:18848/nacos), user/password: `nacos/nacos`
 - `ZipKin`: [localhost:19411/zipkin](http://localhost:19411/zipkin/)
@@ -133,10 +132,10 @@ docker/deploy-mydemo.sh -stop -rm -rmi -build -run
 
 ![](docs/images/docker-stats.png)
 
-#### Run in `Kubernetes`
+### Run in Kubernetes
 The YAML and script files in [k8s/](k8s/) run the demo application with `Mycat` and `ZipKin` in `Kubernetes`.
 
-1. Build `Docker` images for all 3-party components used in the demo application.
+1. Build Docker images for all 3-party components used in the demo application.
    ```sh
    docker/build-basis.sh
    ```
@@ -145,7 +144,7 @@ The YAML and script files in [k8s/](k8s/) run the demo application with `Mycat` 
    k8s/deploy-k8s.sh
    ```
 
-**Entrypoints**
+Entrypoints:
 - Demo Application: [localhost:30090/shop](http://localhost:30090/shop)
 - `Nacos`: [localhost:30048/nacos](http://localhost:30048/nacos), user/password: `nacos/nacos`
 - `ZipKin`: [localhost:30041/zipkin](http://localhost:30041/zipkin/)
@@ -156,8 +155,8 @@ The YAML and script files in [k8s/](k8s/) run the demo application with `Mycat` 
   > ```
 - `MySQL`：`30006`, use `mysql` to connect, user/password: `root/123`
 
-**`Dubbo` in `Kubernetes`** <br />
-`Dubbo` services are deployed by `Kubernetes` `Deployment`, and not registered as `Kubernetes` `Service`. They use `Dubbo`'s own service descovery, load balance, providers take `POD IP` to register to `Nacos`, consumers fetch providers from `Nacos` and comunicate with all providers by `POD IP`. `Dubbo` services can be managed by `Deployment`, the following example scripts show how to scale `svc-user` to 3 `POD`s. New `POD` ready and existing `POD` terminated events can be discovered by `Dubbo`. 
+**Dubbo in Kubernetes** <br />
+`Dubbo` services are deployed by `Kubernetes` `Deployment`, and not registered as `Kubernetes` `Service`. They use Dubbo's own service descovery, load balance, providers take `POD IP` to register to `Nacos`, consumers fetch providers from `Nacos` and comunicate with all providers by `POD IP`. `Dubbo` services can be managed by `Deployment`, the following example scripts show how to scale `svc-user` to 3 PODs. New POD ready and existing POD terminated events can be discovered by `Dubbo`. 
 ```sh
 # Scale user-service to 3 PODs
 kubectl scale Deployment svc-user --replicas=3
@@ -173,7 +172,7 @@ kubectl logs svc-user-68ff844499-dgsnx -c svc-user -f
 
 ![](docs/images/kubernetes-overview.png)
 
-#### Run with `Istio`
+### Run with Istio
 The YAML and script files in [istio/](istio/) is a simple example for running `shop-web` with `Istio`, YAML files are the same with those in [k8s/](k8s/) except `web-shop-deployment.yaml`. It's tested in `Docker Desktop`, with `Istio` installed and `default` namespace enabled for `istio-injection` as following:
 ```sh
 istioctl manifest apply --set profile=demo
@@ -188,12 +187,12 @@ istio/deploy-istio.sh
 
 Bind `myshop.com` to local machine IP in `hosts` file, and use [http://myshop.com/hello/YourName](http://myshop.com/hello/YourName) to visit.
 
-`shop-web` is deployed with two versions: 2 `POD`s for `v1` and 1 `POD` for `v2`, default route to `v1`, use URL query param `version=v2` to route to `v2`. This is achieved by `VirtualService` and `DestinationRule` in [istio/deployment/web-shop-deployment.yaml](istio/deployment/web-shop-deployment.yaml).
+`shop-web` is deployed with two versions: 2 PODs for `v1` and 1 POD for `v2`, default route to `v1`, use URL query param `version=v2` to route to `v2`. This is achieved by `VirtualService` and `DestinationRule` in [istio/deployment/web-shop-deployment.yaml](istio/deployment/web-shop-deployment.yaml).
 
 `Dubbo` services using `dubbo/thrift/rmi` protocols cann't work with `Istio`, if use `http/rest/webservice` protocols, `Spring Boot` is a better choice rather than `Dubbo`.
 
 -------------------------------------------------------------------
-### Screenshots
+## Screenshots
 Logs for `order-service`, debug logs for `Seata` is printed:<br />
 ![](docs/images/order-service-out.png)
 
