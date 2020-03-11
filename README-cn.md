@@ -53,6 +53,7 @@
 
 -------------------------------------------------------------------
 ### 运行演示应用
+
 #### 环境要求
 - 操作系统
   - `Linux`
@@ -174,7 +175,7 @@
 ![](docs/images/kubernetes-overview.png)
 
 #### Istio运行演示应用
-1. 需要在`Kubernetes`集群中部署`Istio`，需要在`istio-system`命名空间部署`istio-ingressgateway`。
+1. 需要在`Kubernetes`集群中部署`Istio`，需要在`istio-system`命名空间部署`istio-ingressgateway`（`Docker Desktop`默认部署和启动`istio-ingressgateway`）。
 2. 在`default`命名空间开启自动注入：`kubectl label ns default istio-injection=enabled --overwrite`。
 3. 参考*Docker容器运行*，为基础组件`MySQL`、`Nacos`、`Mycat`、`ZipKin`构建`Docker`镜像。
 4. 执行`./istio/deploy-istio.sh`在`K8s`中部署演示应用。<br />
