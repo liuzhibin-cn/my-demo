@@ -90,3 +90,6 @@ zipkin:
    server: ${zipkin.base-url}/api/v2/spans
    connectTimeout: 5000
    readTimeout: 5000
+
+mydemo:
+  hostname: ${HOSTNAME:localhost}

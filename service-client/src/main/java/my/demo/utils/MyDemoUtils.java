@@ -1,5 +1,8 @@
 package my.demo.utils;
 
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+
 import org.apache.skywalking.apm.toolkit.trace.ActiveSpan;
 import org.springframework.util.ClassUtils;
 
@@ -30,5 +33,22 @@ public class MyDemoUtils {
 	 */
 	public static String getXID() {
 		return RootContext.getXID();
+	}
+
+	public static String getIpByHostName(String hostName) {
+		InetAddress addr = null;
+		if(hostName!=null && !hostName.isEmpty() && !"localhost".equals(hostName.trim().toLowerCase())) {
+			try {
+				addr = InetAddress.getByName(hostName);
+				return addr.getHostAddress();
+			} catch (UnknownHostException e) {
+			}
+		}
+		try {
+			addr = InetAddress.getLocalHost();
+			return addr.getHostAddress();
+		} catch (UnknownHostException e) {
+			return "";
+		}
 	}
 }

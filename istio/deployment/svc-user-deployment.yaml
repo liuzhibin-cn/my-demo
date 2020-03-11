@@ -3,7 +3,7 @@ kind: Deployment
 metadata:
   name: svc-user
 spec:
-  replicas: 1
+  replicas: 2
   selector:
     matchLabels:
       app: svc-user
