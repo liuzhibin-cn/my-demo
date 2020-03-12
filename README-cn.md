@@ -60,7 +60,8 @@
   - `Windows`: 必须安装一个`bash shell`，例如`git bash`；
   - `Mac`: `Mac`自带的`sed`与`GNU sed`不同，需要在`Mac`上安装`gnu-seed`: `brew install gnu-sed`
 - `JDK8+`, `Apache Maven`
-- 容器运行需要安装`Docker`
+- 容器运行需要安装`Docker`，本地`Docker Desktop`环境运行`Kubernetes`、`Istio`示例，为`Docker Desktop`设置6G以上内存。
+  > 在Mac上为`Docker Desktop`设置5GB内存运行`Istio`示例时，曾导致`Kubernetes`崩溃，内存改为6G后正常。
 
 ### 演示项目编译打包
 `./package.sh`为项目编译打包脚本，参数说明：

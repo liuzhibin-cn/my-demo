@@ -46,6 +46,6 @@ spec:
             # these connections are broken, causes "Connection refused" exception.
             # The initialDelaySeconds is set to an estimated value, but it variates in different environment.
             command: ["mysql", "-hlocalhost", "-uroot", "-p123", "-P3306", "--database", "skywalking", "-e", "SELECT 1"]
-          initialDelaySeconds: 45   # Wait initialDelaySeconds to check the first time
+          initialDelaySeconds: 15   # Wait initialDelaySeconds to check the first time
           periodSeconds: 5          # Wait periodSeconds to check next time
           timeoutSeconds: 2         # Timeout for check process

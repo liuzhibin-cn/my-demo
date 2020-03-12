@@ -23,7 +23,7 @@ A simple demo application for building scalable applications using **Microservic
 1. OS: Linux, Mac, or Windows with a bash shell, such as git bash;
    > In Mac OSX `gnu-sed` is required: `brew install gnu-sed`
 2. JDK 8+ and apache maven;
-3. `Docker`, 5GB memory for Docker is recommended;
+3. `Docker`, 6GB memory for `Docker Desktop` is recommended;
 
 ### Package demo application
 Use [package.sh](package.sh) to compile and package the demo application. 
