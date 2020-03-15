@@ -1,0 +1,219 @@
+{
+	"info": {
+		"_postman_id": "b98ba5bf-8843-4063-b411-dd3a2015e7ff",
+		"name": "mydemo",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "order",
+			"item": [
+				{
+					"name": "register-a-user",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"id": "09a480e6-8b07-48b7-9a79-a9a12a7b6f11",
+								"exec": [
+									"// Save mobile and password as global variables",
+									"var mobile = pm.request.url.query.get('mobile');",
+									"pm.globals.set('user-mobile', mobile);",
+									"pm.globals.set('user-password', pm.request.url.query.get('password'));",
+									"// Query MySQL if mobile is registered",
+									"const url = 'http://' + pm.environment.get('xmysql') + '/api/usr_user_account?_where=(account,eq,' + mobile + ')';",
+									"pm.sendRequest(url, function (err, response) {",
+									"    if(!err && response.code=='200') {",
+									"        var json = response.json();",
+									"        if(json && json.length>0 && json[0].user_id>0) {",
+									"            // mobile is registered, delete from MySQL",
+									"            const userId = json[0].user_id;",
+									"            pm.sendRequest({ url:'http://' + pm.environment.get('xmysql') + '/api/usr_user_account/' + mobile, method: 'DELETE' }, function(err1, rsp1) {",
+									"                if(err1) console.log('Delete user account ' + mobile + ' failed');",
+									"            });",
+									"            pm.sendRequest({ url:'http://' + pm.environment.get('xmysql') + '/api/usr_user/' + userId, method: 'DELETE' }, function(err2, rsp2) {",
+									"                if(err2) console.log('Delete user ' + userId + ' failed');",
+									"            });",
+									"        }",
+									"    }",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"id": "57dd4f97-248c-4074-9e18-d7070235b5f1",
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"var user = pm.response.json();",
+									"pm.test(\"User id \" + user.userId + \" is valid\", function () {",
+									"    pm.expect(user.userId).to.above(0);",
+									"});",
+									"pm.test(\"User mobile is \" + pm.globals.get('user-mobile'), function () {",
+									"    pm.expect(user.mobile).to.eql(pm.globals.get('user-mobile'));",
+									"});",
+									"pm.globals.set('user-id', user.userId);",
+									"postman.setNextRequest('user-login');"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "http://{{shopweb}}/shop/register?mobile=13966666666&password=111111",
+							"protocol": "http",
+							"host": [
+								"{{shopweb}}"
+							],
+							"path": [
+								"shop",
+								"register"
+							],
+							"query": [
+								{
+									"key": "mobile",
+									"value": "13966666666"
+								},
+								{
+									"key": "password",
+									"value": "111111"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "user-login",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "5534b25a-1259-4ac3-95f9-fff51a3499df",
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"var user = pm.response.json();",
+									"pm.test(\"User id is \" + pm.globals.get('user-id'), function () {",
+									"    pm.expect(user.userId).to.eql(pm.globals.get('user-id'));",
+									"});",
+									"pm.test(\"User mobile is \" + pm.globals.get('user-mobile'), function () {",
+									"    pm.expect(user.mobile).to.eql(pm.globals.get('user-mobile'));",
+									"});",
+									"postman.setNextRequest('create-an-order');"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "http://{{shopweb}}/shop/login?mobile={{user-mobile}}&password={{user-password}}",
+							"protocol": "http",
+							"host": [
+								"{{shopweb}}"
+							],
+							"path": [
+								"shop",
+								"login"
+							],
+							"query": [
+								{
+									"key": "mobile",
+									"value": "{{user-mobile}}"
+								},
+								{
+									"key": "password",
+									"value": "{{user-password}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "create-an-order",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "d972d82b-1f9b-4690-8e6f-8729edac7c9a",
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"const order = pm.response.json();",
+									"pm.test(\"Order id \" + order.orderId + \" is valid\", function () {",
+									"    pm.expect(order.orderId).to.above(0);",
+									"});",
+									"pm.test(\"Order user id is \" + pm.globals.get('user-id'), function () {",
+									"    pm.expect(order.userId).to.eql(pm.globals.get('user-id'));",
+									"});",
+									"pm.test(\"Order status is New\", function () {",
+									"    pm.expect(order.status).to.eql('New');",
+									"});",
+									"pm.test(\"Order total \" + order.total + \" is valid\", function () {",
+									"    pm.expect(order.total).to.above(0);",
+									"});",
+									"pm.test(\"Order pay status is New\", function () {",
+									"    pm.expect(order.payStatus).to.eql('New');",
+									"});",
+									"pm.test(\"Order payment is 0\", function () {",
+									"    pm.expect(order.payment).to.eql(0);",
+									"});",
+									"pm.test(\"Order phone is \" + pm.globals.get('user-mobile'), function () {",
+									"    pm.expect(order.phone).to.eql(pm.globals.get('user-mobile'));",
+									"});",
+									"pm.test(\"Order items is valid\", function () {",
+									"    pm.expect(order.items).to.not.be.NaN;",
+									"    pm.expect(order.items.length).to.above(0);",
+									"});",
+									"// Clear globals",
+									"pm.globals.unset('user-id');",
+									"pm.globals.unset('user-mobile');",
+									"pm.globals.unset('user-password');"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Cookie",
+								"value": "user-id={{user-id}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "http://{{shopweb}}/shop/order/create",
+							"protocol": "http",
+							"host": [
+								"{{shopweb}}"
+							],
+							"path": [
+								"shop",
+								"order",
+								"create"
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"protocolProfileBehavior": {}
+		}
+	],
+	"protocolProfileBehavior": {}
+}
