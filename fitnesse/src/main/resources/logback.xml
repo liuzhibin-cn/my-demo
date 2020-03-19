@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<configuration>
+	<!-- <include resource="org/springframework/boot/logging/logback/defaults.xml" /> -->
+    <statusListener class="ch.qos.logback.core.status.NopStatusListener" />
+    
+    <!-- copied from org/springframework/boot/logging/logback/ defaults.xml and console-appender.xml in spring-boot-xxx.jar -->
+	<conversionRule conversionWord="clr" converterClass="org.springframework.boot.logging.logback.ColorConverter" />
+	<conversionRule conversionWord="wex" converterClass="org.springframework.boot.logging.logback.WhitespaceThrowableProxyConverter" />
+	<conversionRule conversionWord="wEx" converterClass="org.springframework.boot.logging.logback.ExtendedWhitespaceThrowableProxyConverter" />
+	
+    <!-- spring default console pattern: -->
+	<appender name="SYS" class="ch.qos.logback.core.ConsoleAppender">
+		<encoder>
+		    <charset>UTF-8</charset>
+		    <pattern>${CONSOLE_LOG_PATTERN:-%clr([%d{${LOG_DATEFORMAT_PATTERN:-yyMMdd HH:mm:ss.SSS}}]){faint} %clr(${LOG_LEVEL_PATTERN:-%5p}) %clr(${PID:- }){magenta} %clr(%-35.35logger{35}){cyan} %clr(:){faint} %m%n${LOG_EXCEPTION_CONVERSION_WORD:-%wEx}}</pattern>
+		</encoder>
+	</appender>
+    <appender name="APP" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder class="ch.qos.logback.core.encoder.LayoutWrappingEncoder">
+            <charset>UTF-8</charset>
+            <layout class="${log.layout}">
+                <pattern>${CONSOLE_LOG_PATTERN:-%clr([%d{${LOG_DATEFORMAT_PATTERN:-yyMMdd HH:mm:ss.SSS}}]){faint} %clr(${LOG_LEVEL_PATTERN:-%5p}) %clr(${PID:- }){magenta} ${log.traceInfo}%clr(:){faint} %m%n${LOG_EXCEPTION_CONVERSION_WORD:-%wEx}}</pattern>
+            </layout>
+        </encoder>
+    </appender>
+	
+	<logger name="com.alibaba.dubbo.registry.redis.RedisRegistry" level="ERROR" />
+    <logger name="org.mybatis.spring" level="WARN"/> <!-- Disable mybatis SQL logs -->
+    <logger name="my.demo.dao" level="WARN"/>
+    <logger name="io.seata" level="INFO" additivity="false">
+       <appender-ref ref="APP" />
+    </logger>
+	<logger name="my.demo" level="DEBUG" additivity="false">
+	   <appender-ref ref="APP" />
+	</logger>
+    
+    <root level="INFO">
+		<appender-ref ref="SYS" />
+	</root>
+</configuration>

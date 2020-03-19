@@ -1,0 +1,28 @@
+server.port: ${SERVICE_PORT:8090}
+
+spring:
+   application:
+      name: ${application.name}
+   main:
+      allow-bean-definition-overriding: true
+   output:
+      ansi:
+         enabled: always
+
+dubbo:
+    scan:
+        basePackages: my.demo.test
+    application: # see com.alibaba.dubbo.config.ApplicationConfig
+        id: ${application.name}
+        name: ${application.name}
+        qosEnable: false
+    registry: # see com.alibaba.dubbo.config.RegistryConfig
+        address: nacos://${nacos.address}
+
+mydemo:
+   mysql:
+      host: ${mysql.host}
+      port: ${mysql.port}
+      user: ${mysql.user}
+      password: ${mysql.password}
+   userDb: ${db.user}
