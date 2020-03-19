@@ -8,9 +8,9 @@ import fit.ColumnFixture;
 import my.demo.test.DbUtils;
 import my.demo.test.Manager;
 
-public class DeleteUserFromMysqlBeforeTestBegin extends ColumnFixture {
+public class DeleteUserFromDb extends ColumnFixture {
 	private String mobile;
-	public int delete() { // Returns the rows affected.
+	public String delete() {
 		DbUtils utils = Manager.getDbUtils();
 		Connection connection = null;
 		try {
@@ -22,17 +22,17 @@ public class DeleteUserFromMysqlBeforeTestBegin extends ColumnFixture {
 				userId = rs.getInt("user_id");
 			}
 			try { rs.close(); } catch (Exception e) {	}
-			if(userId<=0) return 0;
-			int rows = utils.executeUpdate(connection, "delete from usr_user_account where account='" + mobile + "'");
+			if(userId<=0) return "OK";
+			utils.executeUpdate(connection, "delete from usr_user_account where account='" + mobile + "'");
 			utils.executeUpdate(connection, "delete from usr_user where user_id=" + userId);
 			connection.close();
-			return rows;
+			return "OK";
 		} catch (ClassNotFoundException | SQLException e) {
 			if(connection!=null) {
 				try { connection.close(); } catch (SQLException e1) {	}
 			}
 			System.out.println("Delete user from MySQL: " + e.getMessage());
-			return 0;
+			return "SysError: " + e.getMessage();
 		}
 	}
 	public void setMobile(String mobile) {

@@ -1,12 +1,11 @@
 package my.demo.test.fixture;
 
-import fit.ColumnFixture;
 import my.demo.entity.User;
 import my.demo.service.ServiceResult;
 import my.demo.service.UserService;
 import my.demo.test.Manager;
 
-public class UserRegisterAndLoginSummaryTest extends ColumnFixture {
+public class UserRegisterAndLoginSummaryTest {
 	private String mobile;
 	private String password;
 	public void setMobile(String mobile) {
