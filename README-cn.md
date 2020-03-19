@@ -2,12 +2,12 @@
 
 -------------------------------------------------------------------
 ## 演示项目架构
-![](docs/images/architecture.png) <br />
+![](docs/images/architecture.png) 
 
 本项目基础演示部分包括基于`SpringBoot`的`Dubbo`微服务和Web演示应用，另外还包含以下几个方面：
 
 ### 1、Docker容器化
-除`PinPoint`外，整个演示项目以及所有中间件都支持`Docker`容器运行，项目中包含`Dockerfile`、构建`Docker`镜像和运行`Docker`容器的相关脚本。<br />
+除`PinPoint`外，整个演示项目以及所有中间件都支持`Docker`容器运行，项目中包含`Dockerfile`、构建`Docker`镜像和运行`Docker`容器的相关脚本。\
 使用`Docker`容器运行演示应用，架构中用到的组件和演示项目都无需任何部署、配置，使用管理脚本就可以简单快速运行整个演示应用。
 
 ### 2、Kubernetes
@@ -17,7 +17,7 @@
 
 本项目为`Mycat` + `ZipKin`运行演示应用提供了`K8s`配置文件，可以快速部署到`k8s`运行。
 
-**关于K8s中部署Dubbo服务** <br />
+**关于K8s中部署Dubbo服务** \
 - `Dubbo`服务的注册、发现、负载均衡、故障转移都采用Dubbo自己的机制，不使用`K8s Service`。`Provider`注册时通过`Downward API`得到`POD IP`，用`POD IP`向注册中心注册，这样`Consumer`从注册中心拿到的都是`Provider`的`POD IP`，可以直接通讯。
 - `Dubbo`服务使用`Deployment`部署到`K8s`，无需建立`Service`，`K8s`中基于`Deployment`、`ReplicaSet`的管理功能都能运用在`Dubbo`服务上，包括手动扩缩容以及利用HPA自动扩缩容等。`POD`下线、新`POD`上线由Dubbo本身的服务注册发现机制处理。
 
@@ -45,7 +45,7 @@
   - 对单次RPC调用分析，`ZipKin`定义的Annotations更精细，参考[ZipKin部署和使用](https://github.com/liuzhibin-cn/my-demo/blob/master/docs/APM-ZipKin.md)；
   - `PinPoint`和`SkyWalking`都提供将额外方法添加到调用链跟踪的功能，其中`PinPoint`对代码完全没有侵入性，`SkyWalking`则需要对方法添加注解；
   - `SkyWalking`支持在`Span`中添加自定义tag功能，利用该功能可以将方法参数值等额外信息记录到`Span`中，有利于问题分析；
-- UI功能：`PinPoint`和`SkyWalking` UI功能比较丰富，都提供应用/服务、实例等层级的性能统计，两者各有特色；`ZipKin` UI功能最弱，只提供依赖关系、具体调用链查看分析；<br />
+- UI功能：`PinPoint`和`SkyWalking` UI功能比较丰富，都提供应用/服务、实例等层级的性能统计，两者各有特色；`ZipKin` UI功能最弱，只提供依赖关系、具体调用链查看分析；\
   额外的UI功能，可以读取APM工具的数据，自定义开发；
 - 社区支持：`ZipKin`架构灵活、文档完善，社区支持度最高，`Spring Cloud`和`Service Mesh`（[istio](https://github.com/istio/)）官方提供`ZipKin`支持；`SkyWalking`是华为员工开发，已成为Apache项目；`PinPoint`为韩国公司开源；
 
@@ -102,11 +102,11 @@
 - `ShardingProxy`：端口`localhost:3307`，可以用`MySQL`客户端登录访问
 
 ### Docker容器运行演示应用
-使用`Docker`容器运行演示项目非常简单，基础组件无需自行部署、配置，直接运行容器即可。<br />
+使用`Docker`容器运行演示项目非常简单，基础组件无需自行部署、配置，直接运行容器即可。\
 由于`PinPoint`只能采用`HBase`存储，本项目未制作`Dockerfile`，除`PinPoint`外其它组件全部支持容器运行。
-1. 基础组件构建`Docker`镜像：`docker/build-basis.sh`<br />
+1. 基础组件构建`Docker`镜像：`docker/build-basis.sh`\
    相关脚本和`Dockerfile`在`docker`目录中，每个基础组件一个子目录，其中`build.sh`构建`Docker`镜像，`run.sh`启动运行`Docker`容器，都不需要任何参数。
-2. 基础组件运行`Docker`容器：`docker/deploy-basis.sh`<br />
+2. 基础组件运行`Docker`容器：`docker/deploy-basis.sh`\
    最好根据需要修改`deploy-basis.sh`，仅运行本次需要用到的组件。若手工启动，注意按依赖关系依次启动：`mysql -> mycat/shardingproxy/nacos/zipkin/skywalking -> seata`。
    > 如果启用的组件比较多，例如同时启用`Mycat + Seata + SkyWalking + Nacos`，至少给`Docker`分配5G以上内存，否则内存紧张可能导致容器和应用卡死。因为不少组件内存占用比较大，例如`Seata`，JVM启动参数`-XX:MaxDirectMemorySize`小于1G时一直报OOM异常。
 3. 为演示应用构建Docker镜像、运行`Docker`容器。
@@ -137,17 +137,17 @@
 - `ShardingProxy`：端口`localhost:13307`，可以用`MySQL`客户端登录访问
 - `MySQL`：`13306`，可以用`MySQL`客户端登录访问
 
-`Docker`容器：<br />
+`Docker`容器：\
 ![](docs/images/docker-containers.png)
 
-容器资源使用情况：<br />
+容器资源使用情况：\
 ![](docs/images/docker-stats.png)
 
 ### Kubernetes运行演示应用
 1. 部署和启动`Kubernetes`环境。国内环境在`Docker Desktop for Windows/Mac`中启用`Kubernetes`，参考[AliyunContainerService/k8s-for-docker-desktop](https://github.com/AliyunContainerService/k8s-for-docker-desktop)。
 2. 参考*Docker容器运行*，为基础组件`MySQL`、`Nacos`、`Mycat`、`ZipKin`构建`Docker`镜像。
    无需为演示应用构建`Docker`镜像，在下面脚本中会自动重新打包应用，构建`Docker`镜像。
-3. 执行`./k8s/deploy-k8s.sh`在`K8s`中部署演示应用。<br />
+3. 执行`./k8s/deploy-k8s.sh`在`K8s`中部署演示应用。\
    如果部署过程有错误，执行`./k8s/undeploy-k8s.sh`可以将`k8s`中已经部署好的部分全部删除。
 
 访问入口：
@@ -179,32 +179,41 @@
 1. 需要在`Kubernetes`集群中部署`Istio`，需要在`istio-system`命名空间部署`istio-ingressgateway`（`Docker Desktop`默认部署和启动`istio-ingressgateway`）。
 2. 在`default`命名空间开启自动注入：`kubectl label ns default istio-injection=enabled --overwrite`。
 3. 参考*Docker容器运行*，为基础组件`MySQL`、`Nacos`、`Mycat`、`ZipKin`构建`Docker`镜像。
-4. 执行`./istio/deploy-istio.sh`在`K8s`中部署演示应用。<br />
+4. 执行`./istio/deploy-istio.sh`在`K8s`中部署演示应用。\
    如果部署过程有错误，执行`./istio/undeploy-istio.sh`可以将`k8s`中已经部署好的部分全部删除。
 5. 在本地`hosts`文件中绑定`myshop.com`（`Docker Desktop`绑定到本机IP即可）。
 
 通过[http://myshop.com/hello/YourName](http://myshop.com/hello/YourName)访问。
 
-`Dubbo`服务未使用`Istio`进行流量管理，与`Kubernetes`中部署方案相同（采用`Dubbo`自己的服务注册发现机制）。<br />
+`Dubbo`服务未使用`Istio`进行流量管理，与`Kubernetes`中部署方案相同（采用`Dubbo`自己的服务注册发现机制）。\
 `web-shop`部署了`v1`、`v2`两个版本，`v1` 2个`POD`，`v2` 1个`POD`，在URL中添加`?version=v2`来访问`v2`版本。可以分别对`v1`、`v2`版本进行扩缩容，查看访问效果。
 
 -------------------------------------------------------------------
 ## 运行效果
-`shop-web`日志输出：<br />
+`shop-web`日志输出：\
 ![](docs/images/shopweb-out.png)
 
-`order-service`日志输出，打印了Seata分布式事务日志：<br />
+`order-service`日志输出，打印了Seata分布式事务日志：\
 ![](docs/images/order-service-out.png)
 
-使用数据库水平拆分后的数据分布情况:<br />
-![](docs/images/db-sharding-1.png)<br />
+使用数据库水平拆分后的数据分布情况:\
+![](docs/images/db-sharding-1.png)\
 ![](docs/images/db-sharding-2.png)
 
-`Mycat`的执行计划:<br />
+`Mycat`的执行计划:\
 ![](docs/images/mycat-explain.png)
 
-`ZipKin`：<br />
+`ZipKin`：\
 ![](https://richie-leo.github.io/ydres/img/10/120/1013/screen-trace-detail-sql.png)
 
-`PinPoint`：<br />
+`PinPoint`：\
 ![](https://richie-leo.github.io/ydres/img/10/120/1012/pinpoint-screen-trace-mixed-view.png)
+
+`FitNesse`：\
+![](https://richie-leo.github.io/ydres/img/10/191/1001/fitness-ui.png)
+
+`Postman`: \
+![](https://richie-leo.github.io/ydres/img/10/191/1000/postman.jpg)
+
+`Newman`: \
+![](https://richie-leo.github.io/ydres/img/10/191/1000/newman-output.jpg)

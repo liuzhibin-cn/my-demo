@@ -6,13 +6,13 @@ A simple demo application for building scalable applications using **Microservic
 ## Demo Application Architecture
 ![](docs/images/architecture.png)
 
-- [Dubbo](http://dubbo.apache.org/en-us/): A high-performance, java based open source RPC framework. <br />
-  `Dubbo` employs a client based, decentralized load balance mechanism. Consumers fetch providers from registry servers to client at startup, create long living TCP connections and comunicate directly to providers (for `dubbo/thrift` protocols), with variant configurable load balance and fail over algorithms. Availability of providers is detected by heartbeat, and new provider registration events are notified by registry servers to all consumers. <br />
+- [Dubbo](http://dubbo.apache.org/en-us/): A high-performance, java based open source RPC framework. \
+  `Dubbo` employs a client based, decentralized load balance mechanism. Consumers fetch providers from registry servers to client at startup, create long living TCP connections and comunicate directly to providers (for `dubbo/thrift` protocols), with variant configurable load balance and fail over algorithms. Availability of providers is detected by heartbeat, and new provider registration events are notified by registry servers to all consumers. \
   `Dubbo` provides better performance than `Spring Cloud`, it can be deployed and scaled in `Kubernetes`, using its own service discovery, load balance and fail over mechanisms, but it's difficult to work with `Istio`.
 - [Nacos](https://github.com/alibaba/nacos): A naming and config service, providing more enhancements on service discovery and flow control than [Zookeeper](http://zookeeper.apache.org/).
-- [ShardingProxy](http://shardingsphere.apache.org/), [Mycat](https://github.com/MyCATApache/Mycat-Server): Both are database sharding proxies, providing a transparent database sharding solution. <br />
+- [ShardingProxy](http://shardingsphere.apache.org/), [Mycat](https://github.com/MyCATApache/Mycat-Server): Both are database sharding proxies, providing a transparent database sharding solution. \
   The internals are very similar, both implement `MySQL` protocol to comunicate with cross platform applications, intercept SQL queries and route to backend `MySQL` servers based on sharding keys and configurable sharding rules. Although it's not recommemded but both of them support cross-sharding queries (without sharding keys in SQL), rewrite SQL if necessary, dispatch queries to all backend `MySQL` servers, gather results and do aggregation, sorting, pagination in proxy memory, and return result to client.
-- [Seata](https://github.com/seata/seata): A flexible transaction framework for distributed applications. <br />
+- [Seata](https://github.com/seata/seata): A flexible transaction framework for distributed applications. \
   `Seata` implements three transaction modes: [AT](https://seata.io/en-us/docs/dev/mode/at-mode.html), [TCC](https://seata.io/en-us/docs/dev/mode/tcc-mode.html) and [SAGA](https://seata.io/en-us/docs/dev/mode/saga-mode.html). The demo application uses `AT` mode, it's transparent for application code.
 - [ZipKin](https://zipkin.io/), [PinPoint](https://github.com/naver/pinpoint), [SkyWalking](https://skywalking.apache.org/): APM tools for microservices, `ZipKin` and `SkyWalking` can work with `Istio`.
 
@@ -44,7 +44,7 @@ package.sh -shardingproxy -pinpoint -seata
 2. Install and start 3-party components as you wanted, go to project home for help, and [Dockerfiles and scripts](docker/) in demo application are also references for you.
 3. Edit parent [pom.xml](https://github.com/liuzhibin-cn/my-demo/blob/master/pom.xml) and config for your local environment.
 4. Use `package.sh` to compile and package demo application.
-5. Start demo application as following steps: <br />
+5. Start demo application as following steps: \
    - Neither `SkyWalking` nor `PinPoint` is enabled:
      ```sh
      java -jar item-service\target\item-service-0.0.1-SNAPSHOT.jar
@@ -95,7 +95,7 @@ and only run those containers you wanted, to avoid Docker hungs because of memor
    docker/deploy-basis.sh
    ```
    All containers run in a `Docker Network` `mydemo` created in `docker/deploy-basis.sh`, `docker-compose` is not used.
-3. Use [docker/deploy-mydemo.sh](docker/deploy-mydemo.sh) to build images and run containers for demo application. <br />
+3. Use [docker/deploy-mydemo.sh](docker/deploy-mydemo.sh) to build images and run containers for demo application. \
    Usage:
    - `-build`: Build images for `item`, `stock`, `user`, `order` services and `shop-web` app.
    - `-run`: Run containers for `item`, `stock`, `user`, `order` services and `shop-web` app.
@@ -155,7 +155,7 @@ Entrypoints:
   > ```
 - `MySQL`：`30006`, use `mysql` to connect, user/password: `root/123`
 
-**Dubbo in Kubernetes** <br />
+**Dubbo in Kubernetes** \
 `Dubbo` services are deployed by `Kubernetes` `Deployment`, and not registered as `Kubernetes` `Service`. They use Dubbo's own service descovery, load balance, providers take `POD IP` to register to `Nacos`, consumers fetch providers from `Nacos` and comunicate with all providers by `POD IP`. `Dubbo` services can be managed by `Deployment`, the following example scripts show how to scale `svc-user` to 3 PODs. New POD ready and existing POD terminated events can be discovered by `Dubbo`. 
 ```sh
 # Scale user-service to 3 PODs
@@ -193,18 +193,27 @@ Bind `myshop.com` to local machine IP in `hosts` file, and use [http://myshop.co
 
 -------------------------------------------------------------------
 ## Screenshots
-Logs for `order-service`, debug logs for `Seata` is printed:<br />
+Logs for `order-service`, debug logs for `Seata` is printed: \
 ![](docs/images/order-service-out.png)
 
-Data distribution in shards:<br />
-![](docs/images/db-sharding-1.png)<br />
+Data distribution in shards: \
+![](docs/images/db-sharding-1.png) \
 ![](docs/images/db-sharding-2.png)
 
-`Mycat` explain:<br />
+`Mycat` explain: \
 ![](docs/images/mycat-explain.png)
 
-`ZipKin`:<br />
+`ZipKin`: \
 ![](https://richie-leo.github.io/ydres/img/10/120/1013/screen-trace-detail-sql.png)
 
-`PinPoint`:<br />
+`PinPoint`: \
 ![](https://richie-leo.github.io/ydres/img/10/120/1012/pinpoint-screen-trace-mixed-view.png)
+
+`FitNesse`：\
+![](https://richie-leo.github.io/ydres/img/10/191/1001/fitness-ui.png)
+
+`Postman`: \
+![](https://richie-leo.github.io/ydres/img/10/191/1000/postman.jpg)
+
+`Newman`: \
+![](https://richie-leo.github.io/ydres/img/10/191/1000/newman-output.jpg)
