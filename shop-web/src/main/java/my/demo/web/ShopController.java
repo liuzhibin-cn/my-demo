@@ -111,14 +111,22 @@ public class ShopController {
 		result.stop();
 		return result;
 	}
+	private String randomPassword() {
+		char[] chars = { 'a', 'b', 'x', 'y', 'T', 'U' };
+		char[] digits = { '1', '2', '3', '7', '8', '9' };
+		char[] specialChars = {'@', '!', '#', '$', '%', '&'};
+		int ix1 = random.nextInt(chars.length);
+		int ix2 = random.nextInt(chars.length);
+		return "" + chars[ix1] + digits[ix1] + specialChars[ix1] + chars[ix2] + digits[ix2] + specialChars[ix2];
+	}
 	private boolean runFullTestCase() {
 		if(MyDemoUtils.isSeataPresent()) {
 			log.debug("Start a test case, XID: {}", MyDemoUtils.getXID());
 		}
 		//Register a user
-		String prefix = MOBILE_PREFIXS[Math.abs(random.nextInt()) % MOBILE_PREFIXS.length];
-		String mobile = prefix + String.format("%08d", Math.round(Math.random()*100000000));
-		String password = Math.round(Math.random() * 10000000) + "";
+		String prefix = MOBILE_PREFIXS[random.nextInt(MOBILE_PREFIXS.length)];
+		String mobile = prefix + String.format("%08d", random.nextInt(99999999));
+		String password = this.randomPassword();
 		ServiceResult<User> result = userService.registerByMobile(mobile, password);
 		if(!result.isSuccess()) {
 			log.info("[register] failed, account:{}, msg:{}", mobile, result.getMessage());
@@ -174,11 +182,11 @@ public class ShopController {
 		return cart;
 	}
 	private List<Item> pickupItems(List<Item> items) {
-		int count = (Math.abs(random.nextInt()) % 2) + 1;
+		int count = random.nextInt(2) + 1;
 		List<Item> result = new ArrayList<>(count);
 		Set<Integer> pickedList = new HashSet<>(count); 
 		while(count-->0) {
-			int index = Math.abs(random.nextInt()) % items.size(); 
+			int index = random.nextInt(items.size()); 
 			if(pickedList.contains(index)) continue; 
 			result.add(items.get(index));
 			pickedList.add(index);

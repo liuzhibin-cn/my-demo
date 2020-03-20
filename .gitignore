@@ -3,5 +3,4 @@
 **/.project
 **/.classpath
 **/.DS_Store
-**/maven-eclipse.xml
-**/.externalToolBuilders/
+**/test-output

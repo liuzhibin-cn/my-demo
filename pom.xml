@@ -47,6 +47,9 @@
         <seata-enabled>false</seata-enabled>
         <nacos.address>${NACOS_HOST:localhost}:8848</nacos.address>
         <zipkin.base-url>http://${ZIPKIN_HOST:localhost}:9411</zipkin.base-url>
+		
+		<sonar.host.url>http://localhost:9000</sonar.host.url>
+		<sonar.login>afdcc0a66a052fab5452c0d4522183c380ed6943</sonar.login>
     </properties>
 
     <profiles>
@@ -127,6 +130,11 @@
                     <excludeGroupIds>${excludeGroupIds}</excludeGroupIds>
                 </configuration>
             </plugin>
+			<plugin>
+				<groupId>org.sonarsource.scanner.maven</groupId>
+				<artifactId>sonar-maven-plugin</artifactId>
+				<version>3.7.0.1746</version>
+			</plugin>
         </plugins>
     </build>
 
@@ -183,6 +191,13 @@
             <groupId>io.zipkin.reporter2</groupId>
             <artifactId>zipkin-sender-okhttp3</artifactId>
          </dependency>
+         
+		<dependency>
+			<groupId>org.testng</groupId>
+			<artifactId>testng</artifactId>
+			<version>7.1.0</version>
+			<scope>test</scope>
+		</dependency>
     </dependencies>
 
     <dependencyManagement>

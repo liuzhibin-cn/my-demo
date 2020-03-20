@@ -331,7 +331,7 @@
 						"method": "POST",
 						"header": [],
 						"url": {
-							"raw": "http://{{shopweb}}/shop/register?mobile=13966668888&password=111111",
+							"raw": "http://{{shopweb}}/shop/register?mobile=13966668888&password=qwe123",
 							"protocol": "http",
 							"host": [
 								"{{shopweb}}"
@@ -347,7 +347,7 @@
 								},
 								{
 									"key": "password",
-									"value": "111111"
+									"value": "qwe123"
 								}
 							]
 						}

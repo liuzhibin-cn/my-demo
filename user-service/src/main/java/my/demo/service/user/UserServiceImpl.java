@@ -22,6 +22,10 @@ import my.demo.utils.MyDemoUtils;
 @Service
 public class UserServiceImpl implements UserService {
 	static Logger log = LoggerFactory.getLogger(UserServiceImpl.class);
+	public static final String INVALID_ACCOUNT = "Invalid account";
+	public static final String EMPTY_ACCOUNT = "Empty account";
+	public static final String INVALID_PASSWORD = "Invalid password";
+	public static final String EMPTY_PASSWORD = "Empty password";
 	
 	static Date baseLine = null;
 	
@@ -37,6 +41,26 @@ public class UserServiceImpl implements UserService {
 		}
 	}
 	
+	public void checkAccountAndPassword(ServiceResult<User> result, String mobile, String password) {
+		result.setSuccess(true);
+		mobile = mobile==null ? "" : mobile.trim();
+		password = password==null ? "" : password.trim();
+		if(mobile==null || mobile.trim().isEmpty()) {
+			result.fail(EMPTY_ACCOUNT);
+			return;
+		}
+		if(password==null || password.trim().isEmpty()) {
+			result.fail(EMPTY_PASSWORD);
+			return;
+		}
+		if(!mobile.matches("1[0-9]{10,10}")) {
+			result.fail(INVALID_ACCOUNT);
+			return;
+		}
+		if(password.length()<6 || !password.matches(".*[0-9]+.*") || !password.matches(".*[a-zA-Z]+.*")) {
+			result.fail(INVALID_PASSWORD);
+		}
+	}
 	@Override
 	@Transactional
 	public ServiceResult<User> registerByMobile(String mobile, String password) {
@@ -46,12 +70,8 @@ public class UserServiceImpl implements UserService {
 		MyDemoUtils.tag("account", mobile);
 		ServiceResult<User> result = new ServiceResult<>();
 		//简单校验
-		if(mobile==null || mobile.isEmpty() || mobile.trim().length()!=11) {
-			return result.fail("Invalid mobile: " + mobile);
-		}
-		if(password==null || password.trim().length()<6) {
-			return result.fail("Invalid password: " + password);
-		}
+		this.checkAccountAndPassword(result, mobile, password);
+		if(!result.isSuccess()) return result;
 		register(result, mobile, password);
 		return result;
 	}
@@ -59,7 +79,7 @@ public class UserServiceImpl implements UserService {
 		//1. 账号是否已经注册过
 		if(this.isRegistered(mobile)) {
 			log.info("[register] Already registered, mobile: {}", mobile);
-			result.fail("Account " + mobile + " already registered");
+			result.fail("Account already registered");
 			return;
 		}
 		//2. 创建用户资料，主键和分片字段均为 user_id
@@ -99,18 +119,14 @@ public class UserServiceImpl implements UserService {
 	public ServiceResult<User> login(String account, String password) {
 		MyDemoUtils.tag("account", account);
 		ServiceResult<User> result = new ServiceResult<>();
-		if(account==null || account.trim().isEmpty()) {
-			return result.fail("Empty account");
-		}
-		if(password==null || password.trim().isEmpty()) {
-			return result.fail("Empty password");
-		}
+		this.checkAccountAndPassword(result, account, password);
+		if(!result.isSuccess()) return result;
 		try {
 			//1. 通过account获取用户登录账号，分片键 account_hash
 			UserAccount userAccount = this.getUserAccount(account);
 			if(userAccount==null) {
 				log.debug("[login] Account not found, account: {}", account);
-				return result.fail("Account " + account + " not found");
+				return result.fail("Account not found");
 			}
 			//   校验密码
 			if(!DigestUtils.md5DigestAsHex(password.getBytes()).equals(userAccount.getPassword())) {
@@ -121,7 +137,7 @@ public class UserServiceImpl implements UserService {
 			User user = dao.getUser(userAccount.getUserId());
 			if(user==null) {
 				log.warn("[login] User not found, account: {}", account);
-				return result.fail("Account error");
+				return result.fail("Account error: User not found");
 			}
 			log.info("[login] Success, user-id: {}, account: {}", user.getUserId(), account);
 			MyDemoUtils.tag("userId", user.getUserId());
