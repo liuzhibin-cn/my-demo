@@ -2,9 +2,9 @@ package my.demo.service;
 
 import java.io.Serializable;
 
-public class ServiceResult<T> implements Serializable {
+public class ServiceResult<T extends Serializable> implements Serializable {
 	private static final long serialVersionUID = -8163829609385722989L;
-	private T result;
+	private T result = null;
 	private boolean success = true;
 	private String message = "";
 	

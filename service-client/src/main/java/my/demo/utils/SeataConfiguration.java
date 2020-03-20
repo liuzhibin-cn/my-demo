@@ -48,7 +48,7 @@ public class SeataConfiguration implements TransactionManagementConfigurer {
     }
     @Bean
     public SqlSessionFactory sqlSessionFactory(DataSourceProxy dataSourceProxy) throws Exception {
-    	log.info("[seata-configuration] Mybatis sqlSessionFactory created, mapperLocations: " + mapperLocations);
+    	log.info("[seata-configuration] Mybatis sqlSessionFactory created, mapperLocations: {}", mapperLocations);
         SqlSessionFactoryBean factoryBean = new SqlSessionFactoryBean();
         factoryBean.setDataSource(dataSourceProxy);
         factoryBean.setMapperLocations(new PathMatchingResourcePatternResolver().getResources(mapperLocations));

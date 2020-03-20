@@ -210,7 +210,7 @@ Data distribution in shards: \
 ![](https://richie-leo.github.io/ydres/img/10/120/1012/pinpoint-screen-trace-mixed-view.png)
 
 `FitNesse`：\
-![](https://richie-leo.github.io/ydres/img/10/191/1001/fitnesse-test.jpg)
+![](https://richie-leo.github.io/ydres/img/10/191/1001/fitnesse-test.png)
 
 `Postman`: \
 ![](https://richie-leo.github.io/ydres/img/10/191/1000/postman.jpg)

@@ -2,7 +2,6 @@ package my.demo.utils;
 
 import java.util.concurrent.TimeUnit;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
@@ -24,23 +23,19 @@ import zipkin2.reporter.okhttp3.OkHttpSender;
 @EnableConfigurationProperties({ZipkinProperties.class})
 @ConditionalOnClass(TracingFilter.class)
 public class ZipkinConfiguration {
-	@Autowired
-	ZipkinProperties properties;
-	
 	@Bean
-	public Tracing tracing() {
+	public Tracing tracing(ZipkinProperties properties) {
 		Sender sender = OkHttpSender.create(properties.getServer());
 		AsyncReporter<Span> reporter = AsyncReporter.builder(sender)
 			.closeTimeout(properties.getConnectTimeout(), TimeUnit.MILLISECONDS)
 			.messageTimeout(properties.getReadTimeout(), TimeUnit.MILLISECONDS)
 			.build();
-		Tracing tracing = Tracing.newBuilder()
+		return Tracing.newBuilder()
 			.localServiceName(properties.getServiceName())
 			.propagationFactory(ExtraFieldPropagation.newFactory(B3Propagation.FACTORY, "brave-trace"))
 			.sampler(Sampler.ALWAYS_SAMPLE)
 			.spanReporter(reporter)
 			.currentTraceContext(ThreadLocalCurrentTraceContext.newBuilder().addScopeDecorator(MDCScopeDecorator.create()).build())
 			.build();
-		return tracing;
 	}
 }

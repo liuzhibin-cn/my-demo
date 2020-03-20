@@ -3,6 +3,7 @@ package my.demo.web;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Random;
 import java.util.Set;
 
 import javax.servlet.http.Cookie;
@@ -38,9 +39,10 @@ import my.demo.utils.MyDemoUtils;
 public class ShopController {
 	Logger log = LoggerFactory.getLogger(getClass());
 	
-	private static String[] MOBILE_PREFIXS = { "135", "136", "137", "138", "139", "186", "180", "187", "158" };
-	private static String COOKIE_NAME = "user-id";
+	private static final String[] MOBILE_PREFIXS = { "135", "136", "137", "138", "139", "186", "180", "187", "158" };
+	private static final String COOKIE_NAME = "user-id";
 	
+	private Random random = new Random();
 	@Reference
 	ItemService itemService;
 	@Reference
@@ -111,26 +113,26 @@ public class ShopController {
 	}
 	private boolean runFullTestCase() {
 		if(MyDemoUtils.isSeataPresent()) {
-			log.debug("Start a test case, XID: " + MyDemoUtils.getXID());
+			log.debug("Start a test case, XID: {}", MyDemoUtils.getXID());
 		}
 		//Register a user
-		String prefix = MOBILE_PREFIXS[(int)Math.round(Math.random()*1000) % MOBILE_PREFIXS.length];
+		String prefix = MOBILE_PREFIXS[Math.abs(random.nextInt()) % MOBILE_PREFIXS.length];
 		String mobile = prefix + String.format("%08d", Math.round(Math.random()*100000000));
 		String password = Math.round(Math.random() * 10000000) + "";
 		ServiceResult<User> result = userService.registerByMobile(mobile, password);
 		if(!result.isSuccess()) {
-			log.info("[register] failed, account:" + mobile + ", msg:" + result.getMessage());
+			log.info("[register] failed, account:{}, msg:{}", mobile, result.getMessage());
 			return false;
 		}
-		log.info("[register] success, account:" + mobile + ", user-id:" + result.getResult().getUserId());
+		log.info("[register] success, account:{}, user-id:{}", mobile, result.getResult().getUserId());
 		
 		//Login
 		result = userService.login(mobile, password);
 		if(!result.isSuccess()) {
-			log.info("[login] failed, account:" + mobile + ", msg:" + result.getMessage());
+			log.info("[login] failed, account:{}, msg:{}", mobile, result.getMessage());
 			return false;
 		}
-		log.info("[login] success, account:" + mobile + " , user-id:" + result.getResult().getUserId());
+		log.info("[login] success, account:{} , user-id:{}", mobile, result.getResult().getUserId());
 		User user = result.getResult();
 		
 		//View items
@@ -141,22 +143,23 @@ public class ShopController {
 		
 		//Create order
 		Order order = this.createOrder(cart);
+		if(order==null) return false;
 		
 		//Print order info
-		log.debug("[show-order] order:" + order.getOrderId() + ", items:" + order.getOrderItems().size());
-		order.getOrderItems().forEach(orderItem -> {
-			log.debug("[show-order]     item:" + orderItem.getItemId() + ", qty:" + orderItem.getQuantity() 
-				+ ", amt:" + String.format("%.2f", orderItem.getSubtotal()) + ", discount:" + String.format("%.2f", orderItem.getDiscount()));
-		});
+		log.debug("[show-order] order:{}, items:{}", order.getOrderId(), order.getOrderItems().size());
+		order.getOrderItems().forEach(orderItem -> 
+			log.debug("[show-order]     item:{}, qty:{}, amt:{}, discount:{}"
+				, orderItem.getItemId(), orderItem.getQuantity(), String.format("%.2f", orderItem.getSubtotal()), String.format("%.2f", orderItem.getDiscount()))
+		);
 		return true;
 	}
 	private Order createOrder(Cart cart) {
 		ServiceResult<Order> orderResult = orderService.createOrder(cart);
 		if(!orderResult.isSuccess()) {
-			log.warn("[create-order] failed, msg:" + orderResult.getMessage());
+			log.warn("[create-order] failed, msg:{}", orderResult.getMessage());
 			return null;
 		}
-		log.info("[create-order] success, order:" + orderResult.getResult().getOrderId());
+		log.info("[create-order] success, order:{}", orderResult.getResult().getOrderId());
 		return orderResult.getResult();
 	}
 	private Cart addCart(User user, List<Item> items) {
@@ -165,17 +168,17 @@ public class ShopController {
 		pickedItems.forEach(item -> {
 			cart.addItem(item.getId(), 1, item.getPrice(), Math.random()/10 * item.getPrice());
 			CartItem ci = cart.getItems().get(cart.getItems().size()-1);
-			log.info("[add-cart] item:" + ci.getItemId() + ", qty:" + ci.getQuantity() + ", price:" + String.format("%.2f", ci.getPrice()) 
-				+ ", amt:" + String.format("%.2f", ci.getSubtotal()) + ", discount:" + String.format("%.2f", ci.getDiscount()));
+			log.info("[add-cart] item:{}, qty:{}, price:{}, amt:{}, discount:{}"
+				,ci.getItemId(), ci.getQuantity(), String.format("%.2f", ci.getPrice()), String.format("%.2f", ci.getSubtotal()),  String.format("%.2f", ci.getDiscount()));
 		});
 		return cart;
 	}
 	private List<Item> pickupItems(List<Item> items) {
-		int count = ((int)Math.round(Math.random() * 10) % 2) + 1;
+		int count = (Math.abs(random.nextInt()) % 2) + 1;
 		List<Item> result = new ArrayList<>(count);
 		Set<Integer> pickedList = new HashSet<>(count); 
 		while(count-->0) {
-			int index = (int)Math.round(Math.random()*100) % items.size(); 
+			int index = Math.abs(random.nextInt()) % items.size(); 
 			if(pickedList.contains(index)) continue; 
 			result.add(items.get(index));
 			pickedList.add(index);

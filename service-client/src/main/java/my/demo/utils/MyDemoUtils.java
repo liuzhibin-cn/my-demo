@@ -12,6 +12,7 @@ public class MyDemoUtils {
 	private static boolean skywalkingPresent = ClassUtils.isPresent("org.apache.skywalking.apm.toolkit.trace.ActiveSpan", ClassUtils.getDefaultClassLoader());
 	private static boolean seataPresent = ClassUtils.isPresent("io.seata.core.context.RootContext", ClassUtils.getDefaultClassLoader());
 	
+	private MyDemoUtils() {}
 	/**
 	 * Add a user defined tag in current span if SkyWalking is enabled
 	 * @param name
@@ -37,11 +38,12 @@ public class MyDemoUtils {
 
 	public static String getIpByHostName(String hostName) {
 		InetAddress addr = null;
-		if(hostName!=null && !hostName.isEmpty() && !"localhost".equals(hostName.trim().toLowerCase())) {
+		if(hostName!=null && !hostName.isEmpty() && !"localhost".equalsIgnoreCase(hostName.trim())) {
 			try {
 				addr = InetAddress.getByName(hostName);
 				return addr.getHostAddress();
 			} catch (UnknownHostException e) {
+				e.printStackTrace();
 			}
 		}
 		try {

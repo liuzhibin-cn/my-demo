@@ -31,14 +31,28 @@ public class DbUtils {
 		return DriverManager.getConnection(url, user, password); 
 	}
 	public int executeUpdate(Connection connection, String sql) throws SQLException {
-		Statement stmt = connection.createStatement();
-		int result = stmt.executeUpdate(sql);
-		stmt.close();
+		Statement stmt = null;
+		int result = 0;
+		try {
+			stmt = connection.createStatement();
+			result = stmt.executeUpdate(sql);
+		} catch(Exception e) {
+			e.printStackTrace();
+			if(stmt!=null) stmt.close();
+		} finally {
+			if(stmt!=null) stmt.close();
+		}
 		return result;
 	}
 	public ResultSet execQuery(Connection connection, String sql) throws SQLException {
-		Statement stmt = connection.createStatement();
-		ResultSet result = stmt.executeQuery(sql);
-		return result;
+		Statement stmt = null;
+		try {
+			stmt = connection.createStatement();
+			return stmt.executeQuery(sql);
+		} catch(Exception e) {
+			e.printStackTrace();
+			if(stmt!=null) stmt.close();
+		}
+		return null;
 	}
 }

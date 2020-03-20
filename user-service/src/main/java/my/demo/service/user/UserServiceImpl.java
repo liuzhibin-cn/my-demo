@@ -21,9 +21,9 @@ import my.demo.utils.MyDemoUtils;
 
 @Service
 public class UserServiceImpl implements UserService {
-	Logger log = LoggerFactory.getLogger(this.getClass());
+	static Logger log = LoggerFactory.getLogger(UserServiceImpl.class);
 	
-	static Date BASE_LINE = null;
+	static Date baseLine = null;
 	
 	@Autowired
 	UserDao dao;
@@ -31,19 +31,20 @@ public class UserServiceImpl implements UserService {
 	static {
 		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
 		try {
-			BASE_LINE = sdf.parse("2019-01-01");
+			baseLine = sdf.parse("2019-01-01");
 		} catch (ParseException e) {
-			e.printStackTrace();
+			log.info("Create BaseLine date error", e);
 		}
 	}
 	
 	@Override
+	@Transactional
 	public ServiceResult<User> registerByMobile(String mobile, String password) {
 		if(MyDemoUtils.isSeataPresent()) {
-			log.info("[register] XID: " + MyDemoUtils.getXID());
+			log.info("[register] XID: {}", MyDemoUtils.getXID());
 		}
 		MyDemoUtils.tag("account", mobile);
-		ServiceResult<User> result = new ServiceResult<User>();
+		ServiceResult<User> result = new ServiceResult<>();
 		//简单校验
 		if(mobile==null || mobile.isEmpty() || mobile.trim().length()!=11) {
 			return result.fail("Invalid mobile: " + mobile);
@@ -51,19 +52,13 @@ public class UserServiceImpl implements UserService {
 		if(password==null || password.trim().length()<6) {
 			return result.fail("Invalid password: " + password);
 		}
-		try { //注册
-			this.register(result, mobile, password);
-			return result;
-		} catch (Exception ex) {
-			log.error("[register] System error, msg: " + ex.getMessage(), ex);
-			return result.fail("System error: " + ex.getMessage());
-		}
+		register(result, mobile, password);
+		return result;
 	}
-	@Transactional
 	private void register(ServiceResult<User> result, String mobile, String password) {
 		//1. 账号是否已经注册过
 		if(this.isRegistered(mobile)) {
-			log.info("[register] Already registered, mobile: " + mobile);
+			log.info("[register] Already registered, mobile: {}", mobile);
 			result.fail("Account " + mobile + " already registered");
 			return;
 		}
@@ -74,16 +69,16 @@ public class UserServiceImpl implements UserService {
 		user.setEmail("");
 		user.setCreatedAt(new Date());
 		if(dao.createUser(user)<=0) {
-			log.warn("[register] Failed to create user, account: " + mobile);
+			log.warn("[register] Failed to create user, account: {}", mobile);
 			result.fail("Failed to create user");
 			return;
 		}
 		if(user.getUserId()<=0) {
-			log.warn("[register] Failed to create user, invalid user-id, account: " + mobile);
+			log.warn("[register] Failed to create user, invalid user-id, account: {}", mobile);
 			result.fail("Failed to create user");
 			return;
 		}
-		log.info("[register] User created, user-id: " + user.getUserId() + ", account: " + mobile);
+		log.info("[register] User created, user-id: {}, account: {}", user.getUserId(), mobile);
 		//3. 创建用户登录账号，分片字段account_hash，主键account
 		UserAccount userAccount = new UserAccount();
 		userAccount.setAccount(mobile);
@@ -91,19 +86,19 @@ public class UserServiceImpl implements UserService {
 		userAccount.setAccountHash(this.getAccountHashcode(mobile));
 		userAccount.setUserId(user.getUserId());
 		if(dao.createUserAccount(userAccount)<=0) {
-			log.warn("[register] Failed to create user account, user-id: " + user.getUserId() + ", account: " + mobile);
+			log.warn("[register] Failed to create user account, user-id: {}, account: {}", user.getUserId(), mobile);
 			result.fail("Failed to create user account");
 			return;
 		}
 		MyDemoUtils.tag("userId", user.getUserId());
-		log.info("[register] User account created, user-id: " + user.getUserId() + ", account: " + mobile);
+		log.info("[register] User account created, user-id: {}, account: {}", user.getUserId(), mobile);
 		result.success(user);
 	}
 
 	@Override
 	public ServiceResult<User> login(String account, String password) {
 		MyDemoUtils.tag("account", account);
-		ServiceResult<User> result = new ServiceResult<User>();
+		ServiceResult<User> result = new ServiceResult<>();
 		if(account==null || account.trim().isEmpty()) {
 			return result.fail("Empty account");
 		}
@@ -114,21 +109,21 @@ public class UserServiceImpl implements UserService {
 			//1. 通过account获取用户登录账号，分片键 account_hash
 			UserAccount userAccount = this.getUserAccount(account);
 			if(userAccount==null) {
-				log.debug("[login] Account not found, account: " + account);
+				log.debug("[login] Account not found, account: {}", account);
 				return result.fail("Account " + account + " not found");
 			}
 			//   校验密码
 			if(!DigestUtils.md5DigestAsHex(password.getBytes()).equals(userAccount.getPassword())) {
-				log.debug("[login] Incorrect password, account: " + account);
+				log.debug("[login] Incorrect password, account: {}", account);
 				return result.fail("Incorrect password");
 			}
 			//2. 通过user_id获取user对象，分片键 user_id
 			User user = dao.getUser(userAccount.getUserId());
 			if(user==null) {
-				log.warn("[login] User not found, account: " + account);
+				log.warn("[login] User not found, account: {}", account);
 				return result.fail("Account error");
 			}
-			log.info("[login] Success, user-id: " + user.getUserId() + ", account: " + account);
+			log.info("[login] Success, user-id: {}, account: {}", user.getUserId(), account);
 			MyDemoUtils.tag("userId", user.getUserId());
 			return result.success(user);
 		} catch(Exception ex) {

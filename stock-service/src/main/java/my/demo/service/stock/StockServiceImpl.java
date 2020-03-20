@@ -34,11 +34,11 @@ public class StockServiceImpl implements StockService {
 		}
 		Stock stock = stocks.get(itemId);
 		if(stock==null) {
-			log.info("[get] Stock not found, item-id: " + itemId);
+			log.info("[get] Stock not found, item-id: {}", itemId);
 			return new ServiceResult<>(null);
 		}
 		if(log.isDebugEnabled()) {
-			log.debug("[get] item-id: " + itemId + ", available: " + stock.getAvailableQty() + ", lock: " + stock.getLockQty());
+			log.debug("[get] item-id: {}, available: {}, lock: {}", itemId, stock.getAvailableQty(), stock.getLockQty());
 		}
 		return new ServiceResult<>(stock);
 	}
@@ -48,7 +48,7 @@ public class StockServiceImpl implements StockService {
 		MyDemoUtils.tag("itemId", itemId);
 		MyDemoUtils.tag("lockQty", lockQty);
 		if(!stocks.containsKey(itemId)) {
-			log.info("[lock] Stock not found, item-id: " + itemId);
+			log.info("[lock] Stock not found, item-id: {}", itemId);
 			return new ServiceResult<Boolean>().fail("Item " + itemId + " not found"); 
 		}
 		if(lockQty<=0) {
@@ -58,10 +58,10 @@ public class StockServiceImpl implements StockService {
 		Stock stock = stocks.get(itemId);
 		synchronized (stock) {
 			if(stock.getAvailableQty() < lockQty) {
-				log.info("[lock] Failed, item-id: " + itemId + ", avalaible: " + stock.getAvailableQty() + ", request: " + lockQty);
+				log.info("[lock] Failed, item-id: {}, avalaible: {}, request: {}", itemId, stock.getAvailableQty(), lockQty);
 				return new ServiceResult<>(false);
 			}
-			log.info("[lock] Success, item-id: " + itemId + ", avalaible: " + stock.getAvailableQty() + ", request: " + lockQty);
+			log.info("[lock] Success, item-id: {}, avalaible: {}, request: {}", itemId, stock.getAvailableQty(), lockQty);
 			stock.setLockQty(stock.getLockQty() + lockQty);
 			return new ServiceResult<>(true);
 		}

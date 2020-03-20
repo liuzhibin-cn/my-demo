@@ -21,7 +21,7 @@ public class DeleteUserFromDb extends ColumnFixture {
 			if(rs.next()) {
 				userId = rs.getInt("user_id");
 			}
-			try { rs.close(); } catch (Exception e) {	}
+			rs.close();
 			if(userId<=0) return "OK";
 			utils.executeUpdate(connection, "delete from usr_user_account where account='" + mobile + "'");
 			utils.executeUpdate(connection, "delete from usr_user where user_id=" + userId);
@@ -29,13 +29,18 @@ public class DeleteUserFromDb extends ColumnFixture {
 			return "OK";
 		} catch (ClassNotFoundException | SQLException e) {
 			if(connection!=null) {
-				try { connection.close(); } catch (SQLException e1) {	}
+				this.closeConnection(connection);
 			}
-			System.out.println("Delete user from MySQL: " + e.getMessage());
+			e.printStackTrace();
 			return "SysError: " + e.getMessage();
 		}
 	}
 	public void setMobile(String mobile) {
 		this.mobile = mobile;
+	}
+	private void closeConnection(Connection con) {
+		try {
+			con.close();
+		} catch (Exception e) { e.printStackTrace(); }
 	}
 }

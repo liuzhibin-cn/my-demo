@@ -1,6 +1,6 @@
 package my.demo.test.fixture;
 
-import java.util.List;
+import java.util.ArrayList;
 
 import fit.RowFixture;
 import my.demo.entity.Item;
@@ -12,7 +12,7 @@ public class ItemQueryTest extends RowFixture {
 	@Override
 	public Object[] query() throws Exception {
 		ItemService service = Manager.getItemService();
-		ServiceResult<List<Item>> serviceResult = service.findItem();
+		ServiceResult<ArrayList<Item>> serviceResult = service.findItem();
 		if(!serviceResult.isSuccess()) return new Object[] {};
 		Object[] result = new Object[serviceResult.getResult().size()];
 		for(int i=0; i<serviceResult.getResult().size(); i++) {

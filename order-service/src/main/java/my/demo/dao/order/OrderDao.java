@@ -1,5 +1,6 @@
 package my.demo.dao.order;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.ibatis.annotations.Insert;
@@ -26,7 +27,7 @@ public interface OrderDao {
 	@Update("update ord_order_item set subtotal=subtotal-2, discount=discount+2 where order_id=#{orderId}")
 	int testUpdateOrderItem(@Param("orderId") long orderId);
 	
-	List<Order> findOrders(@Param("orderIds") List<Long> orderIds);
+	ArrayList<Order> findOrders(@Param("orderIds") List<Long> orderIds);
 	
 	@Select("select * from ord_order where order_id = #{orderId}")
 	@ResultMap("order")
@@ -34,7 +35,7 @@ public interface OrderDao {
 	
 	@Select("select * from ord_order_item where order_id = #{orderId}")
 	@ResultMap("orderItem")
-	List<OrderItem> getOrderItems(long orderId);
+	ArrayList<OrderItem> getOrderItems(long orderId);
 	
 	@Insert("insert into ord_user_order (user_id, order_id) values(#{userId}, #{orderId})")
 	int createUserOrder(@Param("userId") long userId, @Param("orderId") long orderId);

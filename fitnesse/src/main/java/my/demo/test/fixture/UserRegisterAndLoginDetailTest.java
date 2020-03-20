@@ -11,6 +11,7 @@ import my.demo.service.UserService;
 import my.demo.test.Manager;
 
 public class UserRegisterAndLoginDetailTest {
+	private static final String SYS_ERROR = "SysError: ";
 	private ServiceResult<User> result = null;
 	public void registerWithMobileAndPassword(String mobile, String password) {
 		UserService service = Manager.getUserService();
@@ -18,7 +19,7 @@ public class UserRegisterAndLoginDetailTest {
 			result = service.registerByMobile(mobile, password);
 		} catch (Exception e) {
 			result = new ServiceResult<>();
-			result.fail("SysError: " + e.getMessage());
+			result.fail(SYS_ERROR + e.getMessage());
 		}
 	}
 	public void loginWithMobileAndPassword(String mobile, String password) {
@@ -27,7 +28,7 @@ public class UserRegisterAndLoginDetailTest {
 			result = service.login(mobile, password);
 		} catch (Exception e) {
 			result = new ServiceResult<>();
-			result.fail("SysError: " + e.getMessage());
+			result.fail(SYS_ERROR + e.getMessage());
 		}
 	}
 	public boolean success() {
@@ -49,7 +50,7 @@ public class UserRegisterAndLoginDetailTest {
 			mapper.setDateFormat(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss"));
 			return mapper.writeValueAsString(result);
 		} catch (JsonProcessingException e) {
-			return "SysError: " + e.getMessage();
+			return SYS_ERROR + e.getMessage();
 		}
 	}
 }

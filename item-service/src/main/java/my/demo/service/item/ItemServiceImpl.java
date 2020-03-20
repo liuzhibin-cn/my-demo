@@ -2,7 +2,6 @@ package my.demo.service.item;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import com.alibaba.dubbo.config.annotation.Service;
@@ -49,7 +48,7 @@ public class ItemServiceImpl implements ItemService {
 	}
 
 	@Override
-	public ServiceResult<List<Item>> findItem() {
+	public ServiceResult<ArrayList<Item>> findItem() {
 		return new ServiceResult<>(new ArrayList<>(items.values()));
 	}
 

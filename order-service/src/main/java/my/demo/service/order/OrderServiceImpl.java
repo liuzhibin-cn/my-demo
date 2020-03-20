@@ -29,10 +29,10 @@ import my.demo.utils.MyDemoUtils;
 
 @Service
 public class OrderServiceImpl implements OrderService {
-	Logger log = LoggerFactory.getLogger(this.getClass());
+	static Logger log = LoggerFactory.getLogger(OrderServiceImpl.class);
 
-	static Date BASE_LINE = null;
-	static Date DEFAULT_TIME = null;
+	static Date baseLine = null;
+	static Date defaultTime = null;
 	
 	@Reference
 	ItemService itemService;
@@ -44,19 +44,20 @@ public class OrderServiceImpl implements OrderService {
 	static {
 		try {
 			SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
-			BASE_LINE = sdf.parse("2018-01-01");
-			DEFAULT_TIME = sdf.parse("1900-01-01");
+			baseLine = sdf.parse("2018-01-01");
+			defaultTime = sdf.parse("1900-01-01");
 		} catch (ParseException e) {
-			e.printStackTrace();
+			log.info("Create default datetime error", e);
 		}
 	}
 
 	@Override
+	@Transactional
 	public ServiceResult<Order> createOrder(Cart cart) {
 		if(MyDemoUtils.isSeataPresent()) {
-			log.info("[create] XID: " + MyDemoUtils.getXID());
+			log.info("[create] XID: {}", MyDemoUtils.getXID());
 		}
-		ServiceResult<Order> result = new ServiceResult<Order>();
+		ServiceResult<Order> result = new ServiceResult<>();
 		//1. Verification
 		if(cart==null) {
 			return result.fail("Null cart");
@@ -70,17 +71,9 @@ public class OrderServiceImpl implements OrderService {
 		MyDemoUtils.tag("userId", cart.getUserId());
 		
 		List<OrderItem> lockList = new ArrayList<>(cart.getItems().size());
-		try {
-			this.createOrder(result, lockList, cart);
-			return result;
-		} catch(Exception ex) {
-			log.error("[create] System error, user-id: " + cart.getUserId() + ", msg: " + ex.getMessage(), ex);
-			return result.fail("System error: " + ex.getMessage());
-		} finally {
-			if(!lockList.isEmpty()) this.unlockStock(lockList);
-		}
+		this.createOrder(result, lockList, cart);
+		return result;
 	}
-	@Transactional
 	private void createOrder(ServiceResult<Order> result, List<OrderItem> lockList, Cart cart) {
 		//2. Create Order, OrderItem
 		Order order = new Order();
@@ -88,7 +81,7 @@ public class OrderServiceImpl implements OrderService {
 		order.setStatus("New");
 		order.setUserId(cart.getUserId());
 		order.setPayStatus("New");
-		order.setPayTime(DEFAULT_TIME);
+		order.setPayTime(defaultTime);
 		order.setContact(cart.getContact());
 		order.setPhone(cart.getPhone());
 		order.setAddress(cart.getAddress());
@@ -116,20 +109,18 @@ public class OrderServiceImpl implements OrderService {
 			//Check stock availablility
 			ServiceResult<Stock> stockResult = stockService.getStock(orderItem.getItemId());
 			if(!stockResult.isSuccess()) {
-				log.info("[create] Get stock error, item-id: " + orderItem.getItemId() + ", msg: " + stockResult.getMessage());
+				log.info("[create] Get stock error, item-id: {}, msg: {}", orderItem.getItemId(), stockResult.getMessage());
 				break;
 			}
 			if(stockResult.getResult().getAvailableQty()<orderItem.getQuantity()) {
-				log.info("[create] Stock not enough, item-id: " + orderItem.getItemId() 
-					+ ", available-qty: " + stockResult.getResult().getAvailableQty()
-					+ ", request-qty: " + orderItem.getQuantity());
+				log.info("[create] Stock not enough, item-id: {}, available-qty: {}, request-qty: {}", orderItem.getItemId(), stockResult.getResult().getAvailableQty(), orderItem.getQuantity());
 				break;
 			}
 			//Lock stock
 			ServiceResult<Boolean> lockResult = stockService.lock(orderItem.getItemId(), orderItem.getQuantity());
-			if(lockResult.isSuccess() && lockResult.getResult()) lockList.add(orderItem);
+			if(lockResult.isSuccess() && lockResult.getResult().booleanValue()) lockList.add(orderItem);
 			else {
-				log.info("[create] Lock stock error, item-id: " + orderItem.getItemId() + ", msg: " + lockResult.getMessage());
+				log.info("[create] Lock stock error, item-id: {}, msg: {}", orderItem.getItemId(), lockResult.getMessage());
 				break;
 			}
 		}
@@ -141,15 +132,15 @@ public class OrderServiceImpl implements OrderService {
 		//4. Insert Order, OrderItem to MySQL
 		order.getOrderItems().forEach(orderItem -> {
 			orderDao.createOrderItem(orderItem);
-			log.info("[create] OrderItem created, item-id: " + orderItem.getItemId());
+			log.info("[create] OrderItem created, item-id: {}", orderItem.getItemId());
 		});
 		orderDao.createOrder(order);
-		log.debug("[create] Order created, order-id: " + order.getOrderId());
+		log.debug("[create] Order created, order-id: {}", order.getOrderId());
 		
-		//5. Manage user defined index for (user-id, order_id) 
+		//5. Manage user defined index for user-id, order_id
 		orderDao.createUserOrder(order.getUserId(), order.getOrderId());
-		log.info("[create] User Order created: user-id: " + order.getUserId() + ", order-id: " + order.getOrderId());
-		
+		log.info("[create] User Order created: user-id: {}, order-id: {}", order.getUserId(), order.getOrderId());
+
 		orderDao.testUpdateOrderItem(order.getOrderId());
 		
 		//6. Get order from MySQL
@@ -158,14 +149,12 @@ public class OrderServiceImpl implements OrderService {
 					
 		result.success(persisted);
 	}
-	private void unlockStock(List<OrderItem> list) {
-	}
 	private long newId() {
-		return ((System.currentTimeMillis() - BASE_LINE.getTime()) & 274877906943L << 10) | new Random(System.currentTimeMillis()).nextInt(1023);
+		return ((System.currentTimeMillis() - baseLine.getTime()) & 274877906943L << 10) | new Random(System.currentTimeMillis()).nextInt(1023);
 	}
 	
 	@Override
-	public ServiceResult<List<Order>> findUserOrders(long userId, int offset, int count) {
+	public ServiceResult<ArrayList<Order>> findUserOrders(long userId, int offset, int count) {
 		try {
 			MyDemoUtils.tag("userId", userId);
 			MyDemoUtils.tag("offset", offset);
@@ -173,33 +162,33 @@ public class OrderServiceImpl implements OrderService {
 			List<Long> orderIds = orderDao.findUserOrderIds(userId, offset, count);
 			if(orderIds==null || orderIds.isEmpty()) {
 				if(log.isDebugEnabled()) {
-					log.debug("[find] user-id: " + userId + ", orders: 0, offset: " + offset + ", count: " + count);
+					log.debug("[find] user-id: {}, orders: 0, offset: {}, count: {}", userId, offset, count);
 				}
-				return new ServiceResult<List<Order>>(null);
+				return new ServiceResult<>(null);
 			}
-			ServiceResult<List<Order>> result = new ServiceResult<>(orderDao.findOrders(orderIds));
+			ServiceResult<ArrayList<Order>> result = new ServiceResult<>(orderDao.findOrders(orderIds));
 			if(log.isDebugEnabled()) {
-				log.debug("[find] user-id: " + userId + ", orders: " + result.getResult().size() + ", offset: " + offset + ", count: " + count);
+				log.debug("[find] user-id: {}, orders: {}, offset: {}, count: {}", userId, result.getResult().size(), offset, count);
 			}
 			return result;
 		}catch (Exception ex) {
 			log.error("[find] System error, user-id: " + userId + ", msg: " + ex.getMessage(), ex);
-			return new ServiceResult<List<Order>>().fail("System error: " + ex.getMessage());
+			return new ServiceResult<ArrayList<Order>>().fail("System error: " + ex.getMessage());
 		}
 	}
 
 	@Override
-	public ServiceResult<List<OrderItem>> getOrderItems(long orderId) {
+	public ServiceResult<ArrayList<OrderItem>> getOrderItems(long orderId) {
 		MyDemoUtils.tag("orderId", orderId);
 		try {
-			List<OrderItem> orderItems = orderDao.getOrderItems(orderId);
+			ArrayList<OrderItem> orderItems = orderDao.getOrderItems(orderId);
 			if(log.isDebugEnabled()) {
-				log.debug("[get-item] order-id: " + orderId + ", order-items: " + orderItems.size());
+				log.debug("[get-item] order-id: {}, order-items: {}", orderId, orderItems.size());
 			}
-			return new ServiceResult<List<OrderItem>>(orderItems);
+			return new ServiceResult<>(orderItems);
 		} catch(Exception ex) {
 			log.error("[get-item] System error: " + ex.getMessage(), ex);
-			return new ServiceResult<List<OrderItem>>().fail("System error: " + ex.getMessage());
+			return new ServiceResult<ArrayList<OrderItem>>().fail("System error: " + ex.getMessage());
 		}
 	}
 } 
