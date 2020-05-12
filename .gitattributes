@@ -1,0 +1,11 @@
+*.css linguist-vendored
+*.js linguist-vendored
+*.html linguist-vendored
+*.xml linguist-vendored
+*.sh linguist-vendored
+docs/* linguist-vendored
+docker/* linguist-vendored
+k8s/* linguist-vendored
+istio/* linguist-vendored
+postman/* linguist-vendored
+fitnesse/* linguist-vendored
