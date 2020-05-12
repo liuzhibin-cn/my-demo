@@ -2,7 +2,7 @@
 
 -------------------------------------------------------------------
 ## 演示项目架构
-![](docs/images/architecture.png) 
+![](https://richie-leo.github.io/ydres/img/10/180/1014/architecture.png)
 
 本项目以电商注册/购物场景，演示基于敏捷开发、微服务架构，在云原生环境下构建高性能、高并发、高可用、弹性伸缩互联网平台的主要技术。基础部分是4个基于`SpringBoot`的`Dubbo`微服务和1个`Web`应用，另外还包括以下技术点：
 
@@ -141,10 +141,10 @@
 - `MySQL`：`13306`，可以用`MySQL`客户端登录访问
 
 `Docker`容器：\
-![](docs/images/docker-containers.png)
+![](https://richie-leo.github.io/ydres/img/10/180/1014/docker-containers.png)
 
 容器资源使用情况：\
-![](docs/images/docker-stats.png)
+![](https://richie-leo.github.io/ydres/img/10/180/1014/docker-stats.png)
 
 ### Kubernetes运行演示应用
 1. 部署和启动`Kubernetes`环境。国内环境在`Docker Desktop for Windows/Mac`中启用`Kubernetes`，参考[AliyunContainerService/k8s-for-docker-desktop](https://github.com/AliyunContainerService/k8s-for-docker-desktop)。
@@ -176,7 +176,7 @@
    ...
    ```
 
-![](docs/images/kubernetes-overview.png)
+![](https://richie-leo.github.io/ydres/img/10/180/1014/kubernetes-overview.png)
 
 ### Istio运行演示应用
 1. 需要在`Kubernetes`集群中部署`Istio`，需要在`istio-system`命名空间部署`istio-ingressgateway`（`Docker Desktop`默认部署和启动`istio-ingressgateway`）。
@@ -194,17 +194,17 @@
 -------------------------------------------------------------------
 ## 运行效果
 `shop-web`日志输出：\
-![](docs/images/shopweb-out.png)
+![](https://richie-leo.github.io/ydres/img/10/180/1014/shopweb-out.png)
 
 `order-service`日志输出，打印了Seata分布式事务日志：\
-![](docs/images/order-service-out.png)
+![](https://richie-leo.github.io/ydres/img/10/180/1014/order-service-out.png)
 
 使用数据库水平拆分后的数据分布情况:\
-![](docs/images/db-sharding-1.png)\
-![](docs/images/db-sharding-2.png)
+![](https://richie-leo.github.io/ydres/img/10/180/1014/db-sharding-1.png) \
+![](https://richie-leo.github.io/ydres/img/10/180/1014/db-sharding-2.png)
 
 `Mycat`的执行计划:\
-![](docs/images/mycat-explain.png)
+![](https://richie-leo.github.io/ydres/img/10/180/1014/mycat-explain.png)
 
 `ZipKin`：\
 ![](https://richie-leo.github.io/ydres/img/10/120/1013/screen-trace-detail-sql.png)
