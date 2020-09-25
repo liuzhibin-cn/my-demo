@@ -1,7 +1,7 @@
 FROM mydemo/openjdk:8-jre-alpine
 
 # Download Mycat
-RUN curl -fL -o /home/mycat.tar.gz http://dl.mycat.io/1.6.7.3/20190927161129/Mycat-server-1.6.7.3-release-20190927161129-linux.tar.gz \
+RUN curl -fL -o /home/mycat.tar.gz http://dl.mycat.org.cn/1.6.7.3/20190927161129/Mycat-server-1.6.7.3-release-20190927161129-linux.tar.gz \
 	&& tar xzf /home/mycat.tar.gz -C /home/ \
 	&& rm -rf /home/mycat.tar.gz
 WORKDIR /home/mycat

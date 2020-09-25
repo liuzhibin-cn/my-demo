@@ -3,7 +3,7 @@ FROM mydemo/openjdk:8-jre-alpine
 # Official download: https://github.com/alibaba/nacos/releases
 # Download from github-mirror.bugkiller.org instead of github.com to improve speed, to resolve network issues in Chine.
 # ATTENTION: Security risks not clear!
-RUN curl -fL -o /home/nacos.tar.gz http://github-mirror.bugkiller.org/alibaba/nacos/releases/download/1.1.4/nacos-server-1.1.4.tar.gz \
+RUN curl -fL -o /home/nacos.tar.gz https://github.com/alibaba/nacos/releases/download/1.1.4/nacos-server-1.1.4.tar.gz \
 	&& tar xzf /home/nacos.tar.gz -C /home/ \
 	&& rm -rf /home/nacos.tar.gz
 WORKDIR /home/nacos
