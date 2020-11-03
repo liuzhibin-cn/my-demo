@@ -34,9 +34,9 @@ public class OrderServiceImpl implements OrderService {
 	static Date baseLine = null;
 	static Date defaultTime = null;
 	
-	@Reference
+	@Reference(check=false)
 	ItemService itemService;
-	@Reference
+	@Reference(check=false)
 	StockService stockService;
 	@Autowired
 	OrderDao orderDao;

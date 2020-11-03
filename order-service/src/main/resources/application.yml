@@ -43,6 +43,7 @@ dubbo:
         keepAlive: true
     registry: # see com.alibaba.dubbo.config.RegistryConfig
         address: nacos://${nacos.address}
+        check: false
     provider:
         cluster: failfast
         retries: 0
@@ -51,6 +52,10 @@ dubbo:
         filter: ${dubbo.filter}
     consumer:
         filter: ${dubbo.filter}
+        # Fault tolerance. Options: failover/failfast/failsafe/failback/forking
+        cluster: failfast
+        # Load balancing strategy. Options: random, roundrobin(polling), leastactive(invoking least active service)
+        loadbalance: roundrobin
 
 druid:
    defaultAutoCommit: true

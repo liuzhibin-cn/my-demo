@@ -17,7 +17,7 @@ import my.demo.utils.MyDemoUtils;
 public class HelloController {
 	Logger log = LoggerFactory.getLogger(getClass());
 	
-	@Reference
+	@Reference(check=false)
 	HelloService helloService;
 	
 	@Value("${mydemo.version}")

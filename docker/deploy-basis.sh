@@ -20,3 +20,4 @@ docker network create mydemo
 ./skywalking/run.sh
 
 ./zipkin/run.sh
+

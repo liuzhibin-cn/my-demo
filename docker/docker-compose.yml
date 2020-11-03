@@ -1,0 +1,144 @@
+version: "3.8"
+services:
+  mysql:
+    image: "mydemo/mysql:5.7.18"
+    container_name: mysql
+    networks: 
+      - mydemo
+    ports:
+      - target: 3306
+        published: 13306
+    environment:
+      MYSQL_ROOT_PASSWORD: 123
+
+  nacos:
+    image: "mydemo/nacos:1.1.4"
+    container_name: nacos
+    networks: 
+      - mydemo
+    ports: 
+      - "18848:8848"
+    environment:
+      MYSQL_HOST: mysql
+    depends_on:
+      - mysql
+
+  mycat:
+    image: "mydemo/mycat:1.6.7.3"
+    container_name: mycat
+    networks:
+      - mydemo
+    ports:
+      - "18066:8066"
+      - "19066:9066"
+    environment:
+      MYSQL_HOST: mysql
+    depends_on:
+      - mysql
+
+#  shardingproxy:
+#    image: "mydemo/shardingproxy:4.0.0-RC3"
+#    container_name: shardingproxy
+#    networks:
+#      - mydemo
+#    ports:
+#      - "13307:3307"
+#    environment:
+#      MYSQL_HOST: mysql
+#    depends_on:
+#      - mysql
+
+  zipkin:
+    image: "mydemo/zipkin:2.19.2"
+    container_name: zipkin
+    networks:
+      - mydemo
+    ports:
+      - "19411:9411"
+    environment:
+      MYSQL_HOST: mysql
+    depends_on:
+      - mysql
+
+  item:
+    image: "mydemo/item"
+    container_name: item
+    networks:
+      - mydemo
+    environment:
+      SERVICE_HOST: item
+      NACOS_HOST: nacos
+      ZIPKIN_HOST: zipkin
+      SKYWALKING_HOST: skywalking-oap
+    depends_on:
+      - nacos
+      - mycat
+#      - shardingproxy
+      - zipkin
+
+  stock:
+    image: "mydemo/stock"
+    container_name: stock
+    networks:
+      - mydemo
+    environment:
+      SERVICE_HOST: stock
+      NACOS_HOST: nacos
+      ZIPKIN_HOST: zipkin
+      SKYWALKING_HOST: skywalking-oap
+    depends_on:
+      - nacos
+      - mycat
+#      - shardingproxy
+      - zipkin
+
+  user:
+    image: "mydemo/user"
+    container_name: user
+    networks:
+      - mydemo
+    environment:
+      SERVICE_HOST: user
+      MYSQL_HOST: mysql # mycat, shardingproxy
+      NACOS_HOST: nacos
+      ZIPKIN_HOST: zipkin
+      SKYWALKING_HOST: skywalking-oap
+    depends_on:
+      - nacos
+      - mycat
+#      - shardingproxy
+      - zipkin
+
+  order:
+    image: "mydemo/order"
+    container_name: order
+    networks:
+      - mydemo
+    environment:
+      SERVICE_HOST: order
+      NACOS_HOST: nacos
+      ZIPKIN_HOST: zipkin
+      SKYWALKING_HOST: skywalking-oap
+    depends_on:
+      - item
+      - stock
+
+  shopweb:
+    image: "mydemo/shopweb"
+    container_name: shopweb
+    networks:
+      - mydemo
+    ports:
+      - "18090:8090"
+    environment:
+      SERVICE_HOST: shopweb
+      NACOS_HOST: nacos
+      ZIPKIN_HOST: zipkin
+      SKYWALKING_HOST: skywalking-oap
+    depends_on:
+      - item
+      - user
+      - order
+
+networks:
+  mydemo:

@@ -43,13 +43,13 @@ public class ShopController {
 	private static final String COOKIE_NAME = "user-id";
 	
 	private Random random = new Random();
-	@Reference
+	@Reference(check=false)
 	ItemService itemService;
-	@Reference
+	@Reference(check=false)
 	StockService stockService;
-	@Reference
+	@Reference(check=false)
 	UserService userService;
-	@Reference
+	@Reference(check=false)
 	OrderService orderService;
 	
 	@GetMapping(value = { "" })

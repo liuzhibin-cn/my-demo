@@ -22,12 +22,17 @@ dubbo:
         qosEnable: false
     registry: # see com.alibaba.dubbo.config.RegistryConfig
         address: nacos://${nacos.address}
+        check: false
     protocol: # see com.alibaba.dubbo.config.ProtocolConfig
         id: dubbo
         name: dubbo
         host: ${SERVICE_HOST:localhost} # Use POD IP to register Dubbo service
     consumer:
         filter: ${dubbo.filter}
+        # Fault tolerance. Options: failover/failfast/failsafe/failback/forking
+        cluster: failfast
+        # Load balancing strategy. Options: random, roundrobin(polling), leastactive(invoking least active service)
+        loadbalance: roundrobin
 
 seata:
   enabled: ${seata-enabled}

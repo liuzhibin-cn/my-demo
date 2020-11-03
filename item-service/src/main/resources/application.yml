@@ -25,6 +25,7 @@ dubbo:
         keepAlive: true
     registry: # see com.alibaba.dubbo.config.RegistryConfig
         address: nacos://${nacos.address}
+        check: false
     provider:
         cluster: failfast
         retries: 0
