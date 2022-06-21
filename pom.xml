@@ -33,7 +33,7 @@
         <dubbo.filter></dubbo.filter>
 
         <!-- Sharding-Proxy uses an old version of MySQL JDBC driver -->
-        <mysql-connector.version>8.0.18</mysql-connector.version>
+        <mysql-connector.version>8.0.28</mysql-connector.version>
         <mysql.driver-class>com.mysql.cj.jdbc.Driver</mysql.driver-class>
 
         <!-- MySQL JDBC Connection parameters -->
